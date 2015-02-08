@@ -31,6 +31,7 @@
 
 # Kernel images
 *hello
+rootfs/bin/
 kernel
 newfs.506
 tarfs
