@@ -170,8 +170,8 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
 /* Feature 1: cd command */
 void changeDir(char* dirPath, const char* home)
 {
-    //TODO do not copy character pointer, always use strcpy
-    // printf(">%s<\n", dirPath);
+    //do not copy character pointer, always use strcpy
+    // Bug: cd - not working
     if(dirPath == NULL) {
         chdir(home);
     }
@@ -195,6 +195,9 @@ void execBin(char* binary, char* path, char** argv, char** envp)
 
     singlePath = malloc(fileSize * sizeof(char));
     if((childPID = fork()) == 0) {
+        // Absolute Path
+        // TODO: handle binaries like ./hello and ./a.out
+        error = execve(binary, argv, envp);
         
         // Relative Path
         // ls -lrt
@@ -231,15 +234,12 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 	FILE* fd_shell = NULL;
 	int ch; int i, n=0; char buffer[200]="\0";
 	
-    //if(!(strcmp(file_name[0], " ")))
-		//fd_shell = fopen(file_name[0], "r");
-    printf("_%s_", file_name);
     if((strcmp(file_name, " ")))
 		fd_shell = fopen(file_name, "r");
     
 	if(fd_shell == NULL)
 	{
-		printf("!Error : Not able to open file\n");
+		printf("sbush: %s: No such file or directory\n", file_name);
 	}
 	else {
 		while (!feof(fd_shell)) {
@@ -247,12 +247,12 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
             for (ch = fgetc(fd_shell); ch != EOF && ch != '\n'; ch = fgetc(fd_shell)) {
 				buffer[n++] = ch;
 			}
-
+            // TODO: Add support of positional params
 			// null-terminate the string
 			buffer[n++] = '\n';
 			buffer[n] = '\0';
 			
-			printf("line : %s\n", buffer);
+			//printf("line : %s\n", buffer);
             execLine(buffer, argv, envp);
 			memset(buffer,'\0',sizeof(buffer));n=0;
 		}
@@ -262,22 +262,67 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 /* Feature 5: Set PATH and PS1*/
 void setPATH(char* newPath, char* envp[])
 {
-
+    int error, len, i=0,j=0;
+    char* charPtr, readPtr;
+    char temp[maxSize];
+	int len_path=0;
+	
+    memset(temp,'\0',maxSize);
+	strcpy(temp, "PATH=");
+	
+	len_path=strlen(newPath);
+    //printf("Executable name is %s\n", argv[0]);
+    //for(i=1; i<argc; i++)
+        //printf("%s ", argv[i]);
+    while(*envp != NULL) {
+        len = strlen("PATH=");
+        if(!strncmp(*(envp), "PATH=", len)) {
+            memset(temp, '\0', strlen(*(envp))+1);
+            strcat(temp, newPath);
+			strncpy(*(envp), temp,len+len_path);
+            //printf("%d %s\n", strlen(temp), path);
+        }
+        *(envp++);
+    }
 }
 
-void setPS1(char* new_ps, char* envp[])
+void setPS1(char* new_ps, char* envp[], char *new_path)
 {
+	int i=0, j=0, esc_flag=2;
+	char *curr_path;
 	char home[fileSize], path[maxSize];
     char user[charSize], hostname[charSize];
-	parsePATH(envp, home, path, user, hostname);
-	//printf("new_ps : %s\n",new_ps);
-	if(!strcmp(new_ps, "\\u"))
-		strcpy(new_ps,user);
-	if(!strcmp(new_ps, "\\h"))
-		strcpy(new_ps,hostname);
 	
-	strcpy(ps1,new_ps);
-
+    curr_path = malloc(fileSize * sizeof(char));
+	getcwd(curr_path, fileSize);
+	
+	memset(new_path, '\0', fileSize);
+	parsePATH(envp, home, path, user, hostname);
+	
+    //abc\u@\h
+	while(new_ps[i] != '\0') {
+		if(new_ps[i] == '\\') {
+			esc_flag=1;
+		}
+		else if(new_ps[i] == 'h' && esc_flag==1) {
+			strcat(new_path,hostname);
+			esc_flag=0;j=j+strlen(hostname);
+		}
+		else if(new_ps[i] == 'u' && esc_flag==1) {
+			strcat(new_path,user);
+			esc_flag=0;j=j+strlen(user);
+		}
+		else if(new_ps[i] == 'w' && esc_flag==1) {
+			strcat(new_path,curr_path);
+			esc_flag=0;j=j+strlen(curr_path);
+		}
+		else {
+			new_path[j]=new_ps[i];
+			j++;
+		}
+		i++;
+	}
+	//strcpy(new_ps,new_path);
 }
 
 int execCmd(char** cmd, char** argv, char** envp)
@@ -294,13 +339,12 @@ int execCmd(char** cmd, char** argv, char** envp)
             changeDir(cmd[1], home);
         else if(!strcmp(input, "exit"))
             exit(0);
-        else if(!strcmp(input, "sbush"))
-            execShell(cmd[1], argv, envp);
         else if(!strcmp(input, "set")) {
 			if(!strncmp(cmd[1], "PS1",3))
-				setPS1(cmd[3], envp);
-			else
-				setPATH(cmd[1], envp);
+				//setPS1(cmd[3], envp);
+				strcpy(ps1,cmd[3]);
+			else if(!strncmp(cmd[1], "PATH",4))
+				setPATH(cmd[3], envp);
 			}
         else {
             execBin(input, path, cmd, envp);
@@ -310,11 +354,12 @@ int execCmd(char** cmd, char** argv, char** envp)
     return 0;
 }
 
-void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp){
-	char** cmd;int j,l,k,p;int status;
+void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
+{
+	char** cmd; int j,l,k,p; int status;
 	pid_t childpid;
 	int pfd1[2];
-	int pfd2[2];int error=0;
+	int pfd2[2]; int error=0;
 	char home[fileSize], path[maxSize];
     char user[charSize], hostname[charSize];
 	
@@ -401,41 +446,53 @@ void execLine(char* input, char** argv, char** envp)
     int i; int cnt=0;
     char** cmd, **cmdList;
     
-    cmdList = parseCmd(input, '|');
-	for(cnt=0; cmdList[cnt] != NULL; cnt++);
-	
-	if(cnt<=1 && cmdList[0] != "" && cmdList[0] != NULL) {
-			cmd = parseCmd(cmdList[0], ' ');
-		    execCmd(cmd, argv, envp);
-	}
-	else{
-		for(i=0; cmdList[i] != NULL; i++) {
-			execute_pipe_cmd(cmdList[i], i, cnt, argv, envp);
-		}
-	}
+    // Skip new lines or empty lines
+    if(strcmp(input, "\n") && strcmp(input, "")) {
+        cmdList = parseCmd(input, '|');
+        for(cnt=0; cmdList[cnt] != NULL; cnt++);
+        
+        if(cnt<=1 && cmdList[0] != "" && cmdList[0] != NULL) {
+                cmd = parseCmd(cmdList[0], ' ');
+                execCmd(cmd, argv, envp);
+        }
+        else{
+            for(i=0; cmdList[i] != NULL; i++) {
+                execute_pipe_cmd(cmdList[i], i, cnt, argv, envp);
+            }
+        }
+    }
 }
 
 int main(int argc, char* argv[], char** envp)
 {
     char input[cmdSize];
+	char *sh_target;
     
-    // NotAFeature: Handle case when input is passed using argv of sbush
+	//TODO free memory allocated by Malloc
+   
     ps1 = malloc(fileSize * sizeof(char));
 	last_path = malloc(fileSize * sizeof(char));
+	sh_target = malloc(fileSize * sizeof(char));
 	getcwd(last_path, fileSize);
-	getcwd(ps1, fileSize);
+    strcpy(ps1, "\\w");
     
-    printf("Welcome to sbu shell!\n");
-    while(1) {
-        //getcwd(ps1, fileSize);
-        printf("[%s]$ ", ps1);
-        
-        memset(input, '\0', cmdSize+1);
-        //len = read(STDIN_FILENO, input, cmdSize);
-        //input[len-1] = '\0'; //replace \n with \0
-        getline(input);
-        if(strcmp(input, "\n"))
+    // Feature3: Handle case when input is passed using argv of sbush
+    if(argc > 1)
+        execShell(argv[1], argv, envp);
+    // Feature2: Run shell interactively
+    else {
+        printf("Welcome to sbu shell!\n");
+        while(1) {
+            setPS1(ps1, envp, sh_target);
+            printf("[%s]$ ", sh_target);
+            
+            memset(input, '\0', cmdSize+1);
+            //len = read(STDIN_FILENO, input, cmdSize);
+            //input[len-1] = '\0'; //replace \n with \0
+            getline(input);
+            //if(strcmp(input, "\n"))
             execLine(input, argv, envp);
+        }
     }
     return 0;
 }
