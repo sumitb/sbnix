@@ -4,32 +4,17 @@
 #include <stdarg.h>
 
 #define MAXLENGTH	1024
-/*int scani(){
-	return 0;
-}
-
-int scans(){
-	return 0;
-}
-
-int scanx(){
-	return 0;
-}
-
-int scanc(){
-	return 0;
-}*/
 
 int scanf(const char *format, ...) {
 	va_list val;
 	int scanned = 0;//int i=0;
 	char buf[MAXLENGTH]="\0";
-	char *t;int *num;
-//	char tmp[15]="\0";
+	char *t;
+	int *num;
 	va_start(val, format);
 	int n=0;
 	n=read(0, buf, MAXLENGTH);
-	buf[n]='\0';
+	buf[n-1]='\0';
 	while(*format) {
 		if(*format == '%')
 		++format;
@@ -37,18 +22,19 @@ int scanf(const char *format, ...) {
 			case 'd':
 				num = va_arg (val, int *);	 	
 				*num=atoi(buf);
-			//	itoa(*num,tmp);
-			//	write(1,tmp,15);
 				break;
 			case 's':
 				t = va_arg (val, char *);
 				strcpy(t,buf);
 				break;
 			case 'x':
+				num = va_arg (val, int *);	 	
+				*num=atox(buf);
 				break;
 			case 'c':
 				t = va_arg (val, char *);
-				t[1]='\0';
+				*t=*buf;
+				//write(1,t,1);
 				break;
 		}
 		++scanned;

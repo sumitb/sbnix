@@ -19,20 +19,24 @@ int printf(const char *format, ...) {
 			switch(*format){
 				case 'd':
 					num = va_arg (val, int);
-					itoa(num, tmp, 10);
+					itoa(num,tmp);
 					write(1,tmp,15);
 					break;
 				case 's':
-						do{
-						t = va_arg (val, char *);
+					t = va_arg (val, char *);
+					for(;*t;t++)
 						write(1,t,1);
-						}while(*t != '\0');
 					break;
 				case 'x':
+					num = va_arg (val, int);
+					xtoa(num,tmp);
+					write(1,tmp,15);
 					break;
 				case 'c':
-					t = va_arg (val, char *);
-					write(1,t,1);
+					num = va_arg (val, int);
+					tmp[0]=num;
+					tmp[1]='\0';
+					write(1,tmp,1);
 					break;
 				case '%':
 					write(1,format,1);
@@ -44,6 +48,6 @@ int printf(const char *format, ...) {
 		++printed;
 		++format;
 	}
-va_end(val);
+	va_end(val);
 	return printed;
 }
