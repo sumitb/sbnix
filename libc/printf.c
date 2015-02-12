@@ -19,7 +19,7 @@ int printf(const char *format, ...) {
 			switch(*format){
 				case 'd':
 					num = va_arg (val, int);
-					itoa(num,tmp);
+					itoa(num, tmp, 10);
 					write(1,tmp,15);
 					break;
 				case 's':

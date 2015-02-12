@@ -2,30 +2,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int atoi(char *buff){
-        int i=0;int num=0;
-        while(buff[i] != '\0' &&  buff[i] != '\n'){
-		num *= 10;
-		//num = num + (buff[i]);
-                i++;
-        }
-	printf("%d",num);
-        return num;
-	
+int atoi(char *buff)
+{
+    int i=0;int num=0;
+    while(buff[i] != '\0' &&  buff[i] != '\n'){
+    num *= 10;
+    //num = num + (buff[i]);
+            i++;
+    }
+    printf("%d",num);
+    return num;
 }
 
-int itoa(int num,char *buff){
+int itoa(int num, char *buff)
+{
 	//TODO : print in reverse
-        int i=0;
-        while(num>0){
-                buff[i]=num%10 + '0';
-                //buff[i]='a';
-                num = num/10;
-                i++;
-        }
-        buff[i]='\0';
+    int i=0;
+    while(num>0){
+            buff[i]=num%10 + '0';
+            //buff[i]='a';
+            num = num/10;
+            i++;
+    }
+    buff[i]='\0';
 	write(1,buff,15);
-        return 0;
+    return 0;
 }
 
 int strcpy(char *str1,char *str2){
