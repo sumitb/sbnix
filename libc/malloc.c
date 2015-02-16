@@ -13,19 +13,20 @@ struct node{
    
 };
 
-struct node *malloc_head=NULL,*malloc_tail=NULL,*start;
+struct node *malloc_head=NULL,*malloc_tail=NULL,*start,*end;
 
 int set=0;
 void* malloc(size_t size){
-       struct node *end,*temp;
+       struct node *temp;
         if(malloc_head==NULL){
         start=(struct node *)(syscall_1(12,0));
-       start=(struct node *) syscall_1(12,(((uint64_t)start)+size+(sizeof(struct node))));
+        end=(struct node *) syscall_1(12,(((uint64_t)start)+size+(sizeof(struct node))));
         start->size=size;
         start->flag=true;
-        start->next=NULL;
+        start->next=end;
         malloc_head=start;
         temp=start;
+        start=end;
         }
         else{
 
@@ -38,14 +39,15 @@ void* malloc(size_t size){
             malloc_tail=malloc_tail->next;
         }
         if(set==0){
-             end=(struct node *)(syscall_1(12,0));
-           end=(struct node *) syscall_1(12,(((uint64_t)end)+size+(sizeof(struct node))));
-            start->next=end;
-            start=end;
+         //    end=(struct node *)(syscall_1(12,0));
+          end= (struct node *) syscall_1(12,(((uint64_t)end)+size+(sizeof(struct node))));
+           // start->next=end;
+          //  start=end;
             start->size=size;
             start->flag=true;
-            start->next=NULL;
+            start->next=end;
             temp=start;
+            start=end;
         }
         else{
             set=0;
@@ -59,19 +61,14 @@ void* malloc(size_t size){
 }
 
 
-void free(void *ptr){
-
-   struct node *ptr1=malloc_head;
+void free(void *ptr)
+{
+    struct node *ptr1=malloc_head;
     struct node *ptr2=((struct node *)ptr)-1;
     while(ptr1!=ptr2){
         ptr1=ptr1->next;
      }
     if(ptr1==ptr2){
-        ptr1->flag=false;   
-    
+        ptr1->flag=false;
     }
-
-
-
-
 }

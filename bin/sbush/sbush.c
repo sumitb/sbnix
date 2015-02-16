@@ -11,19 +11,6 @@
 
 void execLine(char* input, char** argv, char** envp);
 
-/* getline: get line into s, return length */
-/*int getline(char s[], int lim)
-{
-    char c;
-    int i=0;
-    while(--lim>0 && (c=getchar()) != EOF && c != '\n')
-        s[i++] = c;
-    //if(c == '\n')
-        //s[i++] = c;
-    s[i] = '\0';
-    return i;
-}*/
-
 char* last_path;
 char* ps1;
 
@@ -45,7 +32,7 @@ int getline(char str[])
 /* Breaks single command into 2-d array */
 char** parseCmd(char *str, char delimiter)
 {
-	int len=0, i=0, j=0, k=0, skip=0;
+	int len=0, i=0, j=0, k=0;
     char** argv= malloc(maxArgs * sizeof(char *));
     memset(argv, 0, maxArgs * sizeof(char *));
 
@@ -112,14 +99,14 @@ void parseString(char *str)
 
 int parsePATH(char *envp[], char home[], char path[], char user[], char hostname[])
 {
-    int error, len, i=0,j=0;
-    char* charPtr, readPtr;
+    int len, i=0,j=0;
+    //char* charPtr;
     char temp[maxSize];
 
     //printf("Executable name is %s\n", argv[0]);
     //for(i=1; i<argc; i++)
         //printf("%s ", argv[i]);
-    while(*envp != NULL) {
+    while(*++envp != NULL) {
         len = strlen("HOME=");
         if(!strncmp(*(envp), "HOME=", len)) {
             memset(temp, '\0', strlen(*(envp))+1);
@@ -158,7 +145,7 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
                 hostname[j]=temp[i];
             //printf("%d %s\n", strlen(temp), hostname);
         }
-        *(envp++);
+        //*(envp++);
         //printf("%d ", len);
         //printf("%s\n", *(envp++));
     }
@@ -168,7 +155,7 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
 
 
 /* Feature 1: cd command */
-void changeDir(char* dirPath, const char* home)
+void changeDir(char* dirPath, char* home)
 {
     //do not copy character pointer, always use strcpy
     // Bug: cd - not working
@@ -189,7 +176,7 @@ void changeDir(char* dirPath, const char* home)
 /* Feature 2: execute binaries interactively */
 void execBin(char* binary, char* path, char** argv, char** envp)
 {
-    int i, j, k, error=1, status;
+    int i=0, j, k, error=1, status;
     char* singlePath;
     pid_t childPID;
 
@@ -231,22 +218,24 @@ void execBin(char* binary, char* path, char** argv, char** envp)
 
 /* Feature 3: Execute scripts */
 void execShell(char* file_name, char* argv[], char* envp[]) {
-	FILE* fd_shell = NULL;
-	int ch; int i, n=0; char buffer[200]="\0";
+	uint64_t fd_shell=-1;
+	char ch[2]; int n=0; char buffer[200]="\0";
 	
     if((strcmp(file_name, " ")))
-		fd_shell = fopen(file_name, "r");
+		fd_shell = open(file_name, 0);
     
-	if(fd_shell == NULL)
+	if(fd_shell == -1)
 	{
 		printf("sbush: %s: No such file or directory\n", file_name);
 	}
 	else {
-		while (!feof(fd_shell)) {
+		//while (!feof(fd_shell)) {
+		while (read(fd_shell,ch,1)) {
+
 		    // TODO: Confirm use of fgetc
-            for (ch = fgetc(fd_shell); ch != EOF && ch != '\n'; ch = fgetc(fd_shell)) {
-				buffer[n++] = ch;
-			}
+            //for (ch = fgetc(fd_shell); ch != EOF && ch != '\n'; ch = fgetc(fd_shell)) {
+				buffer[n++] = ch[0];
+			//}
             // TODO: Add support of positional params
 			// null-terminate the string
 			buffer[n++] = '\n';
@@ -262,8 +251,8 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 /* Feature 5: Set PATH and PS1*/
 void setPATH(char* newPath, char* envp[])
 {
-    int error, len, i=0,j=0;
-    char* charPtr, readPtr;
+    int len=0;
+   // char* charPtr, readPtr;
     char temp[maxSize];
 	int len_path=0;
 	
@@ -274,7 +263,7 @@ void setPATH(char* newPath, char* envp[])
     //printf("Executable name is %s\n", argv[0]);
     //for(i=1; i<argc; i++)
         //printf("%s ", argv[i]);
-    while(*envp != NULL) {
+    while(*++envp != NULL) {
         len = strlen("PATH=");
         if(!strncmp(*(envp), "PATH=", len)) {
             memset(temp, '\0', strlen(*(envp))+1);
@@ -282,7 +271,7 @@ void setPATH(char* newPath, char* envp[])
 			strncpy(*(envp), temp,len+len_path);
             //printf("%d %s\n", strlen(temp), path);
         }
-        *(envp++);
+        //*(envp++);
     }
 }
 
@@ -356,7 +345,7 @@ int execCmd(char** cmd, char** argv, char** envp)
 
 void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 {
-	char** cmd; int j,l,k,p; int status;
+	char** cmd; int l=0,k,p; //int status;
 	pid_t childpid;
 	int pfd1[2];
 	int pfd2[2]; int error=0;
@@ -451,9 +440,12 @@ void execLine(char* input, char** argv, char** envp)
         cmdList = parseCmd(input, '|');
         for(cnt=0; cmdList[cnt] != NULL; cnt++);
         
-        if(cnt<=1 && cmdList[0] != "" && cmdList[0] != NULL) {
+        //if(cnt<=1 && cmdList[0] != "" && cmdList[0] != NULL) {
+        if(cnt<=1 && cmdList[0] != NULL) {
+            if(strcmp(cmdList[0],"")){
                 cmd = parseCmd(cmdList[0], ' ');
                 execCmd(cmd, argv, envp);
+            }
         }
         else{
             for(i=0; cmdList[i] != NULL; i++) {
@@ -487,9 +479,10 @@ int main(int argc, char* argv[], char** envp)
             printf("[%s]$ ", sh_target);
             
             memset(input, '\0', cmdSize+1);
-            //len = read(STDIN_FILENO, input, cmdSize);
-            //input[len-1] = '\0'; //replace \n with \0
-            getline(input);
+            scanf("%s", input);
+            input[strlen(input)] = '\n';
+            input[strlen(input)+1] = '\0';
+            //getline(input);
             //if(strcmp(input, "\n"))
             execLine(input, argv, envp);
         }

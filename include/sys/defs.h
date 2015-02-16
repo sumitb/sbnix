@@ -2,6 +2,7 @@
 #define _DEFS_H
 
 #define NULL ((void*)0)
+#define EOF  -1
 
 typedef unsigned long  uint64_t;
 typedef          long   int64_t;

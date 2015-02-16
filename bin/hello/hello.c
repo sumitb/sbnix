@@ -7,9 +7,9 @@ int main(int argc, char* argv[], char* envp[])
 {
     char str1[MAXLEN]="\0";
     char str2[MAXLEN]="\0";
-    char** env;
-    char* thisEnv;
-    int i=0;
+//  char** env;
+//  char* thisEnv;
+//  int i=0;
 //  int num2=0;
 //  char ch;
 //  write(1,buff,sizeof(buff)+1);
@@ -20,19 +20,21 @@ struct a{
      
 	 int *ptr_one;
        ptr_one = (int *)malloc(sizeof(int));
-	  int *ptr_two = (int *)malloc(sizeof(int));
-       int *ptr_three = (int *)malloc(sizeof(int));
+	  int *ptr_two = (int *)malloc(1024);
+       int *ptr_three = (int *)malloc(50);
 
        if(ptr_one == 0){
             printf("ERROR out of memmory \n");
             return 1;
        }
         *ptr_one=25;
-		*ptr_two=30;
+		//*ptr_two=30;
 		*ptr_three=5;
+        memset(ptr_two,0,1024);
         printf("%d\n", *ptr_one);
-		        printf("%d\n", *ptr_two);
-        printf("%d\n", *ptr_three);
+		printf("%x\n", ptr_two);
+		printf("%x\n", ptr_three);
+        printf("SS: %d\n", *ptr_three);
 
         free(ptr_one);
 		temp=(struct a *)malloc(sizeof(struct a));
@@ -47,22 +49,22 @@ struct a{
 
         printf("free succes \n");
 
-    printf("Hello World!\n");
-    printf("argc = %d\n", argc);
+    //printf("Hello World!\n");
+    //printf("argc = %d\n", argc);
  
   
-    for (i=0; i< argc; i++) {
+    /*for (i=0; i< argc; i++) {
         printf("arg%d=%s\n", i, argv[i]);
     }
     for (env = envp; *env != 0; env++) {
         thisEnv = *env;
         printf("%s\n", thisEnv);
-    }
+    }*/
 
-    scanf("%s", str1);
-	printf("%s\n", str1);
-    scanf("%s", str2);
-	printf("%s\n", str2);
+    //scanf("%s", str1);
+	//printf("%s\n", str1);
+    //scanf("%s", str2);
+	//printf("%s\n", str2);
 	if(strncmp(str1, str2, 3) == 0)
 		strncpy(str1, str2, 3);
 	else
