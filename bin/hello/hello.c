@@ -13,6 +13,39 @@ int main(int argc, char* argv[], char* envp[])
 //  int num2=0;
 //  char ch;
 //  write(1,buff,sizeof(buff)+1);
+struct a{
+	int data1;
+	char data2[10];	
+}*temp;
+     
+	 int *ptr_one;
+       ptr_one = (int *)malloc(sizeof(int));
+	  int *ptr_two = (int *)malloc(sizeof(int));
+       int *ptr_three = (int *)malloc(sizeof(int));
+
+       if(ptr_one == 0){
+            printf("ERROR out of memmory \n");
+            return 1;
+       }
+        *ptr_one=25;
+		*ptr_two=30;
+		*ptr_three=5;
+        printf("%d\n", *ptr_one);
+		        printf("%d\n", *ptr_two);
+        printf("%d\n", *ptr_three);
+
+        free(ptr_one);
+		temp=(struct a *)malloc(sizeof(struct a));
+		temp->data1=10;
+		strcpy(temp->data2,"abcgdhs");
+		printf("%d\n",temp->data1);
+		printf("%s\n",temp->data2);
+		free(temp);
+		     int *ptr_four = (int *)malloc(sizeof(int));
+				*ptr_four=4;
+				        printf("%d\n", *ptr_four);
+
+        printf("free succes \n");
 
     printf("Hello World!\n");
     printf("argc = %d\n", argc);

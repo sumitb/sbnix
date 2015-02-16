@@ -3,6 +3,7 @@
 #include <syscall.h>
 
 
-void exit(int status){
-	syscall_1(SYS_exit, status);
-}
+pid_t getpid(void)
+{
+	return syscall_0(SYS_getpid);
+} 
