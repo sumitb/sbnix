@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#define MAXARGS 100
-#define PATHVAR 100
+#define MAXARGS 10
+#define PATHVAR 50
 
 void _start(void) {
 	int i, argc = 1;
@@ -8,20 +8,15 @@ void _start(void) {
 	char* envp[PATHVAR];
 	int res;
 
-    int* rsp;
-    char* csp;
-    register long esp __asm ("rsp");
-    rsp = (int*)esp;
+    uint64_t* rsp;
+    register int64_t esp __asm ("rsp");
+    rsp = (uint64_t*)esp;
 
     // Skip local variables on stack
-    while(*rsp++ == 0);
-    argc = *rsp;
-    
-    csp = (char*)rsp; csp++;
-    i = 0;
-    while(*csp++ != 0) argv[i++] = csp; csp++;
-    i = 0;
-    while(*csp++ != 0) envp[i++] = csp;
+    while(* rsp++ == 0);
+    argc = *(--rsp);
+    i = 0; while(*rsp != 0) argv[i++] = (char*)(*(++rsp));
+    i = 0; rsp++; while(*rsp != 0) envp[i++] = (char*)(*(rsp++));
 
     res = main(argc, argv, envp);
 	exit(res);
