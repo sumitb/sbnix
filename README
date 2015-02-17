@@ -1,3 +1,9 @@
+Warmup Project 1: Implement a shell (sbush)
+Team members:
+    1) Moiz Ali
+    2) Pratik Bagaria
+    3) Sumit Bindal
+
 Shell Execution:
     1) Shell script execution:
         format: <full path of shell executable> script_name
@@ -31,4 +37,3 @@ Shell Execution:
         cd ~/<path>
         cd -
 
-                                                                                                                                                            
