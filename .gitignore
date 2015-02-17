@@ -30,7 +30,6 @@
 *.hex
 
 # Kernel images
-*hello
 rootfs/bin/
 kernel
 newfs.506
@@ -40,3 +39,7 @@ tarfs
 
 # Tags files
 tags
+
+# Submit files
+*.tgz
+*.gpg
