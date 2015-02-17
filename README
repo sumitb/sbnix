@@ -1,0 +1,34 @@
+Shell Execution:
+    1) Shell script execution:
+        format: <full path of shell executable> script_name
+        Eg : rootfs/bin/sbush run.sh
+    2) Binary Execution:
+        Supported format: full_path/binary_name
+            Eg: /bin/ls
+        Supported format: Relative_path/binary_name
+            Eg: ../a.out
+        Supported format: binary_name (will check with path in envp)
+            Eg: ls
+    3) pipe:
+        Supported format: <binary_name>|<binary_name>
+        Eg: ls|wc , ls | wc
+    4) set PS1:
+        Supported format : set PS1 <string>
+        Eg: set PS1 abcd
+        set PS1 \u@\h:\w
+    5) set PATH :
+        Supported format : set PATH <path>
+            set PATH $PATH:<path>
+            set PATH <path>:$PATH
+        Eg: set PATH /home/stufs1
+            set PATH $PATH:/home/stufs1
+            set PATH /home/stufs1:$PATH
+    6) cd :
+        Supported format : cd <absolute path>
+        cd <relaative path>
+        cd
+        cd ~
+        cd ~/<path>
+        cd -
+
+                                                                                                                                                            

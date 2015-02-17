@@ -201,6 +201,7 @@ void execBin(char* binary, char* path, char** argv, char** envp)
             if(!error)
                 exit(0);
         } while(i<strlen(path) && path[i] != '\n' && path[i] != EOF);
+        printf("%s: command not found.\n", binary);
     }
     else {
         waitpid(childPID, &status, 0);
@@ -349,12 +350,18 @@ int execCmd(char** cmd, char** argv, char** envp)
         else if(!strcmp(input, "exit"))
             exit(0);
         else if(!strcmp(input, "set")) {
-			if(!strncmp(cmd[1], "PS1",3))
-				//setPS1(cmd[3], envp);
-				strcpy(ps1,cmd[3]);
-			else if(!strncmp(cmd[1], "PATH",4))
-				setPATH(cmd[3], envp);
-			}
+            if(cmd[1] == NULL || cmd[2] == NULL)
+                printf("set: Insufficient arguments.\n");
+            else if(cmd[3] != NULL)
+                printf("set: Too many arguments.\n");
+            else {
+                if(!strncmp(cmd[1], "PS1", 3))
+                    //setPS1(cmd[3], envp);
+                    strcpy(ps1, cmd[2]);
+                else if(!strncmp(cmd[1], "PATH", 4))
+                    setPATH(cmd[2], envp);
+            }
+        }
         else {
             execBin(input, path, cmd, envp);
         }
@@ -469,7 +476,10 @@ void execLine(char* input, char** argv, char** envp)
         }
         else{
             for(i=0; cmdList[i] != NULL; i++) {
-                execute_pipe_cmd(cmdList[i], i, cnt, argv, envp);
+                if(strcmp(cmdList[i], "\n") && strcmp(cmdList[i], ""))
+                    execute_pipe_cmd(cmdList[i], i, cnt, argv, envp);
+                else
+                    printf("Invalid null command.\n");
             }
         }
     }
