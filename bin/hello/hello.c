@@ -3,17 +3,34 @@
 #include <stdlib.h>
 #define MAXLEN 1024
 
+int listdir(const char *path) {
+    struct dirent *entry;
+    DIR *dp;
+
+    dp = opendir(path);
+    if (dp == NULL) {
+        printf("opendir error");
+        return -1;
+    }
+    entry = readdir(dp);
+    while((entry = readdir(dp)))
+        printf("%s\n", entry->d_name);
+
+    closedir(dp);
+    return 0;
+}
+
 int main(int argc, char* argv[], char* envp[])
 {
-    char str1[MAXLEN]="\0";
-    char str2[MAXLEN]="\0";
+//  char str1[MAXLEN]="\0";
+//  char str2[MAXLEN]="\0";
 //  char** env;
 //  char* thisEnv;
 //  int i=0;
 //  int num2=0;
 //  char ch;
 //  write(1,buff,sizeof(buff)+1);
-struct a{
+/*struct a{
 	int data1;
 	char data2[10];	
 }*temp;
@@ -28,7 +45,7 @@ struct a{
             return 1;
        }
         *ptr_one=25;
-		//*ptr_two=30;
+		*ptr_two=30;
 		*ptr_three=5;
         memset(ptr_two,0,1024);
         printf("%d\n", *ptr_one);
@@ -47,7 +64,7 @@ struct a{
 				*ptr_four=4;
 				        printf("%d\n", *ptr_four);
 
-        printf("free succes \n");
+        printf("free succes \n");*/
 
     //printf("Hello World!\n");
     //printf("argc = %d\n", argc);
@@ -65,12 +82,12 @@ struct a{
 	//printf("%s\n", str1);
     //scanf("%s", str2);
 	//printf("%s\n", str2);
-	if(strncmp(str1, str2, 3) == 0)
+	/*if(strncmp(str1, str2, 3) == 0)
 		strncpy(str1, str2, 3);
 	else
 		strncpy(str1, str2, 4);
 		
-	printf("%s\n",str1);
+	printf("%s\n",str1);*/
 	
 //  write(1,str,MAXLEN);
 /*  scanf("%d",&num);
@@ -85,5 +102,6 @@ struct a{
 	printf("%c\n",ch);
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
+    listdir("/");
     return 0;
 }

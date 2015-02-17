@@ -402,7 +402,7 @@ void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 					close(pfd2[1]);
 			}
 		}
-		waitpid(childpid,NULL, 0);
+		waitpid(childpid, NULL, 0);
 	}
 }
 

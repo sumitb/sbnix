@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <syscall.h>
 #include <sys/defs.h>
+#include <sys/syscall.h>
 
 typedef enum { false, true } bool;
 
@@ -11,14 +12,24 @@ struct node{
 };
 
 int set=0;
-struct node *malloc_head=NULL, *malloc_tail=NULL, *start, *end;
+struct node *malloc_head=NULL;//, *malloc_tail=NULL, *start, *end;
 
 void* malloc(size_t size)
 {
+    uint64_t start;
+    // Naive allocator
+    start = syscall_1(SYS_brk, 0);
+    syscall_1(SYS_brk, ((uint64_t)start + size ));
+    return (void*)start;
+}
+
+
+/*void* malloc(size_t size)
+{
     struct node *temp;
-    if(malloc_head==NULL) {
-        start = (struct node *) syscall_1(12, 0);
-        end = (struct node *) syscall_1(12, ((uint64_t)start + size + sizeof(struct node)));
+    if(malloc_head == NULL) {
+        start = (struct node *) syscall_1(SYS_brk, 0);
+        end = (struct node *) syscall_1(SYS_brk, ((uint64_t)start + size + sizeof(struct node)));
         start->size = size;
         start->flag = true;
         start->next = end;
@@ -27,18 +38,18 @@ void* malloc(size_t size)
         start = end;
     }
     else {
-        malloc_tail=malloc_head;
-        while(malloc_tail != NULL) {
+        malloc_tail = malloc_head;
+        do {
             if(malloc_tail->flag == false && malloc_tail->size >= size) {
                 set=1;
                 break;
-            }
             malloc_tail = malloc_tail->next;
-        }
+            }
+        } while(malloc_tail != NULL);
     
         if(set == 0) {
             // end=(struct node *)(syscall_1(12,0));
-            end= (struct node *) syscall_1(12, ((uint64_t)end + size + sizeof(struct node)));
+            end= (struct node *) syscall_1(SYS_brk, ((uint64_t)end + size + sizeof(struct node)));
             // start->next=end;
             // start=end;
             start->size = size;
@@ -55,17 +66,17 @@ void* malloc(size_t size)
         }
     }
     return temp+1;
-}
+}*/
 
 
 void free(void *ptr)
 {
-    struct node *ptr1=malloc_head;
-    struct node *ptr2=((struct node *)ptr)-1;
-    while(ptr1!=ptr2){
-        ptr1=ptr1->next;
-     }
-    if(ptr1==ptr2){
-        ptr1->flag=false;
+    struct node *ptr1 = malloc_head;
+    struct node *ptr2 = ((struct node *)ptr) - 1;
+    while(ptr1 != ptr2) {
+        ptr1 = ptr1->next;
+    }
+    if(ptr1 == ptr2) {
+        ptr1->flag = false;
     }
 }

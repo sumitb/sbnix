@@ -44,13 +44,19 @@ int dup2(int oldfd, int newfd);
 
 // directories
 #define NAME_MAX 255
-struct dirent
-{
+struct dirent {
 	long d_ino;
 	off_t d_off;
 	unsigned short d_reclen;
 	char d_name [NAME_MAX+1];
 };
+struct opdir {
+	int fd;
+	long size;
+	long offset;
+	char *buffer;
+};
+typedef struct opdir DIR;
 void *opendir(const char *name);
 struct dirent *readdir(void *dir);
 int closedir(void *dir);
