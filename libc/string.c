@@ -114,12 +114,13 @@ int strcpy(char *str1,char *str2){
 }
 
 int strcat(char *str1,char *str2){
-	int i=0;
+	int i=0;int j=0;
 	int len1 = 0,len2=0;
 	len1 = strlen(str1);
 	len2 = strlen(str2);
 	for(i=len1;i<len1+len2;i++){
-		str1[i]=str2[i];
+		str1[i]=str2[j];
+		j++;
 	}
 	str1[i]='\0';
 	return 0;

@@ -105,6 +105,7 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
                 path[j]=temp[i];
             //printf("%d %s\n", strlen(temp), path);
         }
+        // TODO: BUG: Username not working in PS1
         len = strlen("USER=");
         if(!strncmp(*(envp), "USER=", len)) {
             memset(temp, '\0', strlen(*(envp))+1);
@@ -136,18 +137,31 @@ void changeDir(char* dirPath, char* home)
     //do not copy character pointer, always use strcpy
     // Bug: cd - not working
     // Bug: cd ~/sbnix not working
+	char buffer[200]="\0";int i=0,j=0;
     if(dirPath == NULL) {
+		getcwd(last_path, fileSize);
         chdir(home);
     }
     else {
         if(!strcmp(dirPath, "~") || !strcmp(dirPath, ""))
             strcpy(dirPath, home);
-        if(!strcmp(dirPath, "-"))
-		    strcpy(dirPath, last_path);
-        if(chdir(dirPath))
+        else if(!strcmp(dirPath, "-")){
+			strcpy(dirPath, last_path);
+		}
+		else if(dirPath[0]=='~'){
+			strcpy(buffer,home);
+			int len1=strlen(buffer);
+			int len2=strlen(dirPath);
+			for(i=1,j=len1;i<len2;i++,j++)
+				buffer[j]=dirPath[i];
+			buffer[j]='\0';
+			strcpy(dirPath,buffer);
+		}
+		getcwd(last_path, fileSize);
+		if(chdir(dirPath))
             printf("%s: No such file or directory.\n", dirPath);
 	}
-    getcwd(last_path, fileSize);
+    
 }
 
 /* Feature 2: execute binaries interactively */
@@ -197,9 +211,20 @@ void execBin(char* binary, char* path, char** argv, char** envp)
 void execShell(char* file_name, char* argv[], char* envp[]) {
 	uint64_t fd_shell=-1;
 	char ch[2]; int n=0; char buffer[200]="\0";
+	int len=strlen(file_name);
+	char temp_file[len+2];
+	memset(temp_file,'\0',len+2);
 	
-    if((strcmp(file_name, " ")))
-		fd_shell = open(file_name, 0);
+    if(strcmp(file_name, " ")){
+		if((file_name[0]=='.' && file_name[1]=='/') || (file_name[0]=='/'))
+			fd_shell = open(file_name, 0);
+		else{
+			strcpy(temp_file,"./");
+			strcat(temp_file,file_name);
+			fd_shell = open(temp_file, 0);
+		}
+	}
+		
     
 	if(fd_shell == -1)
 	{
@@ -211,16 +236,16 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 
 		    // TODO: Confirm use of fgetc
             //for (ch = fgetc(fd_shell); ch != EOF && ch != '\n'; ch = fgetc(fd_shell)) {
-				buffer[n++] = ch[0];
-			//}
+			buffer[n] = ch[0];
+			
             // TODO: Add support of positional params
 			// null-terminate the string
-			buffer[n++] = '\n';
-			buffer[n] = '\0';
-			
-			//printf("line : %s\n", buffer);
-            execLine(buffer, argv, envp);
-			memset(buffer,'\0',sizeof(buffer));n=0;
+			if(buffer[n++] == '\n'){
+				buffer[n] = '\0';
+				//printf("line : %s\n", buffer);
+				execLine(buffer, argv, envp);
+				memset(buffer,'\0',sizeof(buffer));n=0;
+			}
 		}
 	}
 }
@@ -228,7 +253,11 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 /* Feature 5: Set PATH and PS1*/
 void setPATH(char* newPath, char* envp[])
 {
-    int len=0;
+	char home[fileSize], path[maxSize];
+    char user[charSize], hostname[charSize];
+	parsePATH(envp, home, path, user, hostname);
+    int len=0;int i=0;
+	int lpath=0;int j=0;int p=5;
    // char* charPtr, readPtr;
     char temp[maxSize];
 	int len_path=0;
@@ -237,15 +266,29 @@ void setPATH(char* newPath, char* envp[])
 	strcpy(temp, "PATH=");
 	
 	len_path=strlen(newPath);
+	lpath=strlen(path);
+	//printf("%s\n",path);
     //printf("Executable name is %s\n", argv[0]);
     //for(i=1; i<argc; i++)
         //printf("%s ", argv[i]);
     while(*++envp != NULL) {
         len = strlen("PATH=");
         if(!strncmp(*(envp), "PATH=", len)) {
-            memset(temp, '\0', strlen(*(envp))+1);
-            strcat(temp, newPath);
-			strncpy(*(envp), temp,len+len_path);
+            //memset(temp, '\0', strlen(*(envp))+1);
+			for(i=0;i<len_path;i++,p++){
+				if(newPath[i]=='$'){
+					for(j=0;j<lpath;j++){
+						temp[p]=path[j];p++;
+					}
+					i+=5;
+				}
+				temp[p]=newPath[i];
+			}
+			temp[p]='\0';
+            //strcat(temp, path);
+			//strcat(temp, newPath);
+			//printf("envp :%s\n",temp);
+			strcpy(*(envp), temp);
             //printf("%d %s\n", strlen(temp), path);
         }
         //*(envp++);
