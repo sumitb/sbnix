@@ -13,7 +13,7 @@ static __inline uint64_t syscall_0(uint64_t n) {
 		"D" (0)
 		: "cc","rcx","r11","memory");
 
-	return 0;
+	return ret;
 }
 
 static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {

@@ -7,7 +7,6 @@
 #define cmdSize maxArgs * charSize
 #define fileSize 1024
 #define maxSize 4096
-#define STDIN_FILENO 0
 
 void execLine(char* input, char** argv, char** envp);
 
@@ -74,29 +73,6 @@ char** parseCmd(char *str, char delimiter)
     return argv;
 }
 
-/*
-void parseString(char *str)
-{
-	int len=0, i=0, j=0, k=0;
-    char** argv;
-    char inputList[maxArgs][cmdSize];
-	
-    len = strlen(str);
-	for(i=0; i<=len; i++) {
-        if(str[i] != '|' && str[i] != '\n' && str[i] != '\0') {
-			inputList[k][j] = str[i];
-			j++;
-		}
-		if(str[i] == '|' || str[i] == '\n' || str[i] == '\0') {
-			inputList[k][j] = '\0';
-		    argv = parseCmd(inputList[k], ' ');
-            execCmd(argv);
-			printf("%d. %s\n", k, inputList[k]); k++; j=0;
-		}
-	}
-}
-*/
-
 int parsePATH(char *envp[], char home[], char path[], char user[], char hostname[])
 {
     int len, i=0,j=0;
@@ -159,6 +135,7 @@ void changeDir(char* dirPath, char* home)
 {
     //do not copy character pointer, always use strcpy
     // Bug: cd - not working
+    // Bug: cd ~/sbnix not working
     if(dirPath == NULL) {
         chdir(home);
     }
@@ -183,7 +160,7 @@ void execBin(char* binary, char* path, char** argv, char** envp)
     singlePath = malloc(fileSize * sizeof(char));
     if((childPID = fork()) == 0) {
         // Absolute Path
-        // TODO: handle binaries like ./hello and ./a.out
+        // Done: handle binaries like ./hello and ./a.out
         error = execve(binary, argv, envp);
         
         // Relative Path
@@ -459,6 +436,7 @@ int main(int argc, char* argv[], char** envp)
 {
     char input[cmdSize];
 	char *sh_target;
+	int len_inp=0;
     
 	//TODO free memory allocated by Malloc
    
@@ -480,11 +458,14 @@ int main(int argc, char* argv[], char** envp)
             
             memset(input, '\0', cmdSize+1);
             scanf("%s", input);
-            input[strlen(input)] = '\n';
-            input[strlen(input)+1] = '\0';
-            //getline(input);
-            //if(strcmp(input, "\n"))
-            execLine(input, argv, envp);
+			if(strcmp(input, "")) {
+				len_inp = strlen(input);
+                input[len_inp] = '\n';
+                input[len_inp+1] = '\0';
+                //getline(input);
+                //if(strcmp(input, "\n"))
+                execLine(input, argv, envp);
+            }
         }
     }
     return 0;

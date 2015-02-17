@@ -159,7 +159,7 @@ int strcmp(char *str1,char *str2){
 
 int strncmp(char *str1,char *str2,int cplen){
 	int i=0;
-	int len1 = 0;int len2 = 0;
+/*	int len1 = 0;int len2 = 0;
 	len1 = strlen(str1);
 	len2 = strlen(str2);
 	if(len1>cplen)
@@ -170,22 +170,23 @@ int strncmp(char *str1,char *str2,int cplen){
 		return 1;
 	else if(len2>len1)
 		return -1;
-	else {
-		for(i=0;i<len1;i++){
+	else {*/
+		for(i=0;i<cplen;i++){
 			if(str1[i]>str2[i])
 				return 1;
 			else if(str2[i]>str1[i])
 				return -1;
 		}
-	}	
+//	}	
 	return 0;
 }
 int strlen(char *str1){
 	int len=0;
-	while(*str1 != '\0'){
+	if(*str1)
+	   while(*str1 != '\0'){
 		len++;
 		str1++;
-	}
+	   }
 	return len;
 }
 

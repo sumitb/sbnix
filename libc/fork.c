@@ -1,12 +1,8 @@
-#include <stdio.h>
-#include <sys/syscall.h>
+#include <stdlib.h>
 #include <syscall.h>
-#include <sys/defs.h>
+#include <sys/syscall.h>
+
 pid_t fork(void)
 {
-	return syscall_0(SYS_fork);
-
+    return (pid_t) syscall_0(SYS_fork);
 }
-
-
-
