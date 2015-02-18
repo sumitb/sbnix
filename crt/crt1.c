@@ -2,6 +2,8 @@
 #define MAXARGS 10
 #define PATHVAR 50
 
+int main(int argc, char* argv[], char* envp[]);
+
 void _start(void) {
 	int i, argc = 1;
 	char* argv[MAXARGS];
