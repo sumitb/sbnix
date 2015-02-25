@@ -1,8 +1,15 @@
+#include <sys/defs.h>
+#include <stdarg.h>
 #define A_VIDEO (char*)0xb8000
 #define intSize     20      // We don't expect any number to be greater than 2^64
 
 //GLOBALS
 char *av_vid = A_VIDEO;       // Current addr of video buffer
+
+/*
+ * value of a_vid = 0xb80000
+ * increment it by 1 byte
+ */
 
 /* Resets the global addr of video buffer to start */
 // TODO: Write clear func and test it's functionality
@@ -35,12 +42,12 @@ void s_printf(char str[]) {
 
 /* Print a n-digit to video buffer */
 /* Print a hexadecimal number to video buffer */
-void i_printf(long num, int base, int addr) {
+void i_printf(uint64_t num, int base, bool xflag) {
     int i=0, flag=0, digit;
     int numArr[intSize] = {0};    // Initialize arr with 0's
 
     // If number is addr, append 0x to it
-    if(addr == 1) {
+    if(xflag) {
         i_printf(0, 2, 0);
         c_printf('x');
     }
@@ -48,11 +55,6 @@ void i_printf(long num, int base, int addr) {
     if(num == 0) {
         c_printf(num);
         return;
-    }
-    // Added support for signed numbers
-    else if (num < 0) {
-        num *= -1;
-        c_printf('-');
     }
     while(num > 0) {
         digit = num % base;
@@ -74,22 +76,66 @@ void i_printf(long num, int base, int addr) {
     return;
 }
 
-
+/*
 int printf(const char *format, ...) {
 	int p;
-    i_printf((long)&p, 16, 1);
-    //*((char*)0xb8000)=65;
-	//*((char*)0xb8001)=0x07;
+    *((char*)0xb8000)=65;
+	*((char*)0xb8001)=0x07;
     //c_printf('H');
     //c_printf('i');
 	//i_printf(63, 16, 0);
     //i_printf(-40, 10, 0);
     //s_printf("Sumit");
     return 0;
+}*/
+
+int printk(const char *format, ...) {
+	va_list val;
+	int printed = 0;
+    int64_t num = 0; uint64_t addr = 0;
+	char *t;
+	
+	va_start(val, format);
+
+	while(*format) {
+		if(*format == '%'){
+			++format;
+			switch(*format){
+				case 'd':
+					num = va_arg (val, int);
+                    // Added support for signed numbers
+                    if (num < 0) c_printf('-');
+                    i_printf((uint64_t)num, 10, 0);
+					break;
+				case 's':
+					t = va_arg (val, char *);
+					for(;*t;t++)
+                        c_printf(*t);
+					break;
+				case 'x':
+					num = va_arg (val, int);
+                    if (num < 0) c_printf('-');
+                    i_printf((uint64_t)num, 16, 0);
+					break;
+				case 'p':
+					addr = va_arg (val, int);
+                    i_printf(addr, 16, 1);
+					break;
+				case 'c':
+					num = va_arg (val, int);
+                    c_printf(num);
+					break;
+				case '%':
+                    c_printf(*format);
+			}
+		}
+		else{
+            c_printf(*format);
+		}
+		++printed;
+		++format;
+	}
+	va_end(val);
+	return printed;
 }
 
-
-/*
- * value of a_vid = 0xb80000
- * increment it by 1 byte
- */

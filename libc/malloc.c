@@ -3,8 +3,6 @@
 #include <sys/defs.h>
 #include <sys/syscall.h>
 
-typedef enum { false, true } bool;
-
 struct node{
     size_t size;
     bool flag;
