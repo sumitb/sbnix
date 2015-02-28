@@ -1,18 +1,18 @@
 #include <sys/defs.h>
 
-static inline void outb(uint16_t port, uint8_t val)
+void outportb(uint16_t port, uint8_t val)
 {
         __asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
-            /* TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. */
-            /* TODO: Should %1 be %w1? */
+            // TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. 
+            // TODO: Should %1 be %w1? 
 }
 
-static inline uint8_t inb(uint16_t port)
+uint8_t inportb(uint16_t port)
 {
         uint8_t ret;
             __asm volatile ( "inb %1, %0" : "=a"(ret) : "Nd"(port) );
-                /* TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. */
-                /* TODO: Should %1 be %w1? */
+                // TODO: Is it wrong to use 'N' for the port? It's not a 8-bit constant. 
+                // TODO: Should %1 be %w1? 
                 return ret;
 }
 
