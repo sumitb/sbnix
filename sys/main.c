@@ -2,7 +2,7 @@
 #include <sys/gdt.h>
 #include <sys/idt.h>
 #include <sys/tarfs.h>
-
+#include<sys/timer.h>
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
 	struct smap_t {
@@ -39,7 +39,10 @@ void boot(void)
 	);
 	reload_gdt();
 	setup_tss();
+    __asm__("sti");
 	reload_idt();
+    init_pic();
+    timer_set();
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
@@ -47,5 +50,7 @@ void boot(void)
 	);
 	s = "!!!!! start() returned !!!!!";
 	for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
-	while(1);
+    int a=5,b=0;
+    a=a/b;
+    while(1);
 }

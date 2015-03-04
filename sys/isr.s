@@ -1,7 +1,7 @@
 
 .global handler_irq0
 .global handler_irq1
-
+.global handler_isr0
 handler_irq0:
 pushq %rax
 pushq %rbx
@@ -70,3 +70,4 @@ popq %rcx
 popq %rbx
 popq %rax
 iretq
+

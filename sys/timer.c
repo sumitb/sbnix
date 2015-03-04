@@ -1,7 +1,8 @@
 #include<sys/defs.h>
 #include<sys/sbunix.h>
 #include<sys/timer.h>
-
+#include<stdio.h>
+#include<stdlib.h>
 extern void outportb(uint16_t port, uint8_t val);
 
 uint64_t counter=0;
@@ -32,11 +33,12 @@ void init_pic(){
    outportb(0xA1, 0x0);
 }
 void call_timer(){
-    printk("timer : %d\n",counter);
+//    printk("timer : %d\n",counter);
     counter++;
     outportb(0x20,0x20);
-    if((counter%18)==0){
-        secs=counter/100;
+    if((counter%100)==0){
+//        secs=counter/100;
+        secs++;
         hours=secs/3600; //hours since boot
     //calculating mins since boot  
         if(secs>=3600)
@@ -50,8 +52,10 @@ void call_timer(){
             secs=0;
         else if(secs>60)
             secs=secs%60;
-
-       printk("Time since boot (hh:mm:ss):", hours,mins,secs);
+//       if(secs%10==0) 
+//       printk("Time since boot (hh:mm:ss):%d:%d:%d", hours,mins,secs);
     }
-
+}
+void div_zero(){
+printk("div zero\n");
 }
