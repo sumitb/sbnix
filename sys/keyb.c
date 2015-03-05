@@ -1,3 +1,6 @@
+/*
+ * Referenced from osdever.net - Bran's Kernel Dev 
+ */
 #include <sys/defs.h>
 #include <sys/sbunix.h>
 #include <sys/timer.h>

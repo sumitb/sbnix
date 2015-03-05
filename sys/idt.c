@@ -1,3 +1,6 @@
+/*
+ * Referenced from osdever.net - Bran's Kernel Dev 
+ */
 #include<sys/timer.h>
 #include<sys/idt.h>
 #include<sys/defs.h>
