@@ -1,13 +1,12 @@
-#include<sys/defs.h>
-#include<sys/timer.h>
-#include<sys/sbunix.h>
-#include<sys/idt.h>
-#if 0
+#include<defs.h>
+#include<timer.h>
+#include<idt.h>
+
 void handler_irq0(){
-	//printk("Interrupt\n");
-/*    __asm__(".global handler_irq0 \n" \
-           "handler_irq0: \n" \
-*/     __asm__("pushq %rax;" \
+
+    _asm_(".global irq0 \n" \
+            "irq0: \n" \
+            "pushq %rax;" \
             "pushq %rbx;" \
             "pushq %rcx;" \
             "pushq %rdx;" \
@@ -29,5 +28,6 @@ void handler_irq0(){
             "popq %rbx;" \
             "popq %rax;" \
             "iretq;");
+
+
 }
-#endif

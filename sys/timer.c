@@ -1,8 +1,6 @@
 #include<sys/defs.h>
 #include<sys/sbunix.h>
 #include<sys/timer.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 extern void outportb(uint16_t port, uint8_t val);
 
@@ -55,5 +53,5 @@ void call_timer(){
 
        printk("Time since boot (hh:mm:ss):", hours,mins,secs);
     }
-//`printk("moiz");
+
 }
