@@ -19,9 +19,6 @@ void reset() {
 
 /* Print a single char to video buffer */
 void c_printf(char ch) {
-	// If it's a integer, obtain ASCII val
-    if (ch >= 0 && ch <= 9)
-        ch += 48;
     *av_vid = ch;
 	av_vid++;
     *av_vid = 0x07;
@@ -53,7 +50,8 @@ void i_printf(uint64_t num, int base, bool xflag) {
     }
     // If number is 0, return back from here only
     if(num == 0) {
-        c_printf(num);
+        // Pass ASCII val of integer
+        c_printf(num + 48);
         return;
     }
     while(num > 0) {
@@ -71,7 +69,8 @@ void i_printf(uint64_t num, int base, bool xflag) {
             flag = 1;
         else
             continue;
-        c_printf(numArr[i]);
+        // Pass ASCII val of integer
+        c_printf(numArr[i] + 48);
     }
     return;
 }
