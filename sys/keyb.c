@@ -5,16 +5,7 @@
 extern void outportb(uint16_t port, uint8_t val);
 extern uint8_t inportb(uint16_t port);
 
-char kbuff[128];
-int kbuff_count = 0;
-
-void reset_keyborad_buffer(){
-	int i=0;
-	for(i=0;i<128;i++)
-		kbuff[i]='\0';
-}
-
-unsigned char keyboard_map[128] =
+unsigned char keyborard_character_set_normal[128] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
   '9', '0', '-', '=', '\b',	/* Backspace */
@@ -57,7 +48,7 @@ unsigned char keyboard_map[128] =
  
 };		
 
-unsigned char keyboard_map_shift[128] =
+unsigned char Keyboard_character_set_shift[128] =
 {
     0,  27, 
     '!', '@', '#', '$', '%', '^', '&', '*',	/* 9 */
@@ -104,42 +95,43 @@ int shift_key=0;
 
 void kb_handler()
 {
-	unsigned char scancode;
-  	unsigned char status;
+    int x, y;
+	unsigned char check_code;
   
-  	status = inportb(0x64);
-  	scancode = status;
-  
-  	/* Read from the keyboard's data buffer */
-  	scancode = inportb(0x60);
-	if (scancode & 0x80)
-  	{
-		if(scancode == 0x2A)
-		{
+  	check_code = inportb(0x60);
+
+	if (check_code & 0x80){
+		if(check_code == 0x2A)
+  		{
       			shift_key = 0;
-		}	
+		}
 	}
 	else
   	{
-		if(scancode == 0x2A)
+		if(check_code == 0x2A)
 		{
       			shift_key = 1;
 		}
 		else{
+            // Get current cursor position
+            x = getcsr_x(); y = getcsr_y();
+            // Move to bottom right corner
+            gotoxy(60, 22);
 			if(shift_key == 1){
-				printk("%c",keyboard_map_shift[scancode]);	
-				//char kbuff[1024];
-				//int kbuff_count = 0;
-				kbuff_count++;
-				kbuff[kbuff_count]=keyboard_map_shift[scancode];
-			 	kbuff_count = kbuff_count%128;	
+				if(Keyboard_character_set_shift[check_code]=='\n')
+					printk("\n");	
+				else
+					printk("%c",Keyboard_character_set_shift[check_code]);	
+				shift_key = 0;
 			}
 			else{
-				printk("%c",keyboard_map[scancode]);	
-				kbuff_count++;
-				kbuff[kbuff_count]=keyboard_map[scancode];
-			 	kbuff_count = kbuff_count%128;	
+				if(keyborard_character_set_normal[check_code]=='\n')
+					printk("\n");	
+				else
+					printk("%c",keyborard_character_set_normal[check_code]);	
 			}	
+            // Reset cursor position
+            gotoxy(x, y);
 		}	
 	}
 	outportb(0x20, 0x20);

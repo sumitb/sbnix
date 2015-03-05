@@ -4,7 +4,8 @@
 #define intSize     20      // We don't expect any number to be greater than 2^64
 
 //GLOBALS
-char *av_vid = A_VIDEO;       // Current addr of video buffer
+//char *av_vid = A_VIDEO;       // Current addr of video buffer
+int csr_x = 0, csr_y = 0;     // Current cursor position
 
 /*
  * value of a_vid = 0xb80000
@@ -14,18 +15,69 @@ char *av_vid = A_VIDEO;       // Current addr of video buffer
 /* Resets the global addr of video buffer to start */
 // TODO: Write clear func and test it's functionality
 void reset() {
-    av_vid = A_VIDEO;
+    //av_vid = A_VIDEO;
+    return;
+ } 
+/*
+void mov_csr(void){
+unsigned blank;
+temp = csr_y * 80 + csr_x;
+outportb(0x3D4, 14);
+outportb(0x3D5, temp >> 8);
+outportb(0x3D4, 15);
+outportb(0x3D5, temp);
+}*/
+
+int getcsr_x() {
+    return csr_x;
+}
+int getcsr_y() {
+    return csr_y;
+}
+void gotoxy(int x, int y) {
+    csr_y = y;
+    csr_x = x;
+    return;
 }
 
 /* Print a single char to video buffer */
 void c_printf(char ch) {
-	// If it's a integer, obtain ASCII val
-    if (ch >= 0 && ch <= 9)
-        ch += 48;
-    *av_vid = ch;
-	av_vid++;
-    *av_vid = 0x07;
-    av_vid++;
+    int offset = 0;
+    char *av_vid = A_VIDEO;
+    
+    if(ch == '\b') {
+        csr_x--;
+        c_printf(' ');
+        csr_x--;
+    }    
+    else if(ch == '\n') {
+        csr_x = 0;
+        csr_y++;
+    }
+    else if(ch == '\t') {
+        csr_x += 8;
+    }
+    else if(ch == '\r') {
+        csr_x = 0;
+    }
+    else {
+        if(csr_x >= 0 && csr_x < 80 && csr_y >=0 && csr_y < 25) {
+            offset = csr_x + (csr_y * 80);
+            while(offset--)
+                av_vid += 2;
+            *av_vid = ch;
+            av_vid++;
+            *av_vid = 0x07;
+            av_vid++;
+        }
+        // Update cursor after writing a char
+        if(csr_x >= 80) {
+            csr_x = 0;
+            csr_y++;
+        }
+        else
+            csr_x++;
+    }
     return;
 }
 
@@ -53,7 +105,7 @@ void i_printf(uint64_t num, int base, bool xflag) {
     }
     // If number is 0, return back from here only
     if(num == 0) {
-        c_printf(num);
+        c_printf(num + 48);
         return;
     }
     while(num > 0) {
@@ -71,7 +123,8 @@ void i_printf(uint64_t num, int base, bool xflag) {
             flag = 1;
         else
             continue;
-        c_printf(numArr[i]);
+        // If it's a integer, obtain ASCII val
+        c_printf(numArr[i] + 48);
     }
     return;
 }
