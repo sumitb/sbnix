@@ -15,21 +15,21 @@ void timer_set(){
     outportb(0x43,0x36);
     outportb(0x40,divisor & 0xFF);
     outportb(0x40, divisor >> 8);
-    printk("divisor : %d\n",divisor);
+     printk("divisor : %d\n",divisor);
 }
 
 void init_pic(){
-    printk("PIC INIT \n");
-    outportb(0x20, 0x11);
-    outportb(0xA0, 0x11);
-    outportb(0x21, 0x20);
-    outportb(0xA1, 0x28);
-    outportb(0x21, 0x04);
-    outportb(0xA1, 0x02);
-    outportb(0x21, 0x01);
-    outportb(0xA1, 0x01);
-    outportb(0x21, 0x0);
-    outportb(0xA1, 0x0);
+   printk("PIC INIT \n");
+   outportb(0x20, 0x11);
+   outportb(0xA0, 0x11);
+   outportb(0x21, 0x20);  
+   outportb(0xA1, 0x28); 
+   outportb(0x21, 0x04);
+   outportb(0xA1, 0x02);
+   outportb(0x21, 0x01);
+   outportb(0xA1, 0x01);
+   outportb(0x21, 0x0);
+   outportb(0xA1, 0x0);
 }
 void call_timer(){
     printk("timer : %d\n",counter);
@@ -38,7 +38,7 @@ void call_timer(){
     if((counter%18)==0){
         secs=counter/100;
         hours=secs/3600; //hours since boot
-    //calculating mins since boot
+    //calculating mins since boot  
         if(secs>=3600)
             mins=secs%3600;
         else if((secs>=60) && (secs<3600))
@@ -53,4 +53,5 @@ void call_timer(){
 
        printk("Time since boot (hh:mm:ss):", hours,mins,secs);
     }
+
 }

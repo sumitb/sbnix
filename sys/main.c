@@ -3,8 +3,6 @@
 #include <sys/idt.h>
 #include <sys/tarfs.h>
 
-volatile int dbg = 1;
-
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
 	struct smap_t {
@@ -31,10 +29,8 @@ struct tss_t tss;
 
 void boot(void)
 {
-	while(dbg);
-    // note: function changes rsp, local stack variables can't be practically used
-	int i=0, j=0;
-    register char *s, *v;
+	// note: function changes rsp, local stack variables can't be practically used
+	register char *s, *v;
 	__asm__(
 		"movq %%rsp, %0;"
 		"movq %1, %%rsp;"
@@ -43,11 +39,8 @@ void boot(void)
 	);
 	reload_gdt();
 	setup_tss();
-    reload_idt();
-    //__asm__ __volatile__ ("sti");
-    //j = 10 / i;
-	printk("%d %d", i, j);
-    start(
+	reload_idt();
+	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
 		(void*)(uint64_t)loader_stack[4]
