@@ -1,77 +1,54 @@
-#include <sys/defs.h>
-#include <stdarg.h>
-#include <sys/idt.h>
-#include <sys/gdt.h>
-#include <sys/tarfs.h>
-#include <sys/timer.h>
+/*
+ * Referenced from osdever.net - Bran's Kernel Dev 
+ */
+#include<sys/timer.h>
+#include<sys/idt.h>
+#include<sys/defs.h>
+#include<sys/gdt.h>
+#include<stdarg.h>
+#include<sys/tarfs.h>
 
-#define MAX_IDT 256
-
-extern void _isr0();
 extern void handler_irq0();
 extern void handler_irq1();
-struct idt_array
+
+/* Defines an IDT entry */
+struct idt_entry
 {
-	uint16_t base_lo_l;
-    uint16_t selector;
-    uint8_t always_0;
-    uint8_t flags;
-	uint16_t base_lo_h;
-	uint32_t base_hi;
-    uint32_t reserved;
-};
+    unsigned short base_lo;
+    unsigned short sel;        /* Our kernel segment goes here! */
+    unsigned char always0;     /* This will ALWAYS be set to 0! */
+    unsigned char flags;       /* Set using the above table! */
+    unsigned short base_mid;
+    unsigned int base_high;
+    unsigned int reserved;
+} __attribute__((packed));
 
-static struct idtr_t {
-	uint16_t size;
-	uint64_t addr;
-}idtr;
 
-struct idt_array idt[MAX_IDT];
-
-void get_entry_idt(int i, uint64_t target, uint8_t flags)
+struct idt_ptr
 {
-    idt[i].base_lo_l = (target) & 0xffff;
-    idt[i].flags = flags;
-    idt[i].always_0 = 0;
-    idt[i].selector = 8;
-    idt[i].reserved = 0;
-    idt[i].base_lo_h = ((target) >> 16) & 0xffff;
-    idt[i].base_hi = ((target) >> 32) & 0xffffffff;
+    unsigned short limit;
+    unsigned long base;
+} __attribute__((packed));
+
+
+struct idt_entry idt[256];
+struct idt_ptr idtp;
+
+void idt_set_gate(int num, unsigned long base, unsigned short sel, unsigned char flags) {
+    idt[num].base_lo=base & 0xffff;
+    idt[num].base_mid=(base>>16) & 0xffff;
+    idt[num].base_high=(base>>32) & 0xffffffff;
+    idt[num].sel=sel;
+    idt[num].always0=0;
+    idt[num].flags=flags;
 }
-
-//struct idr_t idtr;
 
 void reload_idt() {
-    idtr.size = sizeof(struct idt_array) * MAX_IDT;
-	idtr.addr = (uint64_t)&idt;
-	//init_pic();
-	//timer_set();
-	get_entry_idt(0, (uint64_t) &_isr0, 0x8E);
-	//get_entry_idt(32, (uint64_t) &handler_irq0, 0x8E);
-	//get_entry_idt(33, (uint64_t) &handler_irq1, 0x8E);
-	__asm __volatile__( "lidt (%0)" : : "r"(&idtr) );
-	__asm __volatile__("int $0x0");
-}
+    idtp.limit=sizeof(struct idt_entry)*256-1;
+    idtp.base=(uint64_t) &idt;
 
-/*static inline bool are_interrupts_enabled()
-{
-    unsigned long flags;
-    __asm volatile ( "pushf\n\t"
-                   "pop %0"
-                  : "=g"(flags) );
-    return flags & (1 << 9);
-}
-
-static inline void lidt(void* base, uint16_t size)
-{
-    struct
-    {
-        uint16_t length;
-        uint32_t base;
-    } __attribute__((packed)) IDTR;
-
-    IDTR.length = size;
-    IDTR.base = (uint64_t) base;
-    __asm ( "lidt (%0)" : : "p"(&IDTR) );
+    idt_set_gate(32,(uint64_t) &handler_irq0,0x08,0x8E);
+    idt_set_gate(33,(uint64_t) &handler_irq1,0x08,0x8E);
+    __asm__ __volatile__ ("lidt (%0)": :"r" (&idtp));
 }
 
