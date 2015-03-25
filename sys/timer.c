@@ -34,7 +34,7 @@ void init_pic(){
    outportb(0xA1, 0x0);
 }
 void call_timer(){
-    printk("timer : %d\n",counter);
+//    printk("timer : %d\n",counter);
     counter++;
     outportb(0x20,0x20);
     if((counter%18)==0){
@@ -53,7 +53,7 @@ void call_timer(){
         else if(secs>60)
             secs=secs%60;
 
-       printk("Time since boot (hh:mm:ss):", hours,mins,secs);
+ //      printk("Time since boot (hh:mm:ss):", hours,mins,secs);
     }
 //`printk("moiz");
 }

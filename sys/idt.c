@@ -1,91 +1,69 @@
 #include <sys/defs.h>
-#include <stdarg.h>
 #include <sys/idt.h>
 #include <sys/timer.h>
 #include <sys/gdt.h>
-#include <sys/tarfs.h>
-#include <sys/sbunix.h>
-
-#define MAX_IDT 256
-#define IDT_IST           (0x0000)  /*** code segment descriptor ***/
-#define IDT_RESERVED      (0x0000)  /*** data segment descriptor ***/
-#define IDT_TYPE          (0x0E00)  /*** conforming ***/
-#define IDT_ZERO          (0x0000)  /*** conforming ***/
-#define IDT_DPL0          (0x0000)  /*** descriptor privilege level 0 ***/
-#define IDT_DPL1          (0x2000)  /*** descriptor privilege level 1 ***/
-#define IDT_DPL2          (0x4000)  /*** descriptor privilege level 2 ***/
-#define IDT_DPL3          (0x6000)  /*** descriptor privilege level 3 ***/
-#define IDT_P             (0x8000)  /*** present ***/
+#include <stdarg.h>
+#include<sys/tarfs.h>
 
 extern void handler_irq0();
-//extern void handler_irq1();
-struct idt_array
+extern void handler_irq1();
+
+struct idt_entry_struct
 {
-	uint16_t offset1;
-//	uint16_t offset2;
-//	uint32_t offset3;
-        uint16_t selector; 
-        //uint8_t flags_0;        
-        uint16_t flags;            
-	uint16_t offset2;
-	uint32_t offset3;
+        uint16_t base_lo;             // The lower 16 bits of the address to jump to when this interrupt fires.
+//        uint16_t base_mid;
+  //      uint32_t base_hi;
+        uint16_t sel;                 // Kernel segment selector.
+        uint8_t always0;             // This must always be zero.
+        uint8_t flags;               // More flags. See documentation.
+        uint16_t base_mid;
+        uint32_t base_hi;             // The upper 16 bits of the address to jump to.
         uint32_t reserved;
-};
+};// __attribute__((packed));
+typedef struct idt_entry_struct idt_entry_t;
 
-static struct idtr_t {
-	uint16_t size;
-	uint64_t addr;
-}idtr;
-
-struct idt_array idt[MAX_IDT];
-
-//for(int i=0; i<sizeof(idt);i++)
-	
-void get_entry_idt(uint32_t i,uint64_t target,uint16_t flags)
+struct idt_ptr_struct
 {
-   idt[i].offset1 = (target) & 0xffff;
-   //idt[i].flags = flags;
-   idt[i].flags = IDT_IST | IDT_RESERVED | IDT_TYPE | IDT_ZERO | IDT_DPL0| IDT_P;
-   idt[i].selector = 8;
-  // idt[i].flags_0 = 0;
-   idt[i].reserved = 0;
-   idt[i].offset2 = ((target) >> 16) & 0xffff;
-   idt[i].offset3 = ((target) >> 32) & 0xffffffff;
+    uint16_t limit;
+    uint64_t base;                // The address of the first element in our idt_entry_t array.
+} __attribute__((packed));
+typedef struct idt_ptr_struct idt_ptr_t;
+
+
+
+idt_entry_t idt_entries[256];
+idt_ptr_t   idt_ptr;
+
+
+void idt_set_gate(int num, uint64_t base, uint16_t sel, uint8_t flags)
+{
+        idt_entries[num].base_lo = base & 0xFFFF;
+        idt_entries[num].base_mid = (base >> 16) & 0xFFFF;
+        idt_entries[num].base_hi = (base >> 32) & 0xFFFFFFFF;
+
+        idt_entries[num].sel     = sel;
+        idt_entries[num].always0 = 0;
+
+        idt_entries[num].flags   = flags;
 }
 
-//struct idr_t idtr;
 
-void reload_idt(){
-	idtr.size=sizeof(idt);
-	idtr.addr=(uint64_t) &idt;
-	init_pic();
-	timer_set();
-	//get_entry_idt(32,(uint64_t) &handler_irq0,IDT_IST | IDT_RESERVED | IDT_TYPE | IDT_ZERO | IDT_DPL0| IDT_P);
-	get_entry_idt(32,(uint64_t) &handler_irq0, 0x8E);
-//	get_entry_idt(33,(uint64_t) &handler_irq1, 0x8E);
-	__asm __volatile__( "lidt (%0)" : : "r"(&idtr) );
-	printk("camehre");
+void lidt() {
+    __asm__ __volatile__ ("lidt (%0)": :"r" (&idt_ptr));
 }
 
-/*static inline bool are_interrupts_enabled()
-{
-    unsigned long flags;
-    __asm volatile ( "pushf\n\t"
-                   "pop %0"
-                  : "=g"(flags) );
-    return flags & (1 << 9);
+void reload_idt()
+{//       init_pic();
+   //     timer_set();        
+        idt_ptr.limit = sizeof(idt_entry_t) * 256 -1;
+        idt_ptr.base  = (uint64_t)&idt_entries;
+
+        idt_set_gate(32, (uint64_t) &handler_irq0, 0x08, 0x8E);
+        idt_set_gate(33, (uint64_t) &handler_irq1, 0x08, 0x8E);
+
+//        __asm__volatile__("lidt (%0)": :"r" (&idt_ptr));
+       lidt();
+
+
 }
-
-static inline void lidt(void* base, uint16_t size)
-{
-    struct
-    {
-        uint16_t length;
-        uint32_t base;
-    } __attribute__((packed)) IDTR;
-
-    IDTR.length = size;
-    IDTR.base = (uint64_t) base;
-    __asm ( "lidt (%0)" : : "p"(&IDTR) );
-}*/
 
