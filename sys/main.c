@@ -23,7 +23,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 //	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
     //printk("Are interrupts enabled: %d", are_interrupts_enabled());
     // kernel starts here
-
+    while(1);
 }
 
 #define INITIAL_STACK_SIZE 4096
@@ -36,7 +36,7 @@ volatile int gdb=0;
 void boot(void)
 {
 	// note: function changes rsp, local stack variables can't be practically used
-	//register char *s, *v;
+	register char *s, *v;
 	__asm__(
 		"movq %%rsp, %0;"
 		"movq %1, %%rsp;"
@@ -57,7 +57,9 @@ void boot(void)
 		&physbase,
 		(void*)(uint64_t)loader_stack[4]
 	);
-//	s = "!!!!! start() returned !!!!!";
-//	for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
-	while(1);
+	s = "!!!!! start() returned !!!!!";
+	for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
+    int a=5,b=0;
+    a=a/b;
+    while(1);
 }

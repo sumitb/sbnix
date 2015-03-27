@@ -1,3 +1,6 @@
+/*
+ * Referenced from osdever.net - Bran's Kernel Dev 
+ */
 #include <sys/defs.h>
 #include <sys/sbunix.h>
 #include <sys/timer.h>
@@ -95,6 +98,7 @@ int shift_key=0;
 
 void kb_handler()
 {
+    int x, y;
 	unsigned char check_code;
   
   	check_code = inportb(0x60);
@@ -112,6 +116,10 @@ void kb_handler()
       			shift_key = 1;
 		}
 		else{
+            // Get current cursor position
+            x = getcsr_x(); y = getcsr_y();
+            // Move to bottom right corner
+            gotoxy(60, 22);
 			if(shift_key == 1){
 				if(Keyboard_character_set_shift[check_code]=='\n')
 					printk("\n");	
@@ -125,6 +133,8 @@ void kb_handler()
 				else
 					printk("%c",keyborard_character_set_normal[check_code]);	
 			}	
+            // Reset cursor position
+            gotoxy(x, y);
 		}	
 	}
 	outportb(0x20, 0x20);
