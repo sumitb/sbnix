@@ -2,7 +2,7 @@
 #define _STDLIB_H
 
 #include <sys/defs.h>
-
+#include <string.h>
 extern __thread int errno;
 
 void exit(int status);

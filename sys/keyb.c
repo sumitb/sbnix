@@ -2,7 +2,7 @@
  * Referenced from osdever.net - Bran's Kernel Dev 
  */
 #include <sys/defs.h>
-#include <sys/sbunix.h>
+#include <sys/console.h>
 #include <sys/timer.h>
 
 extern void outportb(uint16_t port, uint8_t val);

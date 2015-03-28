@@ -2,6 +2,7 @@
 #include <sys/idt.h>
 #include <sys/tarfs.h>
 #include <sys/timer.h>
+#include <sys/memory.h>
 #include <sys/console.h>
 volatile int dbg = 0;
 
@@ -19,6 +20,9 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	}
     while(dbg);
 	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
+	
+	//initialize memory in pages
+	mem_init(physbase, physfree);
     // kernel starts here
     while(1);
 }
@@ -28,6 +32,7 @@ char stack[INITIAL_STACK_SIZE];
 uint32_t* loader_stack;
 extern char kernmem, physbase;
 struct tss_t tss;
+volatile int gdb=0;
 
 void boot(void)
 {
@@ -40,11 +45,14 @@ void boot(void)
 		:"r"(&stack[INITIAL_STACK_SIZE])
 	);
 	reload_gdt();
+
 	setup_tss();
-    __asm__("sti");
+	while(gdb);
 	reload_idt();
-    init_pic();
-    timer_set();
+        init_pic();
+        timer_set();
+	//__asm__ __volatile__ ("sti");
+//	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
