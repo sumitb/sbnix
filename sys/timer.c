@@ -8,7 +8,6 @@ int time=0;
 int secs=0;
 int hours=0;
 int mins=0;
-volatile int dbg = 0;
 
 void timer_set(){
     int divisor=1193180/100;
@@ -27,8 +26,8 @@ void init_pic(){
    
    outportb(0x20, 0x11);
    outportb(0xA0, 0x11);
-   outportb(0x21, 0x20);  
-   outportb(0xA1, 0x28); 
+   outportb(0x21, 0x20);
+   outportb(0xA1, 0x28);
    outportb(0x21, 0x04);
    outportb(0xA1, 0x02);
    outportb(0x21, 0x01);
@@ -63,7 +62,8 @@ void call_timer(){
         hours = time/3600;                // hours since boot
         mins = (time-(hours*3600))/60;    // mins since boot
         secs = time%60;                   // secs since boot
-        while(dbg);
+        // Reset hours after a day
+        hours %= 24;
         fillTimer(str_time, hours);
         str_time[2] = ':'; str_time[3] = ':';
         fillTimer(str_time+4, mins);

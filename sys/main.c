@@ -3,6 +3,7 @@
 #include <sys/tarfs.h>
 #include <sys/timer.h>
 #include <sys/console.h>
+volatile int dbg = 0;
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
@@ -13,11 +14,11 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	while(modulep[0] != 0x9001) modulep += modulep[1]+2;
 	for(smap = (struct smap_t*)(modulep+2); smap < (struct smap_t*)((char*)modulep+modulep[1]+2*4); ++smap) {
 		if (smap->type == 1 /* memory */ && smap->length != 0) {
-//			printk("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
+			printk("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
-//	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
-    //printk("Are interrupts enabled: %d", are_interrupts_enabled());
+    while(dbg);
+	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
     // kernel starts here
     while(1);
 }
