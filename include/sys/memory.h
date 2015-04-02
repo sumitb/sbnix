@@ -1,3 +1,7 @@
+#ifndef __MEMORY_H
+#define __MEMORY_H
+
+#include <sys/defs.h>
 
 #define AVAIL 0
 #define BUSY 1
@@ -38,4 +42,4 @@ uint64_t* walk_pml4e(uint64_t *pml4e,uint64_t logical);
 
 
 void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t size);
-
+#endif

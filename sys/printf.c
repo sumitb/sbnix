@@ -1,6 +1,8 @@
 #include <sys/defs.h>
 #include <stdarg.h>
-#define A_VIDEO (char*)0xb8000
+#include <sys/memory.h>
+
+#define A_VIDEO (char*)KERN_MEM+0xb8000
 #define intSize     20      // We don't expect any number to be greater than 2^64
 
 //GLOBALS
@@ -17,16 +19,7 @@ int csr_x = 0, csr_y = 0;     // Current cursor position
 void reset() {
     //av_vid = A_VIDEO;
     return;
- } 
-/*
-void mov_csr(void){
-unsigned blank;
-temp = csr_y * 80 + csr_x;
-outportb(0x3D4, 14);
-outportb(0x3D5, temp >> 8);
-outportb(0x3D4, 15);
-outportb(0x3D5, temp);
-}*/
+ }
 
 int getcsr_x() {
     return csr_x;
@@ -49,7 +42,7 @@ void c_printf(char ch) {
         csr_x--;
         c_printf(' ');
         csr_x--;
-    }    
+    }
     else if(ch == '\n') {
         csr_x = 0;
         csr_y++;
@@ -105,13 +98,15 @@ void i_printf(uint64_t num, int base, bool xflag) {
     }
     // If number is 0, return back from here only
     if(num == 0) {
+        // Pass ASCII val of integer
         c_printf(num + 48);
         return;
     }
     while(num > 0) {
         digit = num % base;
         if (digit > 9) {
-            digit += 55;
+            // Incrementing a-f to ascii values.
+            digit += 7 + 32;
         }
         numArr[i] = digit;
         num /= base;
@@ -123,6 +118,7 @@ void i_printf(uint64_t num, int base, bool xflag) {
             flag = 1;
         else
             continue;
+        // Pass ASCII val of integer
         // If it's a integer, obtain ASCII val
         c_printf(numArr[i] + 48);
     }

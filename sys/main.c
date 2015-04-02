@@ -1,10 +1,11 @@
-#include <sys/sbunix.h>
 #include <sys/gdt.h>
 #include <sys/idt.h>
 #include <sys/tarfs.h>
 #include <sys/timer.h>
 #include <sys/memory.h>
 #include <sys/tarfs.h>
+#include <sys/console.h>
+volatile int dbg = 0;
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
@@ -15,14 +16,14 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	while(modulep[0] != 0x9001) modulep += modulep[1]+2;
 	for(smap = (struct smap_t*)(modulep+2); smap < (struct smap_t*)((char*)modulep+modulep[1]+2*4); ++smap) {
 		if (smap->type == 1 /* memory */ && smap->length != 0) {
-	//		printk("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
+			printk("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
+    while(dbg);
+	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	
 	//initialize memory in pages
-	mem_init(physbase,physfree);
-//	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
-    //printk("Are interrupts enabled: %d", are_interrupts_enabled());
+	mem_init(physbase, physfree);
     // kernel starts here
     while(1);
 }
@@ -36,8 +37,8 @@ volatile int gdb=1;
 
 void boot(void)
 {
-	// note: function changes rsp, local stack variables can't be practically used
-	register char *s, *v;
+    // note: function changes rsp, local stack variables can't be practically used
+    register char *s, *v;
 	__asm__(
 		"movq %%rsp, %0;"
 		"movq %1, %%rsp;"
@@ -52,7 +53,7 @@ void boot(void)
         init_pic();
         timer_set();
 	tarfs_initialize();
-	//__asm__ __volatile__ ("sti");
+	__asm__ __volatile__ ("sti");
 //	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),

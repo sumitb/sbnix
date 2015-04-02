@@ -1,5 +1,5 @@
-#include <sys/sbunix.h>
 #include <sys/memory.h>
+#include <sys/console.h>
 
 uint64_t *pml4e;
 uint64_t cr3_addr;
@@ -55,6 +55,7 @@ void  mem_free(uint64_t addr_t){
 		}
 	}
 }
+
 uint64_t page_roundoff(uint64_t addr){
 	if(addr%4096==0)
 		return addr;
@@ -94,7 +95,7 @@ uint64_t* walk_pde(uint64_t *pde,uint64_t logical){
 			pde[pde_shift(logical)]=((page_addr) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
 		}
 	}
-	pte = (uint64_t *)(pde[pde_shift(logical)] & ~(0xFFF)) + KERN_MEM;	
+	pte = (uint64_t *)(pde[pde_shift(logical)] & ~(0xFFF)) + KERN_MEM;
 	pte = &(pte[pte_shift(logical)]);
 	return pte;
 }
@@ -111,7 +112,7 @@ uint64_t* walk_pdpe(uint64_t *pdpe,uint64_t logical){
 			pdpe[pdpe_shift(logical)]=((page_addr) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
 		}
 	}
-	pde = (uint64_t *)(pdpe[pdpe_shift(logical)] & ~(0xFFF)) + KERN_MEM;	
+	pde = (uint64_t *)(pdpe[pdpe_shift(logical)] & ~(0xFFF)) + KERN_MEM;
 	pte = walk_pde(pde, logical);
 	return pte;
 }
@@ -128,8 +129,8 @@ uint64_t* walk_pml4e(uint64_t *pml4e,uint64_t logical){
 			pml4e[pml4e_shift(logical)]=((page_addr) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
 		}
 	}
-	//pdpe = (uint64_t *)page_addr + KERN_MEM;	
-	pdpe = (uint64_t *)(pml4e[pml4e_shift(logical)] & ~(0xFFF)) + KERN_MEM;	
+	//pdpe = (uint64_t *)page_addr + KERN_MEM;
+	pdpe = (uint64_t *)(pml4e[pml4e_shift(logical)] & ~(0xFFF)) + KERN_MEM;
 	pte = walk_pdpe(pdpe, logical);
 	return pte;
 }
@@ -142,7 +143,7 @@ void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t s
 	if(vir_addr){
 		int i=0,j=0;
 		for(i=0; i<size; i+=4096,j++){
-			pte=walk_pml4e(pml4e,vir_addr+i);	
+			pte=walk_pml4e(pml4e,vir_addr+i);
 			//TODO:set page_present,page_write and page_user
 			*pte=((physical+i) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
 		}
