@@ -1,6 +1,8 @@
 #include <sys/defs.h>
 #include <stdarg.h>
-#define A_VIDEO (char*)0xb8000
+#include <sys/memory.h>
+
+#define A_VIDEO (char*)KERN_MEM+0xb8000
 #define intSize     20      // We don't expect any number to be greater than 2^64
 
 //GLOBALS

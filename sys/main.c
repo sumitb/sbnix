@@ -51,7 +51,7 @@ void boot(void)
 	reload_idt();
         init_pic();
         timer_set();
-	//__asm__ __volatile__ ("sti");
+	__asm__ __volatile__ ("sti");
 //	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
