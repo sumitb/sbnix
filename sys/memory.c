@@ -3,13 +3,13 @@
 
 uint64_t *pml4e;
 uint64_t cr3_addr;
-void* memset(void *str,int val,uint64_t size){
+/*void* memset(void *str,int val,uint64_t size){
     unsigned char* ptr = str;
     while(size--)
         *ptr++ = (unsigned char) val;
     return str;
 }
-
+*/
 void init_memmap(void *physfree){
 	long size=MAX_MEM;
 	//uint64_t addr_t=INITIAL_MEM;
@@ -164,9 +164,9 @@ void mem_init(void* physbase,void *physfree){
 	
 	__asm__ __volatile__("mov %0, %%cr3":: "b"(cr3_addr));
 	
-	int a =1;
+/*	int a =1;
 	a++;
 	 *((char*)KERN_MEM+0xb8000)=66;
 	 *((char*)KERN_MEM+0xb8001)=0x07;
-	
+*/	
 }

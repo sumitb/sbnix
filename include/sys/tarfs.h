@@ -24,4 +24,12 @@ struct posix_header_ustar {
 	char pad[12];
 };
 
+struct tarfs {
+	char name[100];
+	int file_size;
+	void *start_addr;
+	}tarfs_ind[20];
+
+void tarfs_initialize();
+
 #endif

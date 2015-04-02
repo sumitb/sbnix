@@ -4,6 +4,7 @@
 #include <sys/tarfs.h>
 #include <sys/timer.h>
 #include <sys/memory.h>
+#include <sys/tarfs.h>
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
@@ -31,7 +32,7 @@ char stack[INITIAL_STACK_SIZE];
 uint32_t* loader_stack;
 extern char kernmem, physbase;
 struct tss_t tss;
-volatile int gdb=0;
+volatile int gdb=1;
 
 void boot(void)
 {
@@ -50,6 +51,7 @@ void boot(void)
 	reload_idt();
         init_pic();
         timer_set();
+	tarfs_initialize();
 	//__asm__ __volatile__ ("sti");
 //	__asm volatile("callq handler_irq0");
 	start(
