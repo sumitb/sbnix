@@ -33,7 +33,7 @@ char stack[INITIAL_STACK_SIZE];
 uint32_t* loader_stack;
 extern char kernmem, physbase;
 struct tss_t tss;
-volatile int gdb=1;
+volatile int gdb=0;
 
 void boot(void)
 {

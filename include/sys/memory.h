@@ -11,9 +11,14 @@
 #define END_LIMIT 0x7ffe000
 #define VIDEO_MEM 0xb8000
 
+#define PAGE_PERM 7
 #define PAGE_PRESENT 1
-#define PAGE_WRITE 2
-#define PAGE_USER 4
+
+#define PML4E 101
+#define PDPE 102
+#define PDE 103
+#define PTE 104
+
 
 struct memory_map {
                 uint64_t addr;
@@ -30,15 +35,12 @@ void mem_free(uint64_t addr_t);
 void init_memmap(void*  physfree);
 void mem_init(void* physbase,void* physfree);
 
-uint64_t page_roundoff(uint64_t addr);
-uint64_t pte_shift(uint64_t logical);
-uint64_t pde_shift(uint64_t logical);
-uint64_t pdpe_shift(uint64_t logical);
-uint64_t pml4e_shift(uint64_t logical);
+uint64_t page_roundoff_4096(uint64_t addr);
+uint64_t addr_res(uint64_t logical, int flag);
 
-uint64_t* walk_pde(uint64_t *pde,uint64_t logical);
-uint64_t* walk_pdpe(uint64_t *pdpe,uint64_t logical);
-uint64_t* walk_pml4e(uint64_t *pml4e,uint64_t logical);
+
+
+uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical);
 
 
 void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t size);
