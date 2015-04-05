@@ -169,5 +169,5 @@ void mem_init(void* physbase,void *physfree){
 	a++;
 	 *((char*)KERN_MEM+0xb8000)=66;
 	 *((char*)KERN_MEM+0xb8001)=0x07;
-*/	
+*/
 }
