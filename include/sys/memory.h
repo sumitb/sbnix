@@ -15,10 +15,17 @@
 #define PAGE_WRITE 2
 #define PAGE_USER 4
 
+struct vm_area_struct {
+    unsigned long vm_start;
+    unsigned long vm_end;
+
+    struct vm_area_struct *vm_next, *vm_prev;
+    };
+
 struct memory_map {
-                uint64_t addr;
+                uint64_t addr;      /* No need to store addr, can evaluate it */
                 int res_flag;
-        }__attribute__((packed));
+        };
 
 struct memory_map memmap[MAX_MEM];
 
