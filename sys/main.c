@@ -1,5 +1,6 @@
 #include <sys/gdt.h>
 #include <sys/idt.h>
+#include <sys/sched.h>
 #include <sys/tarfs.h>
 #include <sys/timer.h>
 #include <sys/memory.h>
@@ -52,7 +53,8 @@ void boot(void)
     while(dbg);
 	tarfs_initialize();
 	__asm__ __volatile__ ("sti");
-//	__asm volatile("callq handler_irq0");
+    schedule();
+    //	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
