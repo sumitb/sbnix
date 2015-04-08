@@ -142,10 +142,4 @@ void mem_init(void* physbase,void *physfree){
 	map_kernel(pml4e,KERN_MEM+VIDEO_MEM,VIDEO_MEM,8192);
 	
 	__asm__ __volatile__("mov %0, %%cr3":: "b"(cr3_addr));
-	
-	int a =1;
-	a++;
-	 *((char*)KERN_MEM+0xb8000)=66;
-	 *((char*)KERN_MEM+0xb8001)=0x07;
-	
 }
