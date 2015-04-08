@@ -3,13 +3,7 @@
 
 uint64_t *pml4e;
 uint64_t cr3_addr;
-/*void* memset(void *str,int val,uint64_t size){
-    unsigned char* ptr = str;
-    while(size--)
-        *ptr++ = (unsigned char) val;
-    return str;
-}
-*/
+
 void init_memmap(void *physfree){
 	long size=MAX_MEM;
 	//uint64_t addr_t=INITIAL_MEM;
@@ -56,7 +50,7 @@ void  mem_free(uint64_t addr_t){
 	}
 }
 
-uint64_t page_roundoff(uint64_t addr){
+uint64_t page_roundoff_4096(uint64_t addr){
 	if(addr%4096==0)
 		return addr;
 	else{
@@ -68,84 +62,68 @@ uint64_t page_roundoff(uint64_t addr){
 	}
 }
 
-uint64_t pml4e_shift(uint64_t logical){
-	return ((logical>>39) & 0x1FF);
+uint64_t addr_res(uint64_t logical, int flag){
+	if (flag == PML4E)
+		return ((logical>>39) & 0x1FF);
+	else if (flag == PDPE)
+		return ((logical>>30) & 0x1FF);
+	else if (flag == PDE)
+		return ((logical>>21) & 0x1FF);
+	else if (flag == PTE)
+		return ((logical>>12) & 0x1FF);
+	return 0;
 }
 
-uint64_t pdpe_shift(uint64_t logical){
-	return ((logical>>30) & 0x1FF);
-}
-
-uint64_t pde_shift(uint64_t logical){
-	return ((logical>>21) & 0x1FF);
-}
-
-uint64_t pte_shift(uint64_t logical){
-	return ((logical>>12) & 0x1FF);
-}
-
-uint64_t* walk_pde(uint64_t *pde,uint64_t logical){
-	uint64_t *pte;
-	uint64_t page_addr;
-		
-	if(!pde[pde_shift(logical)]){
-		page_addr = mem_allocate();
-		if(page_addr){
-			//TODO:set page_present,page_write and page_user
-			pde[pde_shift(logical)]=((page_addr) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
-		}
-	}
-	pte = (uint64_t *)(pde[pde_shift(logical)] & ~(0xFFF)) + KERN_MEM;
-	pte = &(pte[pte_shift(logical)]);
-	return pte;
-}
-
-uint64_t* walk_pdpe(uint64_t *pdpe,uint64_t logical){
+uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
+	uint64_t *pdpe;
 	uint64_t *pde;
 	uint64_t *pte;
-	uint64_t page_addr;
+	uint64_t page_addr_pml4e;
+	uint64_t page_addr_pdpe;
+	uint64_t page_addr_pde;
 		
-	if(!pdpe[pdpe_shift(logical)]){
-		page_addr = mem_allocate();
-		if(page_addr){
+	if(!pml4e[addr_res(logical,PML4E)] & PAGE_PRESENT){
+		page_addr_pml4e = mem_allocate();
+		if(page_addr_pml4e){
 			//TODO:set page_present,page_write and page_user
-			pdpe[pdpe_shift(logical)]=((page_addr) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
+			pml4e[addr_res(logical,PML4E)]=((page_addr_pml4e) | PAGE_PERM);
 		}
 	}
-	pde = (uint64_t *)(pdpe[pdpe_shift(logical)] & ~(0xFFF)) + KERN_MEM;
-	pte = walk_pde(pde, logical);
-	return pte;
-}
+	pdpe = (uint64_t *)(pml4e[addr_res(logical,PML4E)] & ~(0xFFF)) + KERN_MEM;
 
-uint64_t* walk_pml4e(uint64_t *pml4e,uint64_t logical){
-	uint64_t *pdpe;
-	uint64_t *pte;
-	uint64_t page_addr;
-		
-	if(!pml4e[pml4e_shift(logical)] & PAGE_PRESENT){
-		page_addr = mem_allocate();
-		if(page_addr){
+	if(!pdpe[addr_res(logical,PDPE)]){
+		page_addr_pdpe = mem_allocate();
+		if(page_addr_pdpe){
 			//TODO:set page_present,page_write and page_user
-			pml4e[pml4e_shift(logical)]=((page_addr) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
+			pdpe[addr_res(logical,PDPE)]=((page_addr_pdpe) | PAGE_PERM);
 		}
 	}
-	//pdpe = (uint64_t *)page_addr + KERN_MEM;
-	pdpe = (uint64_t *)(pml4e[pml4e_shift(logical)] & ~(0xFFF)) + KERN_MEM;
-	pte = walk_pdpe(pdpe, logical);
+	pde = (uint64_t *)(pdpe[addr_res(logical,PDPE)] & ~(0xFFF)) + KERN_MEM;
+	
+	if(!pde[addr_res(logical,PDE)]){
+		page_addr_pde = mem_allocate();
+		if(page_addr_pde){
+			//TODO:set page_present,page_write and page_user
+			pde[addr_res(logical,PDE)]=((page_addr_pde) | PAGE_PERM);
+		}
+	}
+	pte = (uint64_t *)(pde[addr_res(logical,PDE)] & ~(0xFFF)) + KERN_MEM;
+	pte = &(pte[addr_res(logical,PTE)]);
+	
 	return pte;
 }
 
 void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t size){
 	uint64_t *pte;
-	uint64_t vir_addr = page_roundoff(logical);
-	size = page_roundoff(size);
-	physical = page_roundoff(physical);
+	uint64_t vir_addr = page_roundoff_4096(logical);
+	size = page_roundoff_4096(size);
+	physical = page_roundoff_4096(physical);
 	if(vir_addr){
 		int i=0,j=0;
 		for(i=0; i<size; i+=4096,j++){
-			pte=walk_pml4e(pml4e,vir_addr+i);
+			pte=walk_pages(pml4e,vir_addr+i);
 			//TODO:set page_present,page_write and page_user
-			*pte=((physical+i) | PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
+			*pte=((physical+i) | PAGE_PERM);
 		}
 	}
 	
@@ -164,10 +142,4 @@ void mem_init(void* physbase,void *physfree){
 	map_kernel(pml4e,KERN_MEM+VIDEO_MEM,VIDEO_MEM,8192);
 	
 	__asm__ __volatile__("mov %0, %%cr3":: "b"(cr3_addr));
-	
-/*	int a =1;
-	a++;
-	 *((char*)KERN_MEM+0xb8000)=66;
-	 *((char*)KERN_MEM+0xb8001)=0x07;
-*/
 }
