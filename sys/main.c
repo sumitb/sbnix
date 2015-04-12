@@ -5,8 +5,9 @@
 #include <sys/timer.h>
 #include <sys/memory.h>
 #include <sys/tarfs.h>
+#include <sys/process.h>
 #include <sys/console.h>
-volatile int dbg = 1;
+volatile int dbg = 0;
 
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
@@ -24,6 +25,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	
 	//initialize memory in pages
 	mem_init(physbase, physfree);
+	create_process("bin/sbush");
     // kernel starts here
     while(1);
 }
@@ -52,6 +54,7 @@ void boot(void)
 	
     while(dbg);
 	tarfs_initialize();
+	create_process("sbush");
 	__asm__ __volatile__ ("sti");
     schedule();
     //	__asm volatile("callq handler_irq0");

@@ -43,7 +43,7 @@ void schedule() {
     task2.stack = page_addr;
 
     // Execute current task
-    __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
+   // __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
     return;
 }
 /* move two instrn ahead: 0x80 */

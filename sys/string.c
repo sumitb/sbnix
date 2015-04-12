@@ -62,6 +62,22 @@ void* memset(void *str,int val,uint64_t size){
     return str;
 }
 
+void memcpy(void *dest, void *src, uint32_t n)
+{
+	char *tmp_src;
+    char *tmp_des;
+
+    tmp_src=(char *)src;
+    tmp_des=(char *)dest;
+	uint32_t i=0;
+	for(i=0; i<n; i++){
+		*tmp_des=*tmp_src;
+		tmp_des++;
+		tmp_src++;
+	}
+}
+
+
 int strrev(char *buff){
 	char ch;
 	int low=0;int high=0;int len=0;

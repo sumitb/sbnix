@@ -1,8 +1,13 @@
 #ifndef _TARFS_H
 #define _TARFS_H
-
+#include <stdlib.h>
 extern char _binary_tarfs_start;
 extern char _binary_tarfs_end;
+
+#define DIR "5"
+#define FILE "0"
+#define MAX_BIN 20
+
 
 struct posix_header_ustar {
 	char name[100];
@@ -27,8 +32,11 @@ struct posix_header_ustar {
 struct tarfs {
 	char name[100];
 	int file_size;
-	void *start_addr;
-	}tarfs_ind[20];
+	char typeflag[1];
+	int ref_cnt;
+	uint64_t tarfs_start_addr;
+	uint64_t bin_start_addr;
+	}tarfs_ind[MAX_BIN];
 
 void tarfs_initialize();
 

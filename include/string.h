@@ -16,4 +16,5 @@ int xtoa(int num, char *buff);
 int atox(char *buff);
 
 void* memset(void *str,int val,uint64_t size);
+void memcpy(void *dest, void *src, uint32_t n);
 #endif
