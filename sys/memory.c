@@ -1,8 +1,6 @@
 #include <sys/memory.h>
 #include <sys/console.h>
-
-uint64_t *pml4e;
-uint64_t cr3_addr;
+#include <sys/process.h>
 
 void init_memmap(void *physfree){
 	long size=MAX_MEM;
@@ -130,10 +128,10 @@ void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t s
 }
 
 void mem_init(void* physbase,void *physfree){
+	init_memmap(physfree);
 	pml4e=(uint64_t *)mem_allocate();
 	memset(pml4e,0,4096);
 	cr3_addr=(uint64_t)pml4e;
-	init_memmap(physfree);
 	
 	//map free memory from [100000-7FFE000]
 	//map_kernel(pml4e,KERN_MEM+INITIAL_MEM,INITIAL_MEM,END_LIMIT-INITIAL_MEM);
@@ -143,3 +141,26 @@ void mem_init(void* physbase,void *physfree){
 	
 	__asm__ __volatile__("mov %0, %%cr3":: "b"(cr3_addr));
 }
+
+void page_insert(uint64_t *pml4e, uint64_t logical, uint64_t physical){
+	uint64_t *pte;
+	pte=walk_pages(pml4e,logical);
+	if(*pte & PAGE_PRESENT)
+		mem_free(*pte);
+	*pte=(physical | PAGE_PERM);
+}
+
+void page_fault(){
+	uint64_t *pte;
+	uint64_t *pml4e_addr;
+	uint64_t logical; 
+	uint64_t physical;
+	physical=mem_allocate();
+	__asm__ __volatile__ ("movq %%cr2, %0" : "=r"(logical));
+	pml4e_addr=(uint64_t *)running_proc.process.pml4e_addr;
+	pte=walk_pages(pml4e_addr,logical);
+	if(*pte & PAGE_PRESENT)
+		mem_free(*pte);
+	*pte=(physical | PAGE_PERM);
+}
+

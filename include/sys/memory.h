@@ -34,6 +34,8 @@ struct memory_map {
 
 struct memory_map memmap[MAX_MEM];
 
+uint64_t *pml4e;
+uint64_t cr3_addr;
 
 void* memset(void *str,int val,uint64_t size);
 
@@ -45,7 +47,7 @@ void mem_init(void* physbase,void* physfree);
 uint64_t page_roundoff_4096(uint64_t addr);
 uint64_t addr_res(uint64_t logical, int flag);
 
-
+void page_fault();
 
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical);
 
