@@ -40,12 +40,38 @@ struct tarfs {
 
 void tarfs_initialize();
 
-/*uint64_t check_file(char *file_name);
-uint64_t open(char *file_name);
-void close(uint64_t addr);
-uint64_t opendir(char *dir);
-void closedir(uint64_t addr);
-uint64_t readdir(char *dir);
-ssize_t read(uint64_t addr, int size, uint64_t buf);
-*/
+struct elf_header
+{
+  unsigned char e_ident[16];
+  short int e_type;
+  short int e_machine; 
+  int e_version;
+  uint64_t e_entry; 
+  char e_phoff[8]; 
+  char e_shoff[8]; 
+  int e_flags; 
+  short int e_ehsize;
+  short int e_phentsize;
+  short int e_phnum; 
+  short int e_shentsize; 
+  short int e_shnum; 
+  short int e_shstrndx; 
+};
+
+struct pheader
+{
+ int  p_type; 
+  int p_flags;
+  uint64_t p_offset; 
+  uint64_t p_vaddr; 
+  char p_paddr[8]; 
+  uint64_t p_filesz; 
+  uint64_t p_memsz; 
+  char p_align[8]; 
+};
+
+
+
+
+
 #endif

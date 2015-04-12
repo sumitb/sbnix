@@ -38,5 +38,8 @@ struct task_struct {
 struct kernel_stack kern_stack[NR_TASKS];
 struct task_struct *task[NR_TASKS];
 struct task_struct *current;
+
+void sys_yield();
+void schedule();
 #endif
 
