@@ -51,6 +51,6 @@ void page_fault();
 
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical);
 
-
+void page_insert(uint64_t *pml4e, uint64_t logical, uint64_t physical);
 void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t size);
 #endif

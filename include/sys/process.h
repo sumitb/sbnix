@@ -39,7 +39,8 @@ struct run_queue{
 
 struct mm_struct{
 
-    vma *mmap;
+    vma *vma_addr;
+	uint16_t cnt;
 
 }__attribute__((packed));
 
@@ -48,7 +49,7 @@ struct run_queue rqueue[2];
 struct run_queue *rq_head;
 int curr_proc;
 struct run_queue running_proc;
-/*
+
 typedef struct {
         unsigned char e_ident[ELF_NIDENT];
         uint16_t      e_type;
@@ -64,7 +65,7 @@ typedef struct {
         uint16_t      e_shentsize;
         uint16_t      e_shnum;
         uint16_t      e_shstrndx;
-} __attribute__((packed))Elf_hdr;
+} __attribute__((packed))elf_header;
 
 typedef struct {
         uint32_t   p_type;
@@ -75,8 +76,8 @@ typedef struct {
         uint64_t   p_filesz;
         uint64_t   p_memsz;
         uint64_t   p_align;
-} Elf64_Phdr;
-
+} __attribute__((packed))pheader;
+/*
 typedef struct {
 	uint32_t	sh_name;
 	uint32_t	sh_type;
@@ -91,6 +92,41 @@ typedef struct {
 } Elf64_Shdr;
 
 
+*/
+
+/*struct elfheader
+{
+  unsigned char e_ident[16];
+  short int e_type;
+  short int e_machine; 
+  int e_version;
+  uint64_t e_entry; 
+  char e_phoff[8]; 
+  char e_shoff[8]; 
+  int e_flags; 
+  short int e_ehsize;
+  short int e_phentsize;
+  short int e_phnum; 
+  short int e_shentsize; 
+  short int e_shnum; 
+  short int e_shstrndx; 
+}__attribute__((packed));
+
+struct p_header
+{
+ int  p_type; 
+  int p_flags;
+  uint64_t p_offset; 
+  uint64_t p_vaddr; 
+  char p_paddr[8]; 
+  uint64_t p_filesz; 
+  uint64_t p_memsz; 
+  char p_align[8]; 
+}__attribute__((packed));
+
+
+typedef struct p_header pheader;
+typedef struct elfheader elf_header;
 */
 
 struct task th1,th2,readyQ[5];

@@ -138,7 +138,7 @@ void mem_init(void* physbase,void *physfree){
 	map_kernel(pml4e,KERN_MEM+(uint64_t)physbase,(uint64_t)physbase,END_LIMIT-(uint64_t)physbase);
 	//map_video_memory
 	map_kernel(pml4e,KERN_MEM+VIDEO_MEM,VIDEO_MEM,8192);
-	
+	pml4e=(uint64_t *)(KERN_MEM+cr3_addr);	
 	__asm__ __volatile__("mov %0, %%cr3":: "b"(cr3_addr));
 }
 

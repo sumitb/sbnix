@@ -39,42 +39,6 @@ struct tarfs {
 	}__attribute__((packed))tarfs_ind[MAX_BIN];
 
 void tarfs_initialize();
-
-struct elfheader
-{
-  unsigned char e_ident[16];
-  short int e_type;
-  short int e_machine; 
-  int e_version;
-  uint64_t e_entry; 
-  char e_phoff[8]; 
-  char e_shoff[8]; 
-  int e_flags; 
-  short int e_ehsize;
-  short int e_phentsize;
-  short int e_phnum; 
-  short int e_shentsize; 
-  short int e_shnum; 
-  short int e_shstrndx; 
-}__attribute__((packed));
-
-struct p_header
-{
- int  p_type; 
-  int p_flags;
-  uint64_t p_offset; 
-  uint64_t p_vaddr; 
-  char p_paddr[8]; 
-  uint64_t p_filesz; 
-  uint64_t p_memsz; 
-  char p_align[8]; 
-}__attribute__((packed));
-
-
-typedef struct p_header pheader;
-typedef struct elfheader elf_header;
-
-void tarfs_initialize();
 uint64_t check_file(char *file_name);
 
 #endif

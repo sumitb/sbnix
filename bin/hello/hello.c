@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #define MAXLEN 1024
 
-int listdir(const char *path) {
+/*int listdir(const char *path) {
     struct dirent *entry;
     DIR *dp;
 
@@ -19,7 +19,7 @@ int listdir(const char *path) {
     closedir(dp);
     return 0;
 }
-
+*/
 int main(int argc, char* argv[], char* envp[])
 {
 //  char str1[MAXLEN]="\0";
@@ -102,6 +102,7 @@ int main(int argc, char* argv[], char* envp[])
 	printf("%c\n",ch);
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
-    listdir("/");
+//    listdir("/");
+    printf("Hello World 13 Apr\n");
     return 0;
 }
