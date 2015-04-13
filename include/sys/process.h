@@ -3,6 +3,18 @@
 
 # define ELF_NIDENT	16
 
+struct vm_struct{
+    uint64_t vm_start;
+    uint64_t vm_end;
+    uint64_t vm_mmsz;
+    uint64_t vm_file;
+    struct vm_struct *vm_next;
+    struct mm_struct *vm_mm;
+
+}__attribute__((packed));
+
+typedef struct vm_struct vma;
+
 struct task{
 uint16_t parent_id;
 uint16_t process_id;
@@ -23,24 +35,13 @@ struct run_queue{
 	struct run_queue *next;
 }__attribute__((packed));
 
-struct vm_struct{
-    uint64_t vm_start;
-    uint64_t vm_end;
-    uint64_t vm_mmsz;
-    uint64_t vm_file;
-    struct vm_struct *vm_next;
-    struct mm_struct *vm_mm;
-
-}__attribute__(packed);
-
-typedef struct vm_struct vma;
-typedef struct task task;
+//typedef struct task task;
 
 struct mm_struct{
 
     vma *mmap;
 
-}__attribute__(packed);
+}__attribute__((packed));
 
 
 struct run_queue rqueue[2];
@@ -101,5 +102,10 @@ struct task kernel;
 
 void create_process(char *binary);
 void init_process(uint64_t *stack);
+//static void elf_load(struct task *t, char *file_name);
+//static void allocate(struct task *t,void * addr, int len);
+vma* allocate_vma(struct mm_struct* mm);
+void initialize_thread();
+
 
 #endif

@@ -13,14 +13,111 @@ void funct2(){
 printk("World\n");
 }
 
-void load(struct task *th, char *file_name){
-/*		uint64_t offset = check_file(file_name);
-		//TODO check if file exists or not
-		Elf_hdr *elf = (Elf_hdr *) (&_binary_tarfs_start + offset);
-		Elf64_Phdr *pgmhdr;
-		pgmhdr=(Elf64_Phdr *)((uint64_t)elf+elf->e_phoff);
-		uint32_t pgm_cnt = elf->e_phnum;*/
+
+
+static void elf_load(struct task *t, char *file_name){
+	uint64_t offset = check_file(file_name);
+	int start=0;
+	int end=0;
+	//TODO check if file exists or not
+	if(offset!=0){
+		
+		elf_header *elf = (elf_header *) (&_binary_tarfs_start + offset);
+		int len = elf->e_phnum;
+		pheader *ph1;
+		pheader *ph2;
+	   
+		for(int i=0;i<len;i++){
+			ph1 = (pheader *)(elf + (elf->e_phoff +(elf->e_phentsize * i)));
+			if(ph1->p_type==ELF_PROG_LOAD){
+				allocate(t,(void *) ph1->p_vaddr, ph1->p_memsz);
+				lcr3(t->cr3);
+				memset((char*) ph1->p_vaddr,0,ph1->p_memsz);
+				
+				memcpy((char *) ph1->p_vaddr, (void *) elf + ph1->p_offset, ph1->p_filesz);
+				lcr3(boot_cr3);        
+				vma *vm = allocate_vma(t->mm);
+				vm->vm_start = ph1->p_vaddr;
+				vm->vm_end = ph1->p_vaddr + ph1->p_memsz;
+				vm->vm_mmsz=ph1->p_memsz;
+				vm->vm_next=NULL;
+				vm->vm_file=(uint64_t)elf;
+				start=vm->vm_start;
+				end=vm->vm_end;
+			
+			}
+
+		
+		}
+
+
+		t->entry=elf->e_entry;
+		t->heap_vma = (vma *)(KERN_MEM+mem_allocate());
+		vma* tmp = t->mm->mmap;
+		while(tmp->vm_next != NULL)
+			tmp=tmp->vm_next;
+
+		 uint64_t val = ALIGN_DOWN((uint64_t)(tmp->vm_end + 0x1000));
+		 t->heap_vma->vm_end=t->heap_vma->vm_start=val;
+		 t->heap_vma->vm_mmsz=0x1000;
+
+		allocate(t,(void *)t->heap_vma->vm_start,t->heap_vma->vm_mmsz);
+		t->mm->mmap->vm_start=start;
+		t->mm->mmap->vm_end=end;
+	}
+
 }
+
+
+static void allocate(struct task *t,void * addr, int len){
+
+   // int start = ROUNDDOWN((int)addr, PGSIZE);
+   // int end = ROUNDUP((int)addr+len, PGSIZE);
+   int start = page_roundoff_4096(addr);
+   int end = page_roundoff_4096(addr+len);
+    page* p;
+    
+    for(int i=start;i<end;i+=PGSIZE){
+        if(!(p=page_alloc(ALLOC_ZERO)))
+            kprintf("out of memory\n");
+        else{
+            if(page_insert....)
+                kprint("out of memory\n");
+
+        
+        }
+    
+    
+    }
+
+
+}
+
+
+
+ vma* allocate_vma(struct mm_struct* mm){
+    char *node;
+    vma* end;
+    if(mm->mmap == NULL){
+            node=(char *)(kernbase+mem_allocate());
+            end=(struct vma *)node;
+            mm->mmap=end;
+            //mm->counti+=1;
+            return (struct vma*)node;
+
+        }
+    else{
+        end=mm->mmap;
+        while(end->vm_next!=NULL)
+            end=end->vm_next;
+        node=sizeof(struct vma)+(char *)end;
+        end->vm_next = (struct vma *)node;
+        return (struct vma *)node;
+    
+    }
+
+}
+
 
 void initialize_thread(){
 uint64_t *page_addr1;
