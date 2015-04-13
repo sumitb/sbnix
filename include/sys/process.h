@@ -12,7 +12,10 @@ uint64_t cr3_address;
 uint64_t pml4e_addr;
 uint64_t rip_ptr;
 uint64_t entry_pt;
+vma *heap_vma;
+uint64_t kstack[512];
 uint8_t status;
+struct mm_struct *mm;
 }__attribute__((packed));
 
 struct run_queue{
@@ -20,11 +23,31 @@ struct run_queue{
 	struct run_queue *next;
 }__attribute__((packed));
 
+struct vm_struct{
+    uint64_t vm_start;
+    uint64_t vm_end;
+    uint64_t vm_mmsz;
+    uint64_t vm_file;
+    struct vm_struct *vm_next;
+    struct mm_struct *vm_mm;
+
+}__attribute__(packed);
+
+typedef struct vm_struct vma;
+typedef struct task task;
+
+struct mm_struct{
+
+    vma *mmap;
+
+}__attribute__(packed);
+
+
 struct run_queue rqueue[2];
 struct run_queue *rq_head;
 int curr_proc;
 struct run_queue running_proc;
-
+/*
 typedef struct {
         unsigned char e_ident[ELF_NIDENT];
         uint16_t      e_type;
@@ -67,7 +90,7 @@ typedef struct {
 } Elf64_Shdr;
 
 
-
+*/
 
 struct task th1,th2,readyQ[5];
 
