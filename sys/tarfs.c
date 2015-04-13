@@ -29,7 +29,7 @@ void tarfs_initialize(){
 
 
 
-static void elf_load(){
+static void elf_load(task *t, char ){
 
     elf_header *elf=(elf_header *)(&);
     int len = elf->e_phnum;
@@ -45,13 +45,14 @@ static void elf_load(){
             
             memcpy((char *) ph1->p_vaddr, (void *) elf + ph1->p_offset, ph1->p_filesz);
             lcr3(boot_cr3);        
-            struct vm_struct* vm = allocate_vma(t->mm);
+            vma *vm = allocate_vma(t->mm);
             vm->vm_start = ph1->p_vaddr;
             vm->vm_end = ph1->p_vaddr + ph1->p_memsz;
             vm->vm_mmsz=ph1->p_memsz;
             vm->vm_next=NULL;
             vm->vm_file=(uint64_t)elf;
-
+            start=vm->vm_start;
+            end=vm->vm_end;
         
         }
 
@@ -60,17 +61,24 @@ static void elf_load(){
 
 
 t->entry=elf->e_entry;
-t->heap_vma = (struct vm_area_struct *)(KERN_MEM+mem_allocate());
-struct vm_area_struct* tmp = t->mm->mmap;
-while(t->)
+t->heap_vma = (vma *)(KERN_MEM+mem_allocate());
+vma* tmp = t->mm->mmap;
+while(tmp->vm_next != NULL)
+    tmp=tmp->vm_next;
 
+ uint64_t val = ALIGN_DOWN((uint64_t)(tmp->vm_end + 0x1000));
+ t->heap_vma->vm_end=t->heap_vma->vm_start=val;
+ t->heap_vma->vm_mmsz=0x1000;
 
+allocate(t,(void *)t->heap_vma->vm_start,t->heap_vma->vm_mmsz);
+t->mm->mmap->vm_start=start;
+t->mm->mmap->vm_end=end;
 
 
 }
 
 
-static void allocate(t,void * addr, int len){
+static void allocate(task *t,void * addr, int len){
 
     int start = ROUNDDOWN((int)addr, PGSIZE);
     int end = ROUNDUP((int)addr+len, PGSIZE);
@@ -94,9 +102,9 @@ static void allocate(t,void * addr, int len){
 
 
 
-struct vma* allocate_vma(struct mm_struct* mm){
+ vma* allocate_vma(struct mm_struct* mm){
     char *node;
-    struct vma* end;
+    vma* end;
     if(mm->mmap == NULL){
             node=(char *)(kernbase+mem_allocate());
             end=(struct vma *)node;

@@ -40,7 +40,7 @@ struct tarfs {
 
 void tarfs_initialize();
 
-struct elf_header
+struct elfheader
 {
   unsigned char e_ident[16];
   short int e_type;
@@ -56,9 +56,9 @@ struct elf_header
   short int e_shentsize; 
   short int e_shnum; 
   short int e_shstrndx; 
-};
+}__attribute__((packed));
 
-struct pheader
+struct p_header
 {
  int  p_type; 
   int p_flags;
@@ -68,7 +68,14 @@ struct pheader
   uint64_t p_filesz; 
   uint64_t p_memsz; 
   char p_align[8]; 
-};
+}__attribute__(packed);
+
+
+typedef struct p_header pheader;
+typedef struct elfheader elf_header;
+
+
+
 
 
 
