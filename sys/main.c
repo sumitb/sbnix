@@ -9,6 +9,12 @@
 #include <sys/console.h>
 volatile int dbg = 0;
 
+#define INITIAL_STACK_SIZE 4096
+char stack[INITIAL_STACK_SIZE];
+uint32_t* loader_stack;
+extern char kernmem, physbase;
+struct tss_t tss;
+
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
 	struct smap_t {
@@ -26,15 +32,11 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	//initialize memory in pages
 	mem_init(physbase, physfree);
 	create_process("bin/sbush");
+	init_process((uint64_t *)stack);
     // kernel starts here
     while(1);
 }
 
-#define INITIAL_STACK_SIZE 4096
-char stack[INITIAL_STACK_SIZE];
-uint32_t* loader_stack;
-extern char kernmem, physbase;
-struct tss_t tss;
 
 void boot(void)
 {
@@ -65,7 +67,7 @@ void boot(void)
 	);
 	s = "!!!!! start() returned !!!!!";
 	for(v = (char*)0xb8000; *s; ++s, v += 2) *v = *s;
-    int a=5,b=0;
-    a=a/b;
+//    int a=5,b=0;
+//    a=a/b;
     while(1);
 }

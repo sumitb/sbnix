@@ -36,7 +36,7 @@ struct tarfs {
 	int ref_cnt;
 	uint64_t tarfs_start_addr;
 	uint64_t bin_start_addr;
-	}tarfs_ind[MAX_BIN];
+	}__attribute__((packed))tarfs_ind[MAX_BIN];
 
 void tarfs_initialize();
 
@@ -68,17 +68,13 @@ struct p_header
   uint64_t p_filesz; 
   uint64_t p_memsz; 
   char p_align[8]; 
-}__attribute__(packed);
+}__attribute__((packed));
 
 
 typedef struct p_header pheader;
 typedef struct elfheader elf_header;
 
-
-
-
-
-
-
+void tarfs_initialize();
+uint64_t check_file(char *file_name);
 
 #endif
