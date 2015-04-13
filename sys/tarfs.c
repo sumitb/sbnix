@@ -80,8 +80,11 @@ t->mm->mmap->vm_end=end;
 
 static void allocate(task *t,void * addr, int len){
 
-    int start = ROUNDDOWN((int)addr, PGSIZE);
-    int end = ROUNDUP((int)addr+len, PGSIZE);
+  //  int start = ROUNDDOWN((int)addr, PGSIZE);
+  //  int end = ROUNDUP((int)addr+len, PGSIZE);
+        int start= addr-(addr%4096);
+
+    
     page* p;
     
     for(int i=start;i<end;i+=PGSIZE){
