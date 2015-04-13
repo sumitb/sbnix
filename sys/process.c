@@ -81,9 +81,9 @@ void create_process(char *binary){
 	
 	running_proc=*proc;
 }
-void init_process(uint64_t stack[]){
+void init_process(uint64_t *stack){
 	
-	kernel.stack=stack;
+	kernel.stack=&(stack[0]);
 	kernel.process_id=proc_cnt++;
 	kernel.cr3_address=cr3_addr;
 	kernel.pml4e_addr=(uint64_t)pml4e;

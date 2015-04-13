@@ -22,7 +22,7 @@ struct run_queue{
 
 struct run_queue rqueue[2];
 struct run_queue *rq_head;
-//int curr_proc=0;
+int curr_proc;
 struct run_queue running_proc;
 
 typedef struct {
@@ -77,5 +77,6 @@ struct task kernel;
 
 
 void create_process(char *binary);
+void init_process(uint64_t *stack);
 
 #endif
