@@ -7,7 +7,7 @@
 #include <sys/tarfs.h>
 #include <sys/process.h>
 #include <sys/console.h>
-volatile int dbg = 0;
+volatile int dbg = 1;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -31,9 +31,10 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	
 	//initialize memory in pages
 	mem_init(physbase, physfree);
-//	create_process("bin/sbush");
+    // create_process("bin/sbush");
 	while(dbg);
-	init_process((uint64_t *)stack);
+	// init_process((uint64_t *)stack);
+    schedule();
     // kernel starts here
     while(1);
 }
@@ -59,7 +60,6 @@ void boot(void)
 	tarfs_initialize();
 //	create_process("sbush");
 //	__asm__ __volatile__ ("sti");
-    schedule();
     //	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
