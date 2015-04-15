@@ -18,7 +18,7 @@ typedef struct vm_struct vma;
 struct task{
 uint16_t parent_id;
 uint16_t process_id;
-uint64_t *stack;
+uint64_t stack[64];
 uint64_t rsp_ptr;
 uint64_t cr3_address;
 uint64_t pml4e_addr;
@@ -136,11 +136,11 @@ struct task kernel;
 
 
 
-void create_process(char *binary);
+struct run_queue * create_process(char *binary);
 void init_process(uint64_t *stack);
 //static void elf_load(struct task *t, char *file_name);
 //static void allocate(struct task *t,void * addr, int len);
-vma* allocate_vma(struct mm_struct* mm);
+vma* allocate_vma(vma *vma_head);
 void initialize_thread();
 
 

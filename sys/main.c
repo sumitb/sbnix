@@ -30,9 +30,9 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
 	
 	//initialize memory in pages
+	while(dbg);
 	mem_init(physbase, physfree);
 //	create_process("bin/sbush");
-	while(dbg);
 	init_process((uint64_t *)stack);
     // kernel starts here
     while(1);
@@ -58,7 +58,7 @@ void boot(void)
 //    while(dbg);
 	tarfs_initialize();
 //	create_process("sbush");
-//	__asm__ __volatile__ ("sti");
+	__asm__ __volatile__ ("sti");
     schedule();
     //	__asm volatile("callq handler_irq0");
 	start(
