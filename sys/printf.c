@@ -113,7 +113,7 @@ void i_printf(uint64_t num, int base, bool xflag) {
         i++;
     }
 
-    for(i=intSize; i>=0; i--) {
+    for(; i>=0; i--) {
         if(numArr[i] != 0 || flag == 1)
             flag = 1;
         else

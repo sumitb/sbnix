@@ -15,27 +15,21 @@ struct tss_struct {
     uint64_t r8,r9,r10,r11,r12,r13,r14,r15;
 };
 
-struct user_stack {
-    char stack[4096];
-};
-
-struct kernel_stack {
-    char stack[4096];
-};
-
 struct task_struct {
     volatile long state;    /* -1 unrunnable, 0 runnable, >0 stopped */
     unsigned int flags;     /* per process flags, defined below */
 
-    void *saved_kernel_stack;
-    struct kernel_stack *stack;     /* maintain one kernel stack per task */
+    //uint64_t *stack;     /* maintain one kernel stack per task */
+    uint64_t stack[64];     /* maintain one kernel stack per task */
+    void *saved_kernel_rsp;
     unsigned long pml4e_base_addr;
 
-    struct task_struct *next_task, *prev_task;
-    struct tss_struct tss_r;
+    struct task_struct *next_task;
 };
 
-struct kernel_stack kern_stack[NR_TASKS];
+//struct kernel_stack kern_stack[NR_TASKS];
+//struct kernel_stack *stack;     /* maintain one kernel stack per task */
+//struct tss_struct tss_r;
 struct task_struct *task[NR_TASKS];
 struct task_struct *current;
 
