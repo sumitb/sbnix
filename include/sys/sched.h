@@ -2,7 +2,8 @@
 #define __SCHED_H
 
 #include <sys/defs.h>
-#define NR_TASKS 128
+#define NR_TASKS    128
+#define KERNEL_STACK_SIZE   64
 
 /* A struct for saving and restoring processor state info. */
 /* Don't confuse with tss segment, defined in sys/gdt.h */
@@ -20,7 +21,7 @@ struct task_struct {
     unsigned int flags;     /* per process flags, defined below */
 
     //uint64_t *stack;     /* maintain one kernel stack per task */
-    uint64_t stack[64];     /* maintain one kernel stack per task */
+    uint64_t kern_stack[KERNEL_STACK_SIZE];     /* maintain one kernel stack per task */
     void *saved_kernel_rsp;
     unsigned long pml4e_base_addr;
 

@@ -16,7 +16,7 @@ void bar() {
 }
 
 void schedule() {
-    //void *page_addr;
+    void *page_addr;
     struct task_struct task1;
     struct task_struct task2;
     /* Save current cr3 value */
@@ -24,32 +24,34 @@ void schedule() {
 
     /* Task1: Hello */
     /* Init kernel stack */
-    //page_addr = (void *)mem_allocate();
-    //memset(page_addr, 0, 4096);
+    page_addr = (void *)mem_allocate();
+    page_addr = KERN_MEM + page_addr;
+    memset(page_addr, 0, 4096);
 
     current = &task1;
     task1.pml4e_base_addr = cr3_addr;
     task1.next_task = &task2;
     //task1.stack = (uint64_t*)page_addr;
-    task1.stack[63] = (uint64_t) &foo;
-    task1.saved_kernel_rsp = &task1.stack[63];
+    task1.kern_stack[KERNEL_STACK_SIZE - 1] = (uint64_t) &foo;
+    task1.saved_kernel_rsp = &task1.kern_stack[KERNEL_STACK_SIZE - 1];
 
     /* Task2: World */
-    //page_addr = (void *)mem_allocate();
-    //memset(page_addr, 0, 4096);
+    page_addr = (void *)mem_allocate();
+    page_addr = KERN_MEM + page_addr;
+    memset(page_addr, 0, 4096);
 
     task2.pml4e_base_addr = cr3_addr;
     task2.next_task = &task1;
     //task2.stack = (uint64_t*)page_addr;
-    task2.stack[63] = (uint64_t) &bar;
-    task2.saved_kernel_rsp = &task2.stack[47];
+    task2.kern_stack[KERNEL_STACK_SIZE - 1] = (uint64_t) &bar;
+    task2.saved_kernel_rsp = &task2.kern_stack[KERNEL_STACK_SIZE - 17]; /* 15 regs, 1 retq, 1 offset*/
 
     // Execute current task
     // __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
     /* Invoke Task1 */
     //__asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
     //__asm__ __volatile__("movq %0, %%rsp"::"b"(task1.saved_kernel_rsp));
-    __asm__ __volatile__("movq %0, %%rsp;"::"m"(task1.saved_kernel_rsp));
+    __asm__ __volatile__("movq %0, %%rsp;"::"m"(current->saved_kernel_rsp));
     __asm__ __volatile__("retq");
     return;
 }
