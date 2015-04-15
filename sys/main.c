@@ -60,12 +60,8 @@ void boot(void)
 //    while(dbg);
 	tarfs_initialize();
 //	create_process("sbush");
-<<<<<<< HEAD
 	__asm__ __volatile__ ("sti");
     schedule();
-=======
-//	__asm__ __volatile__ ("sti");
->>>>>>> 8fc63e795accdfed8a8c78aff2b5b365e81a519c
     //	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
