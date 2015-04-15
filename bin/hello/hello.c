@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/console.h>
 #define MAXLEN 1024
 
 /*int listdir(const char *path) {
@@ -103,6 +104,9 @@ int main(int argc, char* argv[], char* envp[])
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
 //    listdir("/");
-    printf("Hello World 13 Apr\n");
+	*((char*)0xffffffff80000000+0xb8000)=65;
+	*((char*)0xffffffff80000000+0xb8001)=0x07;
+    while(1);
+    printk("Hello World 13 Apr\n");
     return 0;
 }

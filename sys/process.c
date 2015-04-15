@@ -3,25 +3,11 @@
 #include <sys/tarfs.h>
 #include <sys/memory.h>
 #include <sys/console.h>
-
-
-void funct1(){
-printk("Hello\n");
-}
-
-void funct2(){
-printk("World\n");
-}
-
-
-
-
+#include <sys/gdt.h>
 
 static void allocate(struct task *t,void * addr, int len){
 	uint64_t start;
-   // int start = ROUNDDOWN((int)addr, PGSIZE);
-   // int end = ROUNDUP((int)addr+len, PGSIZE);
-   //TODO : start address should be round down to 4096
+   //start address should be round down to 4096
    if(((uint64_t)addr)%4096 !=0){
 	start = page_roundoff_4096((uint64_t)addr);
 	start=start-4096;
@@ -43,59 +29,37 @@ static void allocate(struct task *t,void * addr, int len){
     }
 }
 
-
-
- vma* allocate_vma(struct mm_struct* mm){
-    char *node;
-    vma* end;
-    if(mm->vma_addr == NULL){
-            node=(char *)(KERN_MEM+mem_allocate());
-            end=(vma *)node;
-            mm->vma_addr=end;
-            //mm->counti+=1;
-            return (vma*)node;
-
+ vma* allocate_vma(vma *vma_head){
+    vma* tail;
+    if(vma_head == NULL){
+            vma_head=(vma *)(KERN_MEM+mem_allocate());
+            return vma_head;
         }
     else{
-        end=mm->vma_addr;
-        while(end->vm_next!=NULL)
-            end=end->vm_next;
-        node=sizeof(vma)+(char *)end;
-        end->vm_next = (vma *)node;
-        return (vma *)node;
-    
+        tail=vma_head;
+        while(tail->vm_next!=NULL)
+            tail=tail->vm_next;
+        tail->vm_next=(vma *)(sizeof(vma)+(char *)tail);
+        return tail->vm_next;
     }
 	return NULL;
-
 }
-volatile int gdb=1;
+volatile int gdb=0;
 static void elf_load(struct task *t, char *file_name){
 	uint64_t offset = check_file(file_name);
-	//int start=0;
-	//int end=0;
-	//TODO check if file exists or not
-	while(gdb);
 	if(offset!=0){
-		
 		elf_header *elf = (elf_header *)offset;
-//		int len = elf->e_phnum;
-	//	pheader *ph1;
 	    pheader *ph1=(pheader *)((uint8_t *)elf + elf->e_phoff);
-      //  pheader *ph2;
-	   pheader *ph2=ph1+elf->e_phnum;
+		int ph_cnt=elf->e_phnum;
 
-//		for(int i=0;i<len;i++){
-            for(;ph1<ph2;ph1++){
-                
-		//	ph1 = (pheader *)((uint8_t *)elf + (elf->e_phoff +(elf->e_phentsize * i)));
+		for(int i=0;i<ph_cnt;i++,ph1++){
 			if(ph1->p_type==1){
 				allocate(t,(void *) ph1->p_vaddr, ph1->p_memsz);
 				__asm __volatile("movq %0,%%cr3" : : "r" (t->cr3_address));
 				memset((char*) ph1->p_vaddr,0,ph1->p_memsz);
-				
 				memcpy((char *) ph1->p_vaddr, (void *) elf + ph1->p_offset, ph1->p_filesz);
 				__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));       
-				vma *vm = allocate_vma(t->mm);
+				vma *vm = allocate_vma(t->mm->vma_addr);
 				vm->vm_start = ph1->p_vaddr;
 				vm->vm_end = ph1->p_vaddr + ph1->p_memsz;
 				vm->vm_mmsz=ph1->p_memsz;
@@ -164,11 +128,13 @@ rqueue[1].process=th2;
 rqueue[1].next=&rqueue[0];
 }
 
-void create_process(char *binary){
+struct run_queue * create_process(char *binary){
 	uint64_t *page_addr;
 	uint64_t *pml4e_pr;
 	page_addr=(uint64_t *)mem_allocate();
 	struct run_queue *proc=(struct run_queue *)(KERN_MEM + mem_allocate());
+	//allocate 2 pages for process struct, change this later
+	mem_allocate();
 	proc->next=NULL;
 	struct run_queue *curr=rq_head;
 	if(curr != NULL){
@@ -179,7 +145,6 @@ void create_process(char *binary){
 	else{
 		curr=proc;
 	}
-	
 	pml4e_pr=(uint64_t *)((uint64_t)page_addr + KERN_MEM);
 	memset(pml4e_pr,0,4096);
 	
@@ -200,37 +165,79 @@ void create_process(char *binary){
 	
 	//proc->process.rsp_ptr = (uint64_t)(&proc->process.stack[63]);
 	
-        proc->process.kstack[506] = 1; proc->process.kstack[505] = 2;  proc->process.kstack[504] = 3;  proc->process.kstack[503] = 4;
-        proc->process.kstack[502] = 5; proc->process.kstack[501] = 6;  proc->process.kstack[500] = 7;  proc->process.kstack[499] = 8;
-        proc->process.kstack[498] = 9; proc->process.kstack[497] = 10; proc->process.kstack[496] = 11; proc->process.kstack[495] = 12;
-        proc->process.kstack[494] = 13; proc->process.kstack[493] = 14; proc->process.kstack[492] = 15;
+        proc->process.kstack[506] = 0;
+		proc->process.kstack[505] = 0; 
+		proc->process.kstack[504] = 0; 
+		proc->process.kstack[503] = 0;
+        proc->process.kstack[502] = 0; 
+		proc->process.kstack[501] = 0; 
+		proc->process.kstack[500] = 0; 
+		proc->process.kstack[499] = 0;
+        proc->process.kstack[498] = 0;
+		proc->process.kstack[497] = 0;
+		proc->process.kstack[496] = 0; 
+		proc->process.kstack[495] = 0;
+        proc->process.kstack[494] = 0; 
+		proc->process.kstack[493] = 0; 
+		proc->process.kstack[492] = 0;
 
         //proc->process.kstack[491] = (uint64_t)(&irq0+34);
         proc->process.rsp_ptr = (uint64_t)&proc->process.kstack[490];
 
 		proc->process.kstack[511] = 0x23 ;                              //  Data Segment    
-        proc->process.kstack[510] = (uint64_t)(&proc->process.stack[511]);      //  RIP
+        proc->process.kstack[510] = (uint64_t)(&proc->process.stack[511]);      //  RSP
         proc->process.kstack[509] = 0x246;                           //  EFlags
         proc->process.kstack[508] = 0x1b ;                              // Code Segment
         
 		elf_load(&(proc->process), binary);	
         //proc->process.heap_vma->vm_end = proc->process.heap_vma->vm_start;
-		proc->process.kstack[507] = (uint64_t)proc->process.entry_pt;
-	__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
+		proc->process.kstack[507] = (uint64_t)proc->process.entry_pt;  //RIP
+//	__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 	running_proc=*proc;
+	return proc;
+	
+	
 }
 void init_process(uint64_t *stack){
 	
-	kernel.stack=&(stack[0]);
+	//kernel.stack=(uint64_t)&(stack[0]);
 	kernel.process_id=proc_cnt++;
 	kernel.cr3_address=cr3_addr;
 	kernel.pml4e_addr=(uint64_t)pml4e;
 	
-	create_process("bin/hello");
-	
+	struct run_queue *proc = create_process("bin/hello");
+	while(gdb);
+	__asm __volatile("movq %0, %%cr3":: "a"(proc->process.cr3_address));
+	//__asm __volatile("movq %0,%%cr3" : : "r" (proc->process.cr3_address));
+	__asm__ __volatile__ (
+            "movq %0, %%rsp;" //load next's stack in rsp
+            :
+            :"r"(proc->process.rsp_ptr)
+    );
+	tss.rsp0 = (uint64_t)&(proc->process.stack[63]);
+	__asm__ __volatile__("popq %r15");
+	__asm__ __volatile__("popq %r14");
+	__asm__ __volatile__("popq %r13");
+	__asm__ __volatile__("popq %r12");
+	__asm__ __volatile__("popq %r11");
+    __asm__ __volatile__("popq %r10");
+	__asm__ __volatile__("popq %r9");
+	__asm__ __volatile__("popq %r8");
+	__asm__ __volatile__("popq %rdi");
+	__asm__ __volatile__("popq %rsi");
+	__asm__ __volatile__("popq %rdx");
+	__asm__ __volatile__("popq %rcx");
+	__asm__ __volatile__("popq %rbx");
+	__asm__ __volatile__("popq %rax");
+	//__asm__ __volatile__("sti");	
+
 	
 	__asm__ __volatile__ ("mov $0x2b,%ax");
   	__asm__ __volatile__ ("ltr %ax");
+	__asm__ __volatile__ ("add $8, %rsp");
+	__asm__ __volatile__ ("add $8, %rsp");
+	__asm__ __volatile__ ("add $8, %rsp");
+	__asm__ __volatile__("iretq");
 }
 
 

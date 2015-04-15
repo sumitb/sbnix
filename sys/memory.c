@@ -74,8 +74,11 @@ uint64_t addr_res(uint64_t logical, int flag){
 
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 	uint64_t *pdpe;
+	uint64_t pdpe_t;
 	uint64_t *pde;
+	uint64_t pde_t;
 	uint64_t *pte;
+	uint64_t pte_t;
 	uint64_t page_addr_pml4e;
 	uint64_t page_addr_pdpe;
 	uint64_t page_addr_pde;
@@ -87,7 +90,8 @@ uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 			pml4e[addr_res(logical,PML4E)]=((page_addr_pml4e) | PAGE_PERM);
 		}
 	}
-	pdpe = (uint64_t *)(pml4e[addr_res(logical,PML4E)] & ~(0xFFF)) + KERN_MEM;
+	pdpe_t = (pml4e[addr_res(logical,PML4E)] + KERN_MEM); 
+	pdpe = (uint64_t *)(pdpe_t & (0xFFFFFFFFFFFFF000));
 
 	if(!pdpe[addr_res(logical,PDPE)]){
 		page_addr_pdpe = mem_allocate();
@@ -96,7 +100,8 @@ uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 			pdpe[addr_res(logical,PDPE)]=((page_addr_pdpe) | PAGE_PERM);
 		}
 	}
-	pde = (uint64_t *)(pdpe[addr_res(logical,PDPE)] & ~(0xFFF)) + KERN_MEM;
+	pde_t = (pdpe[addr_res(logical,PDPE)] + KERN_MEM);
+	pde = (uint64_t *)(pde_t & (0xFFFFFFFFFFFFF000));
 	
 	if(!pde[addr_res(logical,PDE)]){
 		page_addr_pde = mem_allocate();
@@ -105,7 +110,8 @@ uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 			pde[addr_res(logical,PDE)]=((page_addr_pde) | PAGE_PERM);
 		}
 	}
-	pte = (uint64_t *)(pde[addr_res(logical,PDE)] & ~(0xFFF)) + KERN_MEM;
+	pte_t = (pde[addr_res(logical,PDE)] + KERN_MEM);
+	pte = (uint64_t *)(pte_t & (0xFFFFFFFFFFFFF000));
 	pte = &(pte[addr_res(logical,PTE)]);
 	
 	return pte;
