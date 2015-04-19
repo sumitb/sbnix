@@ -24,7 +24,6 @@ static void allocate(struct task *t,void * addr, int len){
             printk("out of memory\n");
         else{
                 page_insert((uint64_t *)t->pml4e_addr,start+cnt, p);
-        
         }
     }
 }
@@ -67,12 +66,8 @@ static void elf_load(struct task *t, char *file_name){
 				vm->vm_file=(uint64_t)elf;
 				//start=vm->vm_start;
 				//end=vm->vm_end;
-			
 			}
-
-		
 		}
-
 
 		t->entry_pt=elf->e_entry;
 		/*t->heap_vma = (vma *)(KERN_MEM+mem_allocate());
@@ -165,7 +160,7 @@ struct run_queue * create_process(char *binary){
 	
 	//proc->process.rsp_ptr = (uint64_t)(&proc->process.stack[63]);
 	
-        proc->process.kstack[506] = 0;
+        /*proc->process.kstack[506] = 0;
 		proc->process.kstack[505] = 0; 
 		proc->process.kstack[504] = 0; 
 		proc->process.kstack[503] = 0;
@@ -180,14 +175,15 @@ struct run_queue * create_process(char *binary){
         proc->process.kstack[494] = 0; 
 		proc->process.kstack[493] = 0; 
 		proc->process.kstack[492] = 0;
-
-        //proc->process.kstack[491] = (uint64_t)(&irq0+34);
+*/
+		memset(proc->process.kstack,'\0',4096);
+		//proc->process.kstack[491] = (uint64_t)(&irq0+34);
         proc->process.rsp_ptr = (uint64_t)&proc->process.kstack[490];
 
-		proc->process.kstack[511] = 0x23 ;                              //  Data Segment    
-        proc->process.kstack[510] = (uint64_t)(&proc->process.stack[511]);      //  RSP
-        proc->process.kstack[509] = 0x246;                           //  EFlags
-        proc->process.kstack[508] = 0x1b ;                              // Code Segment
+		proc->process.kstack[511] = 0x23 ;                              //SS    
+        proc->process.kstack[510] = (uint64_t)(&proc->process.stack[511]);      //  ESP
+        proc->process.kstack[509] = 0x246;                           // EFLAGS
+        proc->process.kstack[508] = 0x1b ;                           //CS
         
 		elf_load(&(proc->process), binary);	
         //proc->process.heap_vma->vm_end = proc->process.heap_vma->vm_start;
