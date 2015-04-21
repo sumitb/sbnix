@@ -6,7 +6,7 @@
 void *schedule_save;
 static uint64_t avail_pid = 0;
 static uint64_t num_task = 0;
-struct task_struct task1, task2;
+struct task_struct task1, task2, task3, task4;
 LIST_HEAD(runQueue);
 
 uint64_t getCR3() {
@@ -40,8 +40,12 @@ struct task_struct* initTask(uint64_t entry_point) {
     struct task_struct* task;
     if(avail_pid == 0)
         task = &task1;
-    else
+    else if(avail_pid == 1)
         task = &task2;
+    else if(avail_pid == 2)
+        task = &task3;
+    else
+        task = &task4;
     task->pid = ++avail_pid;
     task->state = 0;
     task->parent = NULL;
@@ -159,6 +163,7 @@ void sys_yield() {
     __asm__ __volatile__("popq %rcx");
     __asm__ __volatile__("popq %rax");
     //__asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+	__asm__ __volatile__ ("sti");
     __asm__ __volatile__("retq");
 }
 

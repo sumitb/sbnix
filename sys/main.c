@@ -74,7 +74,6 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     addTasktoQueue(initTask((uint64_t)&bar));
     addTasktoQueue(initTask((uint64_t)&baz));
     addTasktoQueue(initTask((uint64_t)&qux));
-	__asm__ __volatile__ ("sti");
     schedule();
     /*
     init_tasks();
