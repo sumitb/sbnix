@@ -170,3 +170,9 @@ void page_fault(){
 	*pte=(physical | PAGE_PERM);
 }
 
+uint64_t *kmalloc(size_t bytes) {
+    /* Do not memset page to 0, as it will affect performance
+     * kernel space is already trusted just rewite on it
+     */
+    return KERN_MEM + (uint64_t *)mem_allocate();
+}

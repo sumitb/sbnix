@@ -1,47 +1,31 @@
 #ifndef _PROCESS_H
 #define _PROCESS_H
 
-# define ELF_NIDENT	16
+#include <sys/defs.h>
+#include <sys/sched.h>
 
-struct vm_struct{
-    uint64_t vm_start;
-    uint64_t vm_end;
-    uint64_t vm_mmsz;
-    uint64_t vm_file;
-    struct vm_struct *vm_next;
-    struct mm_struct *vm_mm;
-
-}__attribute__((packed));
+#define ELF_NIDENT	16
 
 typedef struct vm_struct vma;
 
 struct task{
-uint16_t parent_id;
-uint16_t process_id;
-uint64_t stack[64];
-uint64_t rsp_ptr;
-uint64_t cr3_address;
-uint64_t pml4e_addr;
-uint64_t rip_ptr;
-uint64_t entry_pt;
-vma *heap_vma;
-uint64_t kstack[512];
-uint8_t status;
-struct mm_struct *mm;
+    uint16_t parent_id;
+    uint16_t process_id;
+    uint64_t stack[64];
+    uint64_t rsp_ptr;
+    uint64_t cr3_address;
+    uint64_t pml4e_addr;
+    uint64_t rip_ptr;
+    uint64_t entry_pt;
+    vma *heap_vma;
+    uint64_t kstack[512];
+    uint8_t status;
+    struct mm_struct *mm;
 }__attribute__((packed));
 
 struct run_queue{
 	struct task process;
 	struct run_queue *next;
-}__attribute__((packed));
-
-//typedef struct task task;
-
-struct mm_struct{
-
-    vma *vma_addr;
-	uint16_t cnt;
-
 }__attribute__((packed));
 
 
@@ -77,6 +61,21 @@ typedef struct {
         uint64_t   p_memsz;
         uint64_t   p_align;
 } __attribute__((packed))pheader;
+
+struct task th1, th2, readyQueue[5];
+
+uint16_t proc_cnt;
+struct task kernel;
+
+struct run_queue * create_process(char *binary);
+void init_process(uint64_t *stack);
+//static void elf_load(struct task *t, char *file_name);
+//static void allocate(struct task *t,void * addr, int len);
+vma* allocate_vma(struct vm_struct *vma_head);
+void initialize_thread();
+
+#endif
+
 /*
 typedef struct {
 	uint32_t	sh_name;
@@ -129,19 +128,3 @@ typedef struct p_header pheader;
 typedef struct elfheader elf_header;
 */
 
-struct task th1,th2,readyQ[5];
-
-uint16_t proc_cnt;
-struct task kernel;
-
-
-
-struct run_queue * create_process(char *binary);
-void init_process(uint64_t *stack);
-//static void elf_load(struct task *t, char *file_name);
-//static void allocate(struct task *t,void * addr, int len);
-vma* allocate_vma(vma *vma_head);
-void initialize_thread();
-
-
-#endif

@@ -3,59 +3,123 @@
 #include <sys/memory.h>
 #include <sys/console.h>
 
-uint64_t cr3_addr;
+void *schedule_save;
+static uint64_t avail_pid = 0;
+static uint64_t num_task = 0;
+struct task_struct task1, task2;
+LIST_HEAD(runQueue);
 
-void foo() {
-    printk("Hello\n");
-    sys_yield();
-}
-
-void bar() {
-    printk("World\n");
-    sys_yield();
-}
-
-void schedule() {
-    void *page_addr;
-    struct task_struct task1;
-    struct task_struct task2;
+uint64_t getCR3() {
+    uint64_t cr3_addr = 0;
+    
     /* Save current cr3 value */
     __asm__ __volatile__("movq %%cr3, %0":: "b"(cr3_addr));
+    return cr3_addr;
+}
 
-    /* Task1: Hello */
+/* Prepare kernel stack for each process
+ * Save sp registers and rip
+*/
+void prepKernelStack(uint64_t* stack, uint64_t rip) {
+    stack[KERNEL_STACK_SIZE - 1] = rip;
+    /*
+    stack[KERNEL_STACK_SIZE - 1] = 0x23;
+    stack[KERNEL_STACK_SIZE - 2] = (uint64_t) &foo;
+    stack[KERNEL_STACK_SIZE - 3] = 0x246;
+    stack[KERNEL_STACK_SIZE - 4] = 0x1b;
+    stack[KERNEL_STACK_SIZE - 5] = rip;
+    task1.kernel_rsp = &task1.kern_stack[KERNEL_STACK_SIZE - 5];
+    task2.kernel_rsp = &task2.kern_stack[KERNEL_STACK_SIZE - 22];
+    */
+}
+
+struct task_struct* initTask(uint64_t entry_point) {
+    /* Allocate memory for a new task_struct */
+    /* TODO: kmalloc issue */
+    //struct task_struct* task = (struct task_struct*)kmalloc(sizeof(struct task_struct));
+    struct task_struct* task;
+    if(avail_pid == 0)
+        task = &task1;
+    else
+        task = &task2;
+    task->pid = ++avail_pid;
+    task->state = 0;
+    task->parent = NULL;
+    //task->childList = ####; /* define in sched.h and init here*/
+    //task-> mm = get_mm();
+    /* define get_mm in memory.h */
+    task->mm = (struct mm_struct *)((char *)(&task + 1)); /* COPY: from process.c */
+    
     /* Init kernel stack */
-    page_addr = (void *)mem_allocate();
-    page_addr = KERN_MEM + page_addr;
-    memset(page_addr, 0, 4096);
+    //task.stack = (uint64_t*)page_addr;
+    prepKernelStack(task->kern_stack, entry_point);
+    /* 15 regs, 1 retq, 1 offset*/
+    task->kernel_rsp = (uint64_t*) &task->kern_stack[KERNEL_STACK_SIZE - 1 - NUM_REGISTERS_SAVED];
+    
+    /* Init user stack for user processes only*/
+    
+    task->pml4e_base_addr = getCR3();
 
-    current = &task1;
-    task1.pml4e_base_addr = cr3_addr;
-    task1.next_task = &task2;
-    //task1.stack = (uint64_t*)page_addr;
-    task1.kern_stack[KERNEL_STACK_SIZE - 1] = (uint64_t) &foo;
-    task1.saved_kernel_rsp = &task1.kern_stack[KERNEL_STACK_SIZE - 1];
+    return task;
+}
 
-    /* Task2: World */
-    page_addr = (void *)mem_allocate();
-    page_addr = KERN_MEM + page_addr;
-    memset(page_addr, 0, 4096);
-
-    task2.pml4e_base_addr = cr3_addr;
-    task2.next_task = &task1;
-    //task2.stack = (uint64_t*)page_addr;
-    task2.kern_stack[KERNEL_STACK_SIZE - 1] = (uint64_t) &bar;
-    task2.saved_kernel_rsp = &task2.kern_stack[KERNEL_STACK_SIZE - 17]; /* 15 regs, 1 retq, 1 offset*/
-
+int addTasktoQueue(struct task_struct *task) {
+    if(num_task + 1 > NR_TASKS)
+        return -1;
+    list_add(&task->tasks, &runQueue);
+    num_task++;
+    return 0;
+}
+/*
+void start_task() {
     // Execute current task
-    // __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
-    /* Invoke Task1 */
-    //__asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
-    //__asm__ __volatile__("movq %0, %%rsp"::"b"(task1.saved_kernel_rsp));
-    __asm__ __volatile__("movq %0, %%rsp;"::"m"(current->saved_kernel_rsp));
+    __asm__ __volatile__("movq %0, %%rsp;"::"m"(current->kernel_rsp));
     __asm__ __volatile__("retq");
+}
+*/
+
+void schedule() {
+    /* Implementing a round robin scheduling policy
+     * Choose the task -> next task in the list
+     * If doing priority scheduling pick max prio task
+     */
+    //TODO: Ensure that runQueue is not empty
+    /* Update global next and current task */
+    nextTask = list_entry(runQueue.next, struct task_struct, tasks);
+    currentTask = list_entry(runQueue.prev, struct task_struct, tasks);
+   
+    /* Skip schedule if next task is current task */
+    if(nextTask->pid == currentTask->pid)
+        return;
+    
+    /* Move current task from head to tail */
+    list_move_tail(&nextTask->tasks, &runQueue);
+    
+    /*TODO: Switch cr3 */
+    /* Do context switch */
+    //current = current->next_task;
+    
+    sys_yield();
+    
+    /*
+     __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
+    __asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
+    __asm__ __volatile__("movq %0, %%rsp"::"b"(task1.saved_kernel_rsp));
+    __asm__ __volatile__("pushq 8(%rip)");
+    __asm__ __volatile__("popq %rax");
+    __asm__ __volatile__("movq %%rax, %0":"=g"(schedule_save)::"memory");
+    __asm__ __volatile__("popq %rdx");
+    __asm__ __volatile__("movq %%rdx, %0":"=g"(schedule_save)::"memory");
+    schedule_save += 0x4;
+    __asm__ __volatile__("jmpq 8(%rip)");
+    __asm__ __volatile__("pushq 8(%rip)");
+    __asm__ __volatile__("movq %%rsp, %0"::"b"(tss.rsp0));
+    __asm__ __volatile__("jmpq *%0"::"b"(current->kernel_stack));
+    __asm__ __volatile__("movq %0, %%rsp"::"m"(schedule_save));
+    */
+    /* move two instrn ahead: 0x80 */
     return;
 }
-/* move two instrn ahead: 0x80 */
 
 void sys_yield() {
     __asm__ __volatile__("pushq %rax");
@@ -73,18 +137,12 @@ void sys_yield() {
     __asm__ __volatile__("pushq %r13");
     __asm__ __volatile__("pushq %r14");
     __asm__ __volatile__("pushq %r15");
-    //__asm__ __volatile__("jmpq 8(%rip)");
     /* Save rip and rsp */
-    //__asm__ __volatile__("pushq 8(%rip)");
-    __asm__ __volatile__("movq %%rsp, %0":"=g"(current->saved_kernel_rsp)::"memory");
-    //__asm__ __volatile__("movq %%rsp, %0"::"b"(tss.rsp0));
+    __asm__ __volatile__("movq %%rsp, %0":"=g"(currentTask->kernel_rsp)::"memory");
     
-    /* Do context switch */
-    current = current->next_task;
-    __asm__ __volatile__("movq %0, %%rsp"::"m"(current->saved_kernel_rsp));
-    //__asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
-
     /*tss.rsp0 Restore values */
+    __asm__ __volatile__("movq %0, %%rsp"::"m"(nextTask->kernel_rsp));
+
     __asm__ __volatile__("popq %r15");
     __asm__ __volatile__("popq %r14");
     __asm__ __volatile__("popq %r13");
@@ -100,8 +158,7 @@ void sys_yield() {
     __asm__ __volatile__("popq %rdx");
     __asm__ __volatile__("popq %rcx");
     __asm__ __volatile__("popq %rax");
-    __asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+    //__asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
     __asm__ __volatile__("retq");
-    return;
 }
 

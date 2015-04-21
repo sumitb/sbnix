@@ -10,7 +10,7 @@ void tarfs_initialize(){
 	printk("tarfs_struct\n");
 	while(tarfs_str < (struct posix_header_ustar *)&_binary_tarfs_end){
 		strcpy(tarfs_ind[ind].name,tarfs_str->name);
-		printk("file_name : %s\n",tarfs_str->name);
+		//printk("file_name : %s\n",tarfs_str->name);
 	 	
 		tarfs_ind[ind].ref_cnt=0;
 		tarfs_ind[ind].file_size=atoo(tarfs_str->size);

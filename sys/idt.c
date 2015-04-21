@@ -1,15 +1,16 @@
+/* bkerndev - Bran's Kernel Development Tutorial
+*  By:   Brandon F. (friesenb@gmail.com)
+*  Desc: Interrupt Descriptor Table management
+*
+*  Notes: No warranty expressed or implied. Use at own risk. */
 /*
- * Referenced from osdever.net - Bran's Kernel Dev 
+ * Referenced from osdever.net - Bran's Kernel Dev
  */
-#include<sys/timer.h>
-#include<sys/idt.h>
-#include<sys/defs.h>
-#include<sys/gdt.h>
-#include<stdarg.h>
-#include<sys/tarfs.h>
-
-extern void handler_irq0();
-extern void handler_irq1();
+#include <sys/gdt.h>
+#include <sys/irq.h>
+#include <sys/idt.h>
+#include <sys/defs.h>
+#include <sys/timer.h>
 
 /* Defines an IDT entry */
 struct idt_entry
@@ -30,7 +31,12 @@ struct idt_ptr
     unsigned long base;
 } __attribute__((packed));
 
-
+/* Declare an IDT of 256 entries. Although we will only use the
+*  first 32 entries in this tutorial, the rest exists as a bit
+*  of a trap. If any undefined IDT entry is hit, it normally
+*  will cause an "Unhandled Interrupt" exception. Any descriptor
+*  for which the 'presence' bit is cleared (0) will generate an
+*  "Unhandled Interrupt" exception */
 struct idt_entry idt[256];
 struct idt_ptr idtp;
 
@@ -43,12 +49,15 @@ void idt_set_gate(int num, unsigned long base, unsigned short sel, unsigned char
     idt[num].flags=flags;
 }
 
+/* Installs the IDT */
 void reload_idt() {
+    /* Sets the special IDT pointer up, just like in 'gdt.c' */
     idtp.limit=sizeof(struct idt_entry)*256-1;
     idtp.base=(uint64_t) &idt;
 
-    idt_set_gate(32,(uint64_t) &handler_irq0,0x08,0x8E);
-    idt_set_gate(33,(uint64_t) &handler_irq1,0x08,0x8E);
+    irq_install();
+    timer_install();
+    /* Points the processor's internal register to the new IDT */
     __asm__ __volatile__ ("lidt (%0)": :"r" (&idtp));
 }
 

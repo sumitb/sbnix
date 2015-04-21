@@ -1,5 +1,6 @@
-#include<sys/timer.h>
-#include<sys/console.h>
+#include <sys/irq.h>
+#include <sys/timer.h>
+#include <sys/console.h>
 
 extern void outportb(uint16_t port, uint8_t val);
 
@@ -9,31 +10,52 @@ int secs=0;
 int hours=0;
 int mins=0;
 
-void timer_set(){
-    int divisor=1193180/100;
-    outportb(0x43,0x36);
-    outportb(0x40,divisor & 0xFF);
+/* This will keep track of how many ticks that the system
+*  has been running for */
+int timer_ticks = 0;
+
+void timer_set() {
+    int divisor = 1193180 / HZ;
+    outportb(0x43, 0x36);
+    outportb(0x40, divisor & 0xFF);
     outportb(0x40, divisor >> 8);
-    //printk("divisor : %d\n",divisor);
 }
 
-void init_pic(){
-   /*printk("PIC INIT \n");
-   printk("PIC INIT \r");
-   printk("INIT \n");
-   printk("123P213IC INIT \t 123213\n");
-   printk("PIC\b INIT \n");*/
-   
-   outportb(0x20, 0x11);
-   outportb(0xA0, 0x11);
-   outportb(0x21, 0x20);
-   outportb(0xA1, 0x28);
-   outportb(0x21, 0x04);
-   outportb(0xA1, 0x02);
-   outportb(0x21, 0x01);
-   outportb(0xA1, 0x01);
-   outportb(0x21, 0x0);
-   outportb(0xA1, 0x0);
+/* Handles the timer. In this case, it's very simple: We
+*  increment the 'timer_ticks' variable every time the
+*  timer fires. By default, the timer fires 18.222 times
+*  per second. Why 18.222Hz? Some engineer at IBM must've
+*  been smoking something funky */
+void timer_handler()
+{
+    /* Increment our 'tick count' */
+    timer_ticks++;
+
+    /* Every 18 clocks (approximately 1 second), we will
+    *  display a message on the screen */
+    if (timer_ticks % 18 == 0) {
+        printk("One second has passed\n");
+    }
+}
+
+/* This will continuously loop until the given time has
+*  been reached */
+void timer_wait(int ticks)
+{
+    unsigned long eticks;
+
+    eticks = timer_ticks + ticks;
+    while(timer_ticks < eticks);
+}
+
+/* Sets up the system clock by installing the timer handler
+*  into IRQ0 */
+void timer_install()
+{
+    /* Installs 'timer_handler' to IRQ0 */
+    irq_install_handler(0, timer_handler);
+    
+    timer_set();
 }
 
 void fillTimer(char* str, int num) {
@@ -51,13 +73,13 @@ void fillTimer(char* str, int num) {
     return;
 }
 
-void call_timer(){
+void call_timer() {
     int x, y;
     char str_time[10];
     
     counter++;
-    outportb(0x20,0x20);
-    if((counter%100)==0){
+    outportb(0x20, 0x20);
+    if((counter % 100) == 0) {
         time++;
         hours = time/3600;                // hours since boot
         mins = (time-(hours*3600))/60;    // mins since boot
