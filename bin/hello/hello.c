@@ -106,6 +106,18 @@ int main(int argc, char* argv[], char* envp[])
 //    listdir("/");
 	*((char*)0xffffffff80000000+0xb8000)=65;
 	*((char*)0xffffffff80000000+0xb8001)=0x07;
+	pid_t pid = fork();
+		if(pid>0)
+		{
+		        *((char*)0xffffffff80000000+0xb8000)=66;
+       			*((char*)0xffffffff80000000+0xb8001)=0x07;
+		}
+		else if(pid==0)
+                {
+                        *((char*)0xffffffff80000000+0xb8000)=67;
+                        *((char*)0xffffffff80000000+0xb8001)=0x07;
+                }
+
     while(1);
     printk("Hello World 13 Apr\n");
     return 0;

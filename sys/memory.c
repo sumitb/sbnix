@@ -60,6 +60,18 @@ uint64_t page_roundoff_4096(uint64_t addr){
 	}
 }
 
+uint64_t page_roundless_4096(uint64_t addr){
+	if(addr%4096==0)
+		return addr;
+	else{
+		uint64_t new_pg_addr= addr - (addr%4096);
+		if(new_pg_addr<0)
+			return 0;
+		else
+			return new_pg_addr;
+	}
+}
+
 uint64_t addr_res(uint64_t logical, int flag){
 	if (flag == PML4E)
 		return ((logical>>39) & 0x1FF);
@@ -117,11 +129,12 @@ uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 	return pte;
 }
 
-void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t size){
+void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t phys, uint64_t sz){
 	uint64_t *pte;
-	uint64_t vir_addr = page_roundoff_4096(logical);
-	size = page_roundoff_4096(size);
-	physical = page_roundoff_4096(physical);
+	uint64_t vir_addr = page_roundless_4096(logical);
+	uint64_t physical = page_roundless_4096(phys);
+	uint64_t size = page_roundoff_4096(sz);
+	
 	if(vir_addr){
 		int i=0,j=0;
 		for(i=0; i<size; i+=4096,j++){
@@ -163,10 +176,13 @@ void page_fault(){
 	uint64_t physical;
 	physical=mem_allocate();
 	__asm__ __volatile__ ("movq %%cr2, %0" : "=r"(logical));
-	pml4e_addr=(uint64_t *)running_proc.process.pml4e_addr;
+	pml4e_addr=(uint64_t *)running_proc->process.pml4e_addr;
 	pte=walk_pages(pml4e_addr,logical);
 	if(*pte & PAGE_PRESENT)
 		mem_free(*pte);
 	*pte=(physical | PAGE_PERM);
 }
 
+void production_fault(){
+	printk("production fault\n");
+}

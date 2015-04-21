@@ -8,6 +8,7 @@ struct vm_struct{
     uint64_t vm_end;
     uint64_t vm_mmsz;
     uint64_t vm_file;
+	uint64_t vm_offset;
     struct vm_struct *vm_next;
     struct mm_struct *vm_mm;
 
@@ -18,7 +19,7 @@ typedef struct vm_struct vma;
 struct task{
 uint16_t parent_id;
 uint16_t process_id;
-uint64_t stack[64];
+uint64_t stack[512];
 uint64_t rsp_ptr;
 uint64_t cr3_address;
 uint64_t pml4e_addr;
@@ -48,7 +49,7 @@ struct mm_struct{
 struct run_queue rqueue[2];
 struct run_queue *rq_head;
 int curr_proc;
-struct run_queue running_proc;
+struct run_queue *running_proc;
 
 typedef struct {
         unsigned char e_ident[ELF_NIDENT];
@@ -142,6 +143,7 @@ void init_process(uint64_t *stack);
 //static void allocate(struct task *t,void * addr, int len);
 vma* allocate_vma(vma *vma_head);
 void initialize_thread();
+uint16_t sys_fork();
 
 
 #endif

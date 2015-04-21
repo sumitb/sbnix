@@ -7,7 +7,7 @@
 #include <sys/tarfs.h>
 #include <sys/process.h>
 #include <sys/console.h>
-volatile int dbg = 0;
+volatile int dbg = 1;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -32,9 +32,8 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	//initialize memory in pages
 	while(dbg);
 	mem_init(physbase, physfree);
-	create_process("bin/sbush");
+//	create_process("bin/sbush");
 	init_process((uint64_t *)stack);
-	while(dbg);
 //    schedule();
     // kernel starts here
     while(1);

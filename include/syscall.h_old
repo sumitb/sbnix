@@ -5,11 +5,14 @@
 #include <sys/syscall.h>
 
 static __inline uint64_t syscall_0(uint64_t n) {
-	uint64_t ret;
-   	__asm volatile( "movq %1,%%rax\n\t"
-                   "int $80\n\t"
-                   "movq %%rax,%0\n\t;"
-                   :"=r"(ret):"r"(n):"rax","memory");
+	int64_t ret;
+	__asm volatile("syscall"
+		: "=a" (ret)
+		: "i" (0x80),
+		"a" (n),
+		"D" (0)
+		: "cc","rcx","r11","memory");
+
 	return ret;
 }
 
