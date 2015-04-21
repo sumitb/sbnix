@@ -43,6 +43,7 @@ uint64_t mem_allocate();
 void mem_free(uint64_t addr_t);
 void init_memmap(void*  physfree);
 void mem_init(void* physbase,void* physfree);
+uint64_t *kmalloc(size_t bytes);
 
 uint64_t page_roundoff_4096(uint64_t addr);
 uint64_t addr_res(uint64_t logical, int flag);

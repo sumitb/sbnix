@@ -15,26 +15,73 @@ uint32_t* loader_stack;
 extern char kernmem, physbase;
 struct tss_t tss;
 
+void foo() {
+    int cnt=0;
+    while(1)
+        printk("%d. Hello\n", ++cnt);
+}
+
+void bar() {
+    int cnt=0;
+    while(1)
+        printk("%d. World\n", ++cnt);
+}
+
+void baz() {
+    int cnt=0;
+    while(1)
+        printk("%d. Demon\n", ++cnt);
+}
+
+void qux() {
+    int cnt=0;
+    while(1)
+        printk("%d. Lorde\n", ++cnt);
+}
+
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
-	struct smap_t {
+	/*
+    struct smap_t {
 		uint64_t base, length;
 		uint32_t type;
 	}__attribute__((packed)) *smap;
 	while(modulep[0] != 0x9001) modulep += modulep[1]+2;
 	for(smap = (struct smap_t*)(modulep+2); smap < (struct smap_t*)((char*)modulep+modulep[1]+2*4); ++smap) {
-		if (smap->type == 1 /* memory */ && smap->length != 0) {
+		if (smap->type == 1 && smap->length != 0) {
 			printk("Available Physical Memory [%x-%x]\n", smap->base, smap->base + smap->length);
 		}
 	}
 	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
+    */
 	
-	//initialize memory in pages
-	while(dbg);
+	tarfs_initialize();
+	/* initialize memory in pages */
 	mem_init(physbase, physfree);
-//	create_process("bin/sbush");
-	init_process((uint64_t *)stack);
-//    schedule();
+
+    /* Preemptive schdeuler
+     * Add two processes to task list
+     * Debug: Print task run queue
+     * Call sys_yield
+     */
+
+    //create_process("bin/sbush");
+	//init_process((uint64_t *)stack);
+    //create_process("sbush");
+    //__asm volatile("callq handler_irq0");
+	while(dbg);
+    addTasktoQueue(initTask((uint64_t)&foo));
+    addTasktoQueue(initTask((uint64_t)&bar));
+    addTasktoQueue(initTask((uint64_t)&baz));
+    addTasktoQueue(initTask((uint64_t)&qux));
+	/* Moiz: User process init */
+    init_process((uint64_t *)stack);
+    schedule();
+    /*
+    init_tasks();
+	__asm__ __volatile__ ("sti");
+    start_task();
+    */
     // kernel starts here
     while(1);
 }
@@ -53,15 +100,6 @@ void boot(void)
 	reload_gdt();
 	setup_tss();
 	reload_idt();
-    init_pic();
-    timer_set();
-	
-//    while(dbg);
-	tarfs_initialize();
-//	create_process("sbush");
-	__asm__ __volatile__ ("sti");
-//    schedule();
-    //	__asm volatile("callq handler_irq0");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,

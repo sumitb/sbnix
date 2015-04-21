@@ -1,59 +1,68 @@
-#include <sys/gdt.h>
 #include <sys/sched.h>
 #include <sys/memory.h>
 #include <sys/console.h>
 
-uint64_t cr3_addr;
+static uint64_t num_task = 0;
+LIST_HEAD(runQueue);
 
-void foo() {
-    printk("Hello\n");
-    sys_yield();
+/*
+void start_task() {
+    // Execute current task
+    __asm__ __volatile__("movq %0, %%rsp;"::"m"(current->kernel_rsp));
+    __asm__ __volatile__("retq");
 }
+*/
 
-void bar() {
-    printk("World\n");
-    sys_yield();
+int addTasktoQueue(struct task_struct *task) {
+    if(num_task + 1 > NR_TASKS)
+        return -1;
+    list_add(&task->tasks, &runQueue);
+    num_task++;
+    return 0;
 }
 
 void schedule() {
-    //void *page_addr;
-    struct task_struct task1;
-    struct task_struct task2;
-    /* Save current cr3 value */
-    __asm__ __volatile__("movq %%cr3, %0":: "b"(cr3_addr));
-
-    /* Task1: Hello */
-    /* Init kernel stack */
-    //page_addr = (void *)mem_allocate();
-    //memset(page_addr, 0, 4096);
-
-    current = &task1;
-    task1.pml4e_base_addr = cr3_addr;
-    task1.next_task = &task2;
-    //task1.stack = (uint64_t*)page_addr;
-    task1.stack[63] = (uint64_t) &foo;
-    task1.saved_kernel_rsp = &task1.stack[63];
-
-    /* Task2: World */
-    //page_addr = (void *)mem_allocate();
-    //memset(page_addr, 0, 4096);
-
-    task2.pml4e_base_addr = cr3_addr;
-    task2.next_task = &task1;
-    //task2.stack = (uint64_t*)page_addr;
-    task2.stack[63] = (uint64_t) &bar;
-    task2.saved_kernel_rsp = &task2.stack[47];
-
-    // Execute current task
-    // __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
-    /* Invoke Task1 */
-    //__asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
-    //__asm__ __volatile__("movq %0, %%rsp"::"b"(task1.saved_kernel_rsp));
-    __asm__ __volatile__("movq %0, %%rsp;"::"m"(task1.saved_kernel_rsp));
-    __asm__ __volatile__("retq");
+    /* Implementing a round robin scheduling policy
+     * Choose the task -> next task in the list
+     * If doing priority scheduling pick max prio task
+     */
+    //TODO: Ensure that runQueue is not empty
+    /* Update global next and current task */
+    nextTask = list_entry(runQueue.next, struct task_struct, tasks);
+    currentTask = list_entry(runQueue.prev, struct task_struct, tasks);
+   
+    /* Skip schedule if next task is current task */
+    if(nextTask->pid == currentTask->pid)
+        return;
+    
+    /* Move current task from head to tail */
+    list_move_tail(&nextTask->tasks, &runQueue);
+    
+    /*TODO: Switch cr3 */
+    /* Do context switch */
+    //current = current->next_task;
+    
+    sys_yield();
+    
+    /*
+     __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
+    __asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
+    __asm__ __volatile__("movq %0, %%rsp"::"b"(task1.saved_kernel_rsp));
+    __asm__ __volatile__("pushq 8(%rip)");
+    __asm__ __volatile__("popq %rax");
+    __asm__ __volatile__("movq %%rax, %0":"=g"(schedule_save)::"memory");
+    __asm__ __volatile__("popq %rdx");
+    __asm__ __volatile__("movq %%rdx, %0":"=g"(schedule_save)::"memory");
+    schedule_save += 0x4;
+    __asm__ __volatile__("jmpq 8(%rip)");
+    __asm__ __volatile__("pushq 8(%rip)");
+    __asm__ __volatile__("movq %%rsp, %0"::"b"(tss.rsp0));
+    __asm__ __volatile__("jmpq *%0"::"b"(current->kernel_stack));
+    __asm__ __volatile__("movq %0, %%rsp"::"m"(schedule_save));
+    */
+    /* move two instrn ahead: 0x80 */
     return;
 }
-/* move two instrn ahead: 0x80 */
 
 void sys_yield() {
     __asm__ __volatile__("pushq %rax");
@@ -71,18 +80,12 @@ void sys_yield() {
     __asm__ __volatile__("pushq %r13");
     __asm__ __volatile__("pushq %r14");
     __asm__ __volatile__("pushq %r15");
-    //__asm__ __volatile__("jmpq 8(%rip)");
     /* Save rip and rsp */
-    //__asm__ __volatile__("pushq 8(%rip)");
-    __asm__ __volatile__("movq %%rsp, %0":"=g"(current->saved_kernel_rsp)::"memory");
-    //__asm__ __volatile__("movq %%rsp, %0"::"b"(tss.rsp0));
+    __asm__ __volatile__("movq %%rsp, %0":"=g"(currentTask->kernel_rsp)::"memory");
     
-    /* Do context switch */
-    current = current->next_task;
-    __asm__ __volatile__("movq %0, %%rsp"::"m"(current->saved_kernel_rsp));
-    //__asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
-
     /*tss.rsp0 Restore values */
+    __asm__ __volatile__("movq %0, %%rsp"::"m"(nextTask->kernel_rsp));
+
     __asm__ __volatile__("popq %r15");
     __asm__ __volatile__("popq %r14");
     __asm__ __volatile__("popq %r13");
@@ -98,8 +101,8 @@ void sys_yield() {
     __asm__ __volatile__("popq %rdx");
     __asm__ __volatile__("popq %rcx");
     __asm__ __volatile__("popq %rax");
-    __asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+    //__asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+	__asm__ __volatile__ ("sti");
     __asm__ __volatile__("retq");
-    return;
 }
 

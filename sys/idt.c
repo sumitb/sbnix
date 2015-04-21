@@ -1,23 +1,17 @@
+/* bkerndev - Bran's Kernel Development Tutorial
+*  By:   Brandon F. (friesenb@gmail.com)
+*  Desc: Interrupt Descriptor Table management
+*
+*  Notes: No warranty expressed or implied. Use at own risk. */
 /*
- * Referenced from osdever.net - Bran's Kernel Dev 
+ * Referenced from osdever.net - Bran's Kernel Dev
  */
-#include<sys/timer.h>
-#include<sys/idt.h>
-#include<sys/defs.h>
-#include<sys/gdt.h>
-#include<stdarg.h>
-#include<sys/tarfs.h>
-#include<sys/process.h>
-#include<sys/syscall.h>
-#include<sys/console.h>
 
-extern void handler_irq0();
-extern void handler_irq1();
-extern void handler_idt13();
-extern void handler_idt14();
-extern void handler_idt80();
-extern void handler_idt128();
-extern void handler_idt126();
+#include <sys/gdt.h>
+#include <sys/irq.h>
+#include <sys/idt.h>
+#include <sys/defs.h>
+#include <sys/timer.h>
 
 /* Defines an IDT entry */
 struct idt_entry
@@ -38,7 +32,12 @@ struct idt_ptr
     unsigned long base;
 } __attribute__((packed));
 
-
+/* Declare an IDT of 256 entries. Although we will only use the
+*  first 32 entries in this tutorial, the rest exists as a bit
+*  of a trap. If any undefined IDT entry is hit, it normally
+*  will cause an "Unhandled Interrupt" exception. Any descriptor
+*  for which the 'presence' bit is cleared (0) will generate an
+*  "Unhandled Interrupt" exception */
 struct idt_entry idt[256];
 struct idt_ptr idtp;
 
@@ -51,35 +50,14 @@ void idt_set_gate(int num, unsigned long base, unsigned short sel, unsigned char
     idt[num].flags=flags;
 }
 
+/* Installs the IDT */
 void reload_idt() {
+    /* Sets the special IDT pointer up, just like in 'gdt.c' */
     idtp.limit=sizeof(struct idt_entry)*256-1;
     idtp.base=(uint64_t) &idt;
 	
-	idt_set_gate(13,(uint64_t) &handler_idt13,0x08,0x8E);
-	idt_set_gate(14,(uint64_t) &handler_idt14,0x08,0x8E);
-    idt_set_gate(32,(uint64_t) &handler_irq0,0x08,0x8E);
-    idt_set_gate(33,(uint64_t) &handler_irq1,0x08,0x8E);
-	idt_set_gate(80,(uint64_t) &handler_idt80,0x08,0xEE);
-	idt_set_gate(126,(uint64_t) &handler_idt128,0x08,0xEE);
-	idt_set_gate(128,(uint64_t) &handler_idt128,0x08,0xEE);
+    irq_install();
+    timer_install();
+    /* Points the processor's internal register to the new IDT */
     __asm__ __volatile__ ("lidt (%0)": :"r" (&idtp));
-}
-volatile int ggd=1;
-void syscall_handler(){
-	uint64_t s_cal_no =0;
-	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
-	
-	switch(s_cal_no){
-		case SYS_read: //sys_read
-			break;
-		case SYS_write: //sys_write
-			break;
-		case SYS_fork:
-				{
-					printk("inside sys_handler\n");
-					while(ggd);
-					pid_t pid = sys_fork();
-					__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
-				}
-	}
 }

@@ -1,6 +1,6 @@
+#include <sys/sched.h>
 #include <sys/memory.h>
 #include <sys/console.h>
-#include <sys/process.h>
 
 void init_memmap(void *physfree){
 	long size=MAX_MEM;
@@ -183,6 +183,52 @@ void page_fault(){
 	*pte=(physical | PAGE_PERM);
 }
 
-void production_fault(){
-	printk("production fault\n");
+static void allocate(uint64_t pml4e_addr,void * addr, int len){
+	uint64_t start;
+   //start address should be round down to 4096
+   if(((uint64_t)addr)%4096 !=0){
+	start = page_roundoff_4096((uint64_t)addr);
+	start=start-4096;
+   }
+   else{
+	   start=(uint64_t)addr;
+   }
+   uint64_t end = page_roundoff_4096((uint64_t)(addr+len));
+   uint64_t p,i;
+   uint64_t cnt=0;
+    
+    for(i=start;i<end;i+=4096,cnt+=4096){
+        if(!(p=mem_allocate()))
+            printk("out of memory\n");
+        else{
+                page_insert((uint64_t *)pml4e_addr,start+cnt, p);
+        }
+    }
+}
+
+vma* allocate_vma(vma *vma_head){
+    vma* tail;
+    if(vma_head == NULL){
+            vma_head=(vma *)(KERN_MEM+mem_allocate());
+            return vma_head;
+        }
+    else{
+        tail=vma_head;
+        while(tail->vm_next!=NULL)
+            tail=tail->vm_next;
+        tail->vm_next=(vma *)(sizeof(vma)+(char *)tail);
+        return tail->vm_next;
+    }
+	return NULL;
+}
+
+void protection_fault() {
+	printk("protection fault\n");
+}
+
+uint64_t *kmalloc(size_t bytes) {
+    /* Do not memset page to 0, as it will affect performance
+     * kernel space is already trusted just rewite on it
+     */
+    return KERN_MEM + (uint64_t *)mem_allocate();
 }

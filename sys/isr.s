@@ -90,7 +90,7 @@ handler_idt13:
     pushq %r13
     pushq %r14
     pushq %r15
-    call production_fault
+    call protection_fault
     popq %r15
     popq %r14
     popq %r13

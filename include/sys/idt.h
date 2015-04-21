@@ -5,9 +5,7 @@
 
 //bool are_interrupts_enabled();
 //void lidt(void* base, uint16_t size);
-void get_entry_idt(uint32_t i,uint64_t target,uint8_t flags);
+void idt_set_gate(int num, unsigned long base, unsigned short sel, unsigned char flags);
 void reload_idt();
 
-
 #endif
-
