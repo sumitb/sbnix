@@ -4,7 +4,7 @@
 #include <sys/memory.h>
 #include <sys/console.h>
 
-void elf_load(struct task *t, char *file_name){
+void elf_load(struct task_struct *t, char *file_name){
 	uint64_t offset = check_file(file_name);
 	if(offset!=0){
 		elf_header *elf = (elf_header *)offset;

@@ -4,7 +4,7 @@
 #include<sys/gdt.h>
 #include<stdarg.h>
 #include<sys/tarfs.h>
-#include<sys/process.h>
+#include<sys/sched.h>
 #include<sys/syscall.h>
 #include<sys/console.h>
 

@@ -5,9 +5,8 @@
 #include <sys/list.h>
 
 #define NR_TASKS    128
-#define ELF_NIDENT	16
 #define USER_STACK_SIZE   512
-#define KERNEL_STACK_SIZE   64
+#define KERNEL_STACK_SIZE   512
 #define NUM_REGISTERS_SAVED 15
 #define STACK_MAGIC 0xdeadbeef
 
@@ -45,7 +44,7 @@ struct task_struct {
     uint16_t pid;
     uint16_t ppid;
     
-    uint64_t *stack;     /* user stack */
+    //uint64_t *stack;     /* user stack */
     uint64_t stack[USER_STACK_SIZE];
     uint64_t kstack[KERNEL_STACK_SIZE];     /* maintain one kernel stack per task */
 
@@ -68,12 +67,14 @@ struct task_struct {
 struct task_struct *currentTask;
 struct task_struct *nextTask;
 
+uint16_t avail_pid;
+
 struct task_struct *initTask(uint64_t entry_point);
 int addTasktoQueue(struct task_struct *task);
 void sys_yield();
 void schedule();
 
-struct run_queue *create_process(char *binary);
+struct task_struct *create_process(char *binary);
 void init_process(uint64_t *stack);
 void allocate(uint64_t pml4e_addr, void * addr, int len);
 vma* allocate_vma(vma *vma_head);

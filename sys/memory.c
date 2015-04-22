@@ -176,14 +176,14 @@ void page_fault(){
 	uint64_t physical;
 	physical=mem_allocate();
 	__asm__ __volatile__ ("movq %%cr2, %0" : "=r"(logical));
-	pml4e_addr=(uint64_t *)running_proc->process.pml4e_addr;
+	pml4e_addr=(uint64_t *)currentTask->pml4e_addr;
 	pte=walk_pages(pml4e_addr,logical);
 	if(*pte & PAGE_PRESENT)
 		mem_free(*pte);
 	*pte=(physical | PAGE_PERM);
 }
 
-static void allocate(uint64_t pml4e_addr,void * addr, int len){
+void allocate(uint64_t pml4e_addr,void * addr, int len){
 	uint64_t start;
    //start address should be round down to 4096
    if(((uint64_t)addr)%4096 !=0){

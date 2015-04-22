@@ -5,7 +5,6 @@
 #include <sys/timer.h>
 #include <sys/memory.h>
 #include <sys/tarfs.h>
-#include <sys/process.h>
 #include <sys/console.h>
 volatile int dbg = 1;
 

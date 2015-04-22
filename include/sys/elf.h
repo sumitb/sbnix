@@ -2,6 +2,10 @@
 #define __ELF_H
 
 #include <sys/defs.h>
+#include <sys/sched.h>
+
+#define ELF_NIDENT	16
+
 typedef struct {
         uint8_t       e_ident[ELF_NIDENT];
         uint16_t      e_type;
@@ -44,5 +48,5 @@ typedef struct {
 	uint32_t	sh_entsize;
 } Elf64_Shdr;
 */
-void elf_load(struct task *t, char *file_name);
+void elf_load(struct task_struct *t, char *file_name);
 #endif
