@@ -7,6 +7,9 @@
 
 extern void outportb(uint16_t port, uint8_t val);
 extern uint8_t inportb(uint16_t port);
+char kbuffer[512];
+int count=0;
+bool flag=false;
 
 unsigned char keyborard_character_set_normal[128] =
 {
@@ -140,3 +143,31 @@ void kb_handler()
 	outportb(0x20, 0x20);
 }
 
+/*
+
+int read(int fildes,void *buf,int nbyte){
+    int i=0;
+    Flag=true;
+    count=0;
+    
+    for(i=0;i<512;i++)
+        kbuffer[i]='\0';
+    while(Flag);
+    for(i=0;i<512;i++)
+        buf[i]='\0';
+        
+    kbuffer[count] = '\0';
+    strcpy(buf,kbuffer);
+
+    for(i=0;i<512;i++)
+        kbuffer[i]='\0';
+
+    return count;
+}
+
+
+
+
+
+
+*/
