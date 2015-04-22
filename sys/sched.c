@@ -13,6 +13,10 @@ void start_task() {
 }
 */
 
+struct task_struct *getCurrentTask() {
+    return list_entry(runQueue.prev, struct task_struct, tasks);
+}
+
 int addTasktoQueue(struct task_struct *task) {
     if(num_task + 1 > NR_TASKS)
         return -1;
@@ -39,6 +43,7 @@ void schedule() {
     list_move_tail(&nextTask->tasks, &runQueue);
     
     /*TODO: Switch cr3 */
+	__asm __volatile("movq %0, %%cr3":: "a"(currentTask->cr3_address));
     /* Do context switch */
     //current = current->next_task;
     
@@ -101,7 +106,8 @@ void sys_yield() {
     __asm__ __volatile__("popq %rdx");
     __asm__ __volatile__("popq %rcx");
     __asm__ __volatile__("popq %rax");
-    //__asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+    __asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+    __asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
 	__asm__ __volatile__ ("sti");
     __asm__ __volatile__("retq");
 }

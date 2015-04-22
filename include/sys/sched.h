@@ -71,6 +71,7 @@ uint16_t avail_pid;
 
 struct task_struct *initTask(uint64_t entry_point);
 int addTasktoQueue(struct task_struct *task);
+struct task_struct *getCurrentTask();
 void sys_yield();
 void schedule();
 

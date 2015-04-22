@@ -2,7 +2,6 @@
 #include <sys/tarfs.h>
 #include <sys/sched.h>
 #include <sys/memory.h>
-#include <sys/console.h>
 
 void elf_load(struct task_struct *t, char *file_name){
 	uint64_t offset = check_file(file_name);
@@ -17,7 +16,7 @@ void elf_load(struct task_struct *t, char *file_name){
 				__asm __volatile("movq %0,%%cr3" : : "r" (t->cr3_address));
 				memset((char*) ph1->p_vaddr,0,ph1->p_memsz);
 				memcpy((char *) ph1->p_vaddr, (void *) elf + ph1->p_offset, ph1->p_filesz);
-				__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));       
+				__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 				vma *vm = allocate_vma(&(t->mm->vma_addr));
 				vm->vm_start = ph1->p_vaddr;
 				vm->vm_end = ph1->p_vaddr + ph1->p_memsz;
