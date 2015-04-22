@@ -5,8 +5,8 @@
 #include <sys/memory.h>
 #include <sys/console.h>
 
+volatile int gdb=0;
 //static uint64_t avail_pid = 0;
-struct task_struct task1, task2, task3, task4;
 
 uint64_t getCR3() {
     uint64_t cr3_addr = 0;
@@ -36,15 +36,11 @@ struct task_struct* initTask(uint64_t entry_point) {
     /* Allocate memory for a new task_struct */
     /* TODO: kmalloc issue */
     //struct task_struct* task = (struct task_struct*)kmalloc(sizeof(struct task_struct));
-    struct task_struct* task;
-    if(avail_pid == 0)
-        task = &task1;
-    else if(avail_pid == 1)
-        task = &task2;
-    else if(avail_pid == 2)
-        task = &task3;
-    else
-        task = &task4;
+    struct task_struct *task = (struct task_struct *)(KERN_MEM + mem_allocate());
+    //allocate 3 pages for process struct, change this later
+	mem_allocate();
+	mem_allocate();
+    
     task->pid = ++avail_pid;
     task->state = 0;
     task->parent = NULL;
@@ -66,7 +62,6 @@ struct task_struct* initTask(uint64_t entry_point) {
     return task;
 }
 
-volatile int gdb=0;
 
 struct task_struct *create_process(char *binary){
 	uint64_t *page_addr;
@@ -85,7 +80,7 @@ struct task_struct *create_process(char *binary){
 	pml4e_pr[511]=pml4e[511];
 	
 	process->cr3_address=(uint64_t)page_addr;
-	process->pid=avail_pid++;
+	process->pid=++avail_pid;
 	process->pml4e_addr=(uint64_t)pml4e_pr;
 	
 	process->mm=(struct mm_struct *)(KERN_MEM + mem_allocate());
@@ -103,20 +98,21 @@ struct task_struct *create_process(char *binary){
     //proc->process->kstack[491] = (uint64_t)(&irq0+34);
     process->kernel_rsp = (uint64_t *)&process->kstack[42];
 
-    process->kstack[63] = 0x23 ;                              //SS    
+    process->kstack[63] = 0x23 ;                              //SS
     process->kstack[62] = (uint64_t)(&process->stack[63]);      //  ESP
     process->kstack[61] = 0x246;                           // EFLAGS
     process->kstack[60] = 0x1b ;                           //CS
     
-    elf_load(process, binary);	
+    elf_load(process, binary);
     //process->heap_vma->vm_end = process->heap_vma->vm_start;
     process->kstack[59] = (uint64_t)process->entry_pt;  //RIP
     //asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 	return process;
 }
 
-void init_process(uint64_t *stack){
-	struct task_struct *process = create_process("bin/hello");
+void init_process(uint64_t *stack)
+{
+	struct task_struct *process = getCurrentTask();
 	
     while(gdb);
 	__asm __volatile("movq %0, %%cr3":: "a"(process->cr3_address));
@@ -126,7 +122,7 @@ void init_process(uint64_t *stack){
             :
             :"r"(process->kernel_rsp)
     );
-	tss.rsp0 = (uint64_t)&(process->stack[63]);
+	tss.rsp0 = (uint64_t)&(process->kstack[63]);
 	__asm__ __volatile__("popq %r15");
 	__asm__ __volatile__("popq %r14");
 	__asm__ __volatile__("popq %r13");
@@ -149,4 +145,3 @@ void init_process(uint64_t *stack){
 	__asm__ __volatile__ ("add $8, %rsp");
 	__asm__ __volatile__("iretq");
 }
-

@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 1;
+volatile int dbg = 0;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -64,17 +64,20 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
      * Call sys_yield
      */
 
-    //create_process("bin/sbush");
-	//init_process((uint64_t *)stack);
-    //create_process("sbush");
     //__asm volatile("callq handler_irq0");
 	while(dbg);
+    /*
     addTasktoQueue(initTask((uint64_t)&foo));
     addTasktoQueue(initTask((uint64_t)&bar));
     addTasktoQueue(initTask((uint64_t)&baz));
     addTasktoQueue(initTask((uint64_t)&qux));
+    */
+    addTasktoQueue(create_process("bin/foo"));
+    addTasktoQueue(create_process("bin/bar"));
+    addTasktoQueue(create_process("bin/baz"));
+    addTasktoQueue(create_process("bin/qux"));
 	/* Moiz: User process init */
-    init_process((uint64_t *)stack);
+	init_process((uint64_t *)stack);
     schedule();
     /*
     init_tasks();
