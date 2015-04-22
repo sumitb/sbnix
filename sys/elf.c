@@ -18,7 +18,7 @@ void elf_load(struct task_struct *t, char *file_name){
 				memset((char*) ph1->p_vaddr,0,ph1->p_memsz);
 				memcpy((char *) ph1->p_vaddr, (void *) elf + ph1->p_offset, ph1->p_filesz);
 				__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));       
-				vma *vm = allocate_vma(t->mm->vma_addr);
+				vma *vm = allocate_vma(&(t->mm->vma_addr));
 				vm->vm_start = ph1->p_vaddr;
 				vm->vm_end = ph1->p_vaddr + ph1->p_memsz;
 				vm->vm_mmsz=ph1->p_memsz;

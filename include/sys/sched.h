@@ -5,8 +5,8 @@
 #include <sys/list.h>
 
 #define NR_TASKS    128
-#define USER_STACK_SIZE   512
-#define KERNEL_STACK_SIZE   512
+#define USER_STACK_SIZE   64
+#define KERNEL_STACK_SIZE   64
 #define NUM_REGISTERS_SAVED 15
 #define STACK_MAGIC 0xdeadbeef
 
@@ -77,7 +77,7 @@ void schedule();
 struct task_struct *create_process(char *binary);
 void init_process(uint64_t *stack);
 void allocate(uint64_t pml4e_addr, void * addr, int len);
-vma* allocate_vma(vma *vma_head);
+vma* allocate_vma(vma **vma_head);
 void initialize_thread();
 uint16_t sys_fork();
 #endif

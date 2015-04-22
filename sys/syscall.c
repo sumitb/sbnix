@@ -20,7 +20,7 @@ void syscall_handler(){
 			break;
 		case SYS_fork:
 				{
-					printk("inside sys_handler\n");
+					//printk("inside sys_handler\n");
 					while(ggd);
 					pid_t pid = sys_fork();
 					__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");

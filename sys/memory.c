@@ -206,14 +206,14 @@ void allocate(uint64_t pml4e_addr,void * addr, int len){
     }
 }
 
-vma* allocate_vma(vma *vma_head){
+vma* allocate_vma(vma **vma_head){
     vma* tail;
-    if(vma_head == NULL){
-            vma_head=(vma *)(KERN_MEM+mem_allocate());
-            return vma_head;
+    if(*vma_head == NULL){
+            *vma_head=(vma *)(KERN_MEM+mem_allocate());
+            return *vma_head;
         }
     else{
-        tail=vma_head;
+        tail=*vma_head;
         while(tail->vm_next!=NULL)
             tail=tail->vm_next;
         tail->vm_next=(vma *)(sizeof(vma)+(char *)tail);
