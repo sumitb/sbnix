@@ -143,7 +143,6 @@ handler_idt14:
     iretq
 
 handler_idt80:
-	pushq %rax
     pushq %rbx
     pushq %rcx
     pushq %rdx
@@ -174,7 +173,6 @@ handler_idt80:
     popq %rdx
     popq %rcx
     popq %rbx
-    popq %rax
 	iretq
 
 handler_idt126:

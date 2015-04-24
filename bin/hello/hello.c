@@ -117,6 +117,11 @@ int main(int argc, char* argv[], char* envp[])
                         *((char*)0xffffffff80000000+0xb8000)=67;
                         *((char*)0xffffffff80000000+0xb8001)=0x07;
                 }
+		else 
+                {
+                        *((char*)0xffffffff80000000+0xb8000)=68;
+                        *((char*)0xffffffff80000000+0xb8001)=0x07;
+                }
 
     while(1);
     printk("Hello World 13 Apr\n");

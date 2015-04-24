@@ -19,12 +19,18 @@ void syscall_handler(){
 		case SYS_write: //sys_write
 			break;
 		case SYS_fork:
-				{
-					//printk("inside sys_handler\n");
-					while(ggd);
-					pid_t pid = sys_fork();
-					__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
-				}
+		{
+			//printk("inside sys_handler\n");
+			while(ggd);
+			pid_t pid = sys_fork();
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
+			break;
+		}
+		case SYS_exit:
+		{
+			uint64_t status;
+            __asm__ __volatile__("movq %%rbx, %0;" :"=b"(status):);
+		}
 	}
 }
 

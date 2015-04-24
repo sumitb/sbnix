@@ -71,11 +71,11 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     //create_process("sbush");
     //__asm volatile("callq handler_irq0");
 	while(dbg);
-    addTasktoQueue(initTask((uint64_t)&foo));
+   /* addTasktoQueue(initTask((uint64_t)&foo));
     addTasktoQueue(initTask((uint64_t)&bar));
     addTasktoQueue(initTask((uint64_t)&baz));
     addTasktoQueue(initTask((uint64_t)&qux));
-	/* Moiz: User process init */
+*/	/* Moiz: User process init */
     init_process((uint64_t *)stack);
     schedule();
     /*
