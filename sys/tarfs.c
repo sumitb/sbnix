@@ -30,7 +30,7 @@ void tarfs_initialize(){
 }
 
 
-uint64_t check_file(char *file_name){
+uint64_t check_file(const char *file_name){
 	int ind=0;
 	for(ind=0;ind<MAX_BIN;ind++){
 	if(strcmp(file_name,tarfs_ind[ind].name)==0){

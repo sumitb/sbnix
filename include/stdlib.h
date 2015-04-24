@@ -25,6 +25,7 @@ pid_t fork(void);
 pid_t getpid(void);
 pid_t getppid(void);
 int execve(const char *filename, char *const argv[], char *const envp[]);
+//int execve(char *filename);
 pid_t waitpid(pid_t pid, int *status, int options);
 unsigned int sleep(unsigned int seconds);
 unsigned int alarm(unsigned int seconds);

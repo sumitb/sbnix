@@ -28,3 +28,83 @@ void syscall_handler(){
 	}
 }
 
+
+void irq2(){
+printk("handler for hardware interrupt 2 \n");
+}
+
+void irq3(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq4(){
+printk("handler for hardware interrupt  \n");
+}
+
+void irq5(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq6(){
+printk("handler for hardware interrupt  \n");
+}
+
+void irq7(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq8(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq9(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq10(){
+printk("handler for hardware interrupt \n");
+}
+
+
+void irq11(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq12(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq13(){
+printk("handler for hardware interrupt \n");
+}
+
+
+void irq14(){
+printk("handler for hardware interrupt \n");
+}
+
+void irq15(){
+printk("handler for hardware interrupt \n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
