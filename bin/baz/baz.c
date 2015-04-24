@@ -5,10 +5,10 @@
 int main(int argc, char* argv[], char* envp[])
 {
     write(1, "3\0", 1);
-    /*
     while(1) {
         write(1, "Demon\n\0", 6);
     }
+    /*
     int cnt=0;
     *((char*)addr + cnt++)=51;
     *((char*)addr + cnt++)=0x07;
