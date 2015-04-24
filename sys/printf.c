@@ -4,11 +4,15 @@
 
 #define A_VIDEO (char*)KERN_MEM+0xb8000
 #define intSize     20      // We don't expect any number to be greater than 2^64
-
 //GLOBALS
 //char *av_vid = A_VIDEO;       // Current addr of video buffer
 int csr_x = 0, csr_y = 0;     // Current cursor position
+<<<<<<< HEAD
 void scroll();
+=======
+void window_scroll();
+int* buffer[4096];
+>>>>>>> eeffdabf202093a8cd0795f767815e538237cad6
 /*
  * value of a_vid = 0xb80000
  * increment it by 1 byte
@@ -66,7 +70,7 @@ void c_printf(char ch) {
     else if(ch == '\n') {
         csr_x = 0;
         csr_y++;
-        if(csr_y >= 20)
+        if(csr_y>=20)
             window_scroll();
     }
     else if(ch == '\t') {
@@ -89,7 +93,7 @@ void c_printf(char ch) {
         if(csr_x >= 80) {
             csr_x = 0;
             csr_y++;
-            if(csr_y >= 20)
+            if(csr_y>=20)
                 window_scroll();
         }
         else
@@ -232,3 +236,87 @@ void scroll(){
 	csr_y=19;	
 	
 }
+int write(int fildes, char *buf, int size){
+
+if(fildes==1||fildes==2){
+    int i=0;
+    for(i=0;i<size;i++){
+        if(buf[i]!='\0')
+            c_printf(buf[i]);
+        else
+            break;   
+    }
+
+    return i+1;
+}
+else
+    return -1;
+
+}
+
+/*
+void window_scroll(){
+    char *av_vid = A_VIDEO;
+    for(int i=80;i<(20*80);i++){
+        *av_vid=*(av_vid+160);
+        av_vid++;
+       *av_vid = 0x07;
+         av_vid++;
+     } 
+
+for(int j=0;j<80;j++){
+    
+    *av_vid=' ';
+    av_vid++;
+    *av_vid=0x07;
+    av_vid++;
+}
+    csr_x=0;
+    csr_y=19;
+
+}
+
+void window_scroll(){
+    char *av_vid=A_VIDEO;
+    int a=0;
+    int b=0;
+
+    for(int i=1;i<25;i++){
+        for(int j=0;j<80;j++){
+            a=(((i-1)*80)+j)*2;
+            b=((i*80)+j)*2;
+            av_vid[a++]=av_vid[b++];
+            av_vid[a]=av_vid[b];
+        
+        }
+    }
+
+    csr_x=0;
+
+}
+*/
+/*
+void window_scroll(){
+ //   char *new=A_VIDEO;
+    char *old=A_VIDEO;
+    
+    int i = 0;
+    int j=0;
+    for(i=0; i<4096; i++) {
+            buffer[i] = 0;
+        }
+    for(i=0;i<=79*19*2;i++){
+            buffer[i] = atoi((old[i]));
+        }
+    for(i=80,j=0;i<=79*19*2;i++,j++){
+            *(old+j) =(char *) buffer[i];
+        }
+    for(i=0;i<80;i++){
+      *old=' ';
+      old++;
+      *old=0x07;
+      old++;
+            
+    }
+    csr_x=0;
+        }*/

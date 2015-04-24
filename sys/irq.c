@@ -33,6 +33,20 @@ extern void irq15();
 */
 extern void handler_irq0();
 extern void handler_irq1();
+extern void handler_irq2();
+extern void handler_irq3();
+extern void handler_irq4();
+extern void handler_irq5();
+extern void handler_irq6();
+extern void handler_irq7();
+extern void handler_irq8();
+extern void handler_irq9();
+extern void handler_irq10();
+extern void handler_irq11();
+extern void handler_irq12();
+extern void handler_irq13();
+extern void handler_irq14();
+extern void handler_irq15();
 extern void handler_idt13();
 extern void handler_idt14();
 extern void handler_idt80();
@@ -91,6 +105,20 @@ void irq_install()
 
     idt_set_gate(32, (uint64_t) &handler_irq0, 0x08, 0x8E);
     idt_set_gate(33, (uint64_t) &handler_irq1, 0x08, 0x8E);
+    idt_set_gate(34, (uint64_t) &handler_irq2, 0x08, 0x8E);
+    idt_set_gate(35, (uint64_t) &handler_irq3, 0x08, 0x8E);
+    idt_set_gate(36, (uint64_t) &handler_irq4, 0x08, 0x8E);
+    idt_set_gate(37, (uint64_t) &handler_irq5, 0x08, 0x8E);
+    idt_set_gate(38, (uint64_t) &handler_irq6, 0x08, 0x8E);
+    idt_set_gate(39, (uint64_t) &handler_irq7, 0x08, 0x8E);
+    idt_set_gate(40, (uint64_t) &handler_irq8, 0x08, 0x8E);
+    idt_set_gate(41, (uint64_t) &handler_irq9, 0x08, 0x8E);
+    idt_set_gate(42, (uint64_t) &handler_irq10, 0x08, 0x8E);
+    idt_set_gate(43, (uint64_t) &handler_irq11, 0x08, 0x8E);
+    idt_set_gate(44, (uint64_t) &handler_irq12, 0x08, 0x8E);
+    idt_set_gate(45, (uint64_t) &handler_irq13, 0x08, 0x8E);
+    idt_set_gate(46, (uint64_t) &handler_irq14, 0x08, 0x8E);
+    idt_set_gate(47, (uint64_t) &handler_irq15, 0x08, 0x8E);
 	
     idt_set_gate(13, (uint64_t) &handler_idt13, 0x08, 0x8E);
 	idt_set_gate(14, (uint64_t) &handler_idt14, 0x08, 0x8E);

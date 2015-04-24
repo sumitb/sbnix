@@ -3,7 +3,10 @@
 
 #include <sys/defs.h>
 
+<<<<<<< HEAD
 int printk(const char *fmt, ...);
+//void printk(const char *fmt, ...);
+//void window_scroll();
 int getcsr_x();
 int getcsr_y();
 void gotoxy(int x, int y);

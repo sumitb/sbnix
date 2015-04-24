@@ -7,6 +7,8 @@ extern __thread int errno;
 
 void exit(int status);
 
+int global_fd;    //  directory
+int file_fd;     
 typedef uint64_t ssize_t;
 typedef uint64_t size_t;
 typedef uint32_t pid_t;
@@ -23,6 +25,7 @@ pid_t fork(void);
 pid_t getpid(void);
 pid_t getppid(void);
 int execve(const char *filename, char *const argv[], char *const envp[]);
+//int execve(char *filename);
 pid_t waitpid(pid_t pid, int *status, int options);
 unsigned int sleep(unsigned int seconds);
 unsigned int alarm(unsigned int seconds);
@@ -47,18 +50,37 @@ int dup2(int oldfd, int newfd);
 
 // directories
 #define NAME_MAX 255
-struct dirent {
-	long d_ino;
-	off_t d_off;
+typedef struct dirent {
+	long d_ino;      
+	off_t d_off;        //offset of all the files
 	unsigned short d_reclen;
-	char d_name [NAME_MAX+1];
-};
+	char d_name [NAME_MAX+1];  //name of all files
+}__attribute__((packed)) dirent;
 struct opdir {
 	int fd;
 	long size;
 	long offset;
 	char *buffer;
+    char dir_name[NAME_MAX+1];
+    int status;
+    dirent curdirent;
 };
+
+
+typedef struct dir{
+    char dir_name[NAME_MAX+1];
+    dirent curdirent;
+    int set;
+  }__attribute__((packed))direct;
+
+struct File{
+    char *path;
+    dirent directory;
+    uint64_t offset;
+    int flags;
+}__attribute__((packed))fd[200];
+
+
 typedef struct opdir DIR;
 void *opendir(const char *name);
 struct dirent *readdir(void *dir);

@@ -76,7 +76,7 @@ struct task_struct *getCurrentTask();
 void sys_yield();
 void schedule();
 
-struct task_struct *create_process(char *binary);
+struct task_struct *create_process(const char *binary);
 void init_process(uint64_t *stack);
 void allocate(uint64_t pml4e_addr, void * addr, int len);
 vma* allocate_vma(vma **vma_head);

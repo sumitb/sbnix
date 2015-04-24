@@ -4,6 +4,7 @@
 #include <sys/sched.h>
 #include <sys/memory.h>
 #include <sys/console.h>
+#include<stdlib.h>
 
 volatile int gdb=0;
 //static uint64_t avail_pid = 0;
@@ -63,7 +64,7 @@ struct task_struct* initTask(uint64_t entry_point) {
 }
 
 
-struct task_struct *create_process(char *binary){
+struct task_struct *create_process(const char *binary){
 	uint64_t *page_addr;
 	uint64_t *pml4e_pr;
 	
@@ -152,4 +153,17 @@ void init_process(uint64_t *stack)
 	__asm__ __volatile__ ("add $8, %rsp");
 	__asm__ __volatile__ ("add $8, %rsp");
 	__asm__ __volatile__("iretq");
+}
+
+
+int execve(const char *filename,char *const argv[],char *const envp[]){
+    elf_header* elf=(elf_header *)filename;
+    if(elf->e_ident[1]=='E' && elf->e_ident[2]=='L' && elf->e_ident[3]=='F'){
+        struct task_struct *task=create_process(filename);
+        addTasktoQueue(task);     
+        return 0;    
+    }
+    else
+        return -1;
+    
 }

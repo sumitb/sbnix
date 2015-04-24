@@ -39,6 +39,6 @@ struct tarfs {
 	}__attribute__((packed))tarfs_ind[MAX_BIN];
 
 void tarfs_initialize();
-uint64_t check_file(char *file_name);
+uint64_t check_file(const char *file_name);
 
 #endif
