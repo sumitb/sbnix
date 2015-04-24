@@ -33,6 +33,26 @@ void gotoxy(int x, int y) {
     return;
 }
 
+void window_scroll() {
+    char *av_vid = A_VIDEO;
+
+    for(int i=80; i<(20*80); i++) {
+        *av_vid = *(av_vid+160);
+        av_vid++;
+        *av_vid = 0x07;
+        av_vid++;
+    }
+
+    for(int j=0;j<80;j++) {
+        *av_vid = ' ';
+        av_vid++;
+        *av_vid = 0x07;
+        av_vid++;
+    }
+    csr_x = 0;
+    csr_y = 19;
+}
+
 /* Print a single char to video buffer */
 void c_printf(char ch) {
     int offset = 0;
@@ -46,6 +66,8 @@ void c_printf(char ch) {
     else if(ch == '\n') {
         csr_x = 0;
         csr_y++;
+        if(csr_y >= 20)
+            window_scroll();
     }
     else if(ch == '\t') {
         csr_x += 8;
@@ -67,6 +89,8 @@ void c_printf(char ch) {
         if(csr_x >= 80) {
             csr_x = 0;
             csr_y++;
+            if(csr_y >= 20)
+                window_scroll();
         }
         else
             csr_x++;
