@@ -8,7 +8,7 @@
 //GLOBALS
 //char *av_vid = A_VIDEO;       // Current addr of video buffer
 int csr_x = 0, csr_y = 0;     // Current cursor position
-
+void scroll();
 /*
  * value of a_vid = 0xb80000
  * increment it by 1 byte
@@ -46,6 +46,8 @@ void c_printf(char ch) {
     else if(ch == '\n') {
         csr_x = 0;
         csr_y++;
+		if(csr_y>=20)
+			scroll();
     }
     else if(ch == '\t') {
         csr_x += 8;
@@ -67,6 +69,8 @@ void c_printf(char ch) {
         if(csr_x >= 80) {
             csr_x = 0;
             csr_y++;
+			if(csr_y>=20)
+				scroll();
         }
         else
             csr_x++;
@@ -188,3 +192,23 @@ int printk(const char *format, ...) {
 	return printed;
 }
 
+void scroll(){
+	//char *old=A_VIDEO;
+	char *new=A_VIDEO;
+	for(int i=80;i<(20*80);i++){
+		*new=*(new+160);
+		new++;
+		*new=0x07;
+		new++;
+	}
+	for(int j=0;j<=80;j++){
+		*new=' ';
+		new++;
+		*new=0x07;
+		new++;
+	}
+	
+	csr_x=0;
+	csr_y=19;	
+	
+}

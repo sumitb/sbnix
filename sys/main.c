@@ -63,7 +63,9 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
      * Debug: Print task run queue
      * Call sys_yield
      */
-
+//	int i=0;
+//	for(i=0; i<1500000;i++)
+//		printk("%d\n",i);
     //create_process("bin/sbush");
 	//init_process((uint64_t *)stack);
     //create_process("sbush");

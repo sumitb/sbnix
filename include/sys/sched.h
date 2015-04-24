@@ -5,7 +5,7 @@
 #include <sys/list.h>
 
 #define NR_TASKS    128
-#define USER_STACK_SIZE   64
+#define USER_STACK_SIZE   512
 #define KERNEL_STACK_SIZE   64
 #define NUM_REGISTERS_SAVED 15
 #define STACK_MAGIC 0xdeadbeef
@@ -66,6 +66,7 @@ struct task_struct {
 //struct task_struct *task[NR_TASKS];
 struct task_struct *currentTask;
 struct task_struct *nextTask;
+struct task_struct *runningTask;
 
 uint16_t avail_pid;
 
