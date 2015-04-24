@@ -131,9 +131,13 @@ uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 
 void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t phys, uint64_t sz){
 	uint64_t *pte;
-	uint64_t vir_addr = page_roundless_4096(logical);
-	uint64_t physical = page_roundless_4096(phys);
-	uint64_t size = page_roundoff_4096(sz);
+	uint64_t vir_addr;
+	uint64_t physical;
+	uint64_t size;
+	
+	vir_addr = page_roundless_4096(logical);
+	physical = page_roundless_4096(phys);
+	size = page_roundoff_4096(sz);
 	
 	if(vir_addr){
 		int i=0,j=0;

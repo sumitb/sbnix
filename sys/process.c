@@ -68,10 +68,17 @@ struct task_struct *create_process(char *binary){
 	uint64_t *pml4e_pr;
 	
     struct task_struct *process = (struct task_struct *)(KERN_MEM + mem_allocate());
-    //allocate 3 pages for process struct, change this later
+    //allocate 10 pages for process struct, change this later
 	mem_allocate();
 	mem_allocate();
-	memset((void *)process,'\0',3*4096);
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	memset((void *)process,'\0',10*4096);
 	
     page_addr=(uint64_t *)mem_allocate();
 	pml4e_pr=(uint64_t *)((uint64_t)page_addr + KERN_MEM);
@@ -107,6 +114,7 @@ struct task_struct *create_process(char *binary){
     //process->heap_vma->vm_end = process->heap_vma->vm_start;
     process->kstack[59] = (uint64_t)process->entry_pt;  //RIP
     //asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
+	runningTask=process;
 	return process;
 }
 
