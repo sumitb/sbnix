@@ -89,13 +89,8 @@ void c_printf(char ch) {
         if(csr_x >= 80) {
             csr_x = 0;
             csr_y++;
-<<<<<<< HEAD
             if(csr_y >= 20)
                 window_scroll();
-=======
-			if(csr_y>=20)
-				scroll();
->>>>>>> 88d6f593bb650b6ece4f4c2cd6ea9eba31453648
         }
         else
             csr_x++;
