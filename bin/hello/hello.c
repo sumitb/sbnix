@@ -106,7 +106,8 @@ int main(int argc, char* argv[], char* envp[])
 //    listdir("/");
 	*((char*)0xffffffff80000000+0xb8000)=65;
 	*((char*)0xffffffff80000000+0xb8001)=0x07;
-	pid_t pid = fork();
+    write(1, "ABCD\0", 2);
+    pid_t pid = fork();
 		if(pid>0)
 		{
 		        *((char*)0xffffffff80000000+0xb8000)=66;

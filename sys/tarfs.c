@@ -1,7 +1,6 @@
 #include <sys/console.h>
 #include <sys/tarfs.h>
 #include <sys/memory.h>
-#include <string.h>
 
 void tarfs_initialize(){
 	struct posix_header_ustar *tarfs_str;

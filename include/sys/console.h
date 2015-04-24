@@ -3,7 +3,7 @@
 
 #include <sys/defs.h>
 
-void printk(const char *fmt, ...);
+int printk(const char *fmt, ...);
 int getcsr_x();
 int getcsr_y();
 void gotoxy(int x, int y);
