@@ -7,12 +7,9 @@
 //GLOBALS
 //char *av_vid = A_VIDEO;       // Current addr of video buffer
 int csr_x = 0, csr_y = 0;     // Current cursor position
-<<<<<<< HEAD
 void scroll();
-=======
-void window_scroll();
-int* buffer[4096];
->>>>>>> eeffdabf202093a8cd0795f767815e538237cad6
+//void window_scroll();
+//int* buffer[4096];
 /*
  * value of a_vid = 0xb80000
  * increment it by 1 byte

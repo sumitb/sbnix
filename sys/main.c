@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 0;
+volatile int dbg = 1;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -71,6 +71,9 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     addTasktoQueue(initTask((uint64_t)&baz));
     addTasktoQueue(initTask((uint64_t)&qux));
 */	/* Moiz: User process init */
+	struct task_struct *task=create_process("bin/hello");
+        addTasktoQueue(task);
+
     init_process((uint64_t *)stack);
     schedule();
     printk("Die Kernel");

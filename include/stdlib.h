@@ -35,21 +35,9 @@ char *getcwd(char *buf, size_t size);
 int chdir(const char *path);
 
 // files
-
-enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000 };
-int open(const char *pathname, int flags);
-ssize_t read(int fd, void *buf, size_t count);
-ssize_t write(int fd, const void *buf, size_t count);
-enum { SEEK_SET = 0, SEEK_CUR = 1, SEEK_END = 2 };
-typedef uint64_t off_t;
-off_t lseek(int fildes, off_t offset, int whence);
-int close(int fd);
-int pipe(int filedes[2]);
-int dup(int oldfd);
-int dup2(int oldfd, int newfd);
-
-// directories
 #define NAME_MAX 255
+typedef uint64_t off_t;
+
 typedef struct dirent {
 	long d_ino;      
 	off_t d_off;        //offset of all the files
@@ -65,8 +53,6 @@ struct opdir {
     int status;
     dirent curdirent;
 };
-
-
 typedef struct dir{
     char dir_name[NAME_MAX+1];
     dirent curdirent;
@@ -74,11 +60,27 @@ typedef struct dir{
   }__attribute__((packed))direct;
 
 struct File{
-    char *path;
+    char path[32];
     dirent directory;
     uint64_t offset;
     int flags;
 }__attribute__((packed))fd[200];
+
+enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000 };
+int open(const char *pathname, int flags);
+ssize_t read(int fd, void *buf, size_t count);
+ssize_t write(int fd, const void *buf, size_t count);
+enum { SEEK_SET = 0, SEEK_CUR = 1, SEEK_END = 2 };
+off_t lseek(int fildes, off_t offset, int whence);
+int close(int fd);
+int pipe(int filedes[2]);
+int dup(int oldfd);
+int dup2(int oldfd, int newfd);
+
+// directories
+
+
+
 
 
 typedef struct opdir DIR;

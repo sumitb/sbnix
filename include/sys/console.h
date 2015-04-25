@@ -3,7 +3,6 @@
 
 #include <sys/defs.h>
 
-<<<<<<< HEAD
 int printk(const char *fmt, ...);
 //void printk(const char *fmt, ...);
 //void window_scroll();

@@ -1,14 +1,21 @@
 #include <stdlib.h>
+#include <string.h>
 #include <sys/defs.h>
 #include <sys/sched.h>
+#include <sys/tarfs.h>
 #include <sys/syscall.h>
 #include <sys/console.h>
 
 volatile int ggd=1;
 
-int64_t sys_write(int fildes, char *buf, int size) {
-    ((char*)(buf))[size] = '\0';
-    return printk(buf);
+
+int64_t sys_write(uint64_t fildes, const char *buf, uint64_t size) {
+
+    char tem_buf[size];
+    strncpy(tem_buf,buf,size);
+    tem_buf[size] = '\0';
+    return printk(tem_buf);
+
     /*if(fildes==1 || fildes==2) {
     }
     return -1;
@@ -18,16 +25,23 @@ int64_t sys_write(int fildes, char *buf, int size) {
 void syscall_handler(){
 	uint64_t s_cal_no, param_1, param_2, param_3;
 	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
-	__asm__ __volatile__("movq %%rdi, %0;":"=a"(param_1):);
+//	__asm__ __volatile__("movq %%rdi, %0;":"=a"(param_1):);
 	__asm__ __volatile__("movq %%rsi, %0;":"=a"(param_2):);
+	__asm__ __volatile__("movq %%rbx, %0;":"=a"(param_1):);
+//	__asm__ __volatile__("movq %%rcx, %0;":"=a"(param_2):);
 	__asm__ __volatile__("movq %%rdx, %0;":"=a"(param_3):);
 	
 	switch(s_cal_no){
 		case SYS_read: //sys_read
+		{
 			break;
+		}
 		case SYS_write: //sys_write
-            sys_write((int)param_1, (char*)param_2, (int)param_3);
-            break;
+		{
+			while(ggd);	
+            		sys_write((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
+            		break;
+		}
 		case SYS_fork:
 		{
 			//printk("inside sys_handler\n");
@@ -39,7 +53,17 @@ void syscall_handler(){
 		case SYS_exit:
 		{
 			uint64_t status;
-            __asm__ __volatile__("movq %%rbx, %0;" :"=b"(status):);
+        		__asm__ __volatile__("movq %%rbx, %0;" :"=b"(status):);
+			//TODO call exit	
+			break;
+		}
+		case SYS_open:
+		{
+			uint16_t fd;
+			while(ggd);
+			fd = sys_open((const char *)param_1, (int)param_2);
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
+                        break;
 		}
 	}
 }

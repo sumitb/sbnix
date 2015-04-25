@@ -106,7 +106,7 @@ int main(int argc, char* argv[], char* envp[])
 //    listdir("/");
 	*((char*)0xffffffff80000000+0xb8000)=65;
 	*((char*)0xffffffff80000000+0xb8001)=0x07;
-    write(1, "ABCD\0", 2);
+   /* write(1, "ABCD\0", 2);
     pid_t pid = fork();
 		if(pid>0)
 		{
@@ -123,7 +123,15 @@ int main(int argc, char* argv[], char* envp[])
                         *((char*)0xffffffff80000000+0xb8000)=68;
                         *((char*)0xffffffff80000000+0xb8001)=0x07;
                 }
-
+*/
+//	int fd=0;
+//	fd = open("bin/sbush",0);
+	*((char*)0xffffffff80000000+0xb8000)=68;
+        *((char*)0xffffffff80000000+0xb8001)=0x07;
+	printf("1. hello\n");	
+	printf("2. Moiz\n");	
+	printf("3. Ali\n");	
+//	printf("%d\n",fd);
     while(1);
     printk("Hello World 13 Apr\n");
     return 0;

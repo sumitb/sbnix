@@ -2,11 +2,11 @@
 #define _STRING_H
 #include <sys/defs.h>
 
-int strcpy(char *str1,char *str2);
+int strcpy(char *str1,const char *str2);
 int strcmp(const char *str1,const char *str2);
 int strcat(char *str1,char *str2);
-int strncpy(char *str1,char *str2, int len);
-int strncmp(char *str1,char *str2, int len);
+int strncpy(char *str1,const char *str2, int len);
+int strncmp(const char *str1,const char *str2, int len);
 int strlen(const char *str);
 int itoa(int num, char *buff);
 int atoi(char *buff);

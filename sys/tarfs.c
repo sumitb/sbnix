@@ -38,16 +38,16 @@ uint64_t check_file(const char *file_name){
 	}
 	return 0;
 }
-/*
+
 //uint64_t open(char *file_name){
-int open(const char *file_name, int flags){
+uint16_t sys_open(const char *file_name, int flags){
 	int ind=0;
 	for(ind=0;ind<MAX_BIN;ind++){
 	if(strcmp(file_name,tarfs_ind[ind].name)==0 && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
 		tarfs_ind[ind].ref_cnt++;
-        fd[file_fd]->offset=tarfs_ind[ind].bin_start_addr;
-        fd[file_fd]->flags=flags;
-       strcpy(fd[file_fd]->path,file_name);
+        fd[file_fd].offset=tarfs_ind[ind].bin_start_addr;
+        fd[file_fd].flags=flags;
+       	strcpy(fd[file_fd].path,file_name);
         file_fd++;
 	//	return tarfs_ind[ind].bin_start_addr;
         return file_fd-1;
@@ -56,7 +56,7 @@ int open(const char *file_name, int flags){
 	printk("No such file\n");
 	return -1;
 }
-
+/*
 //void close(uint64_t addr){
 int close(int filedes){
 	int ind=0;
