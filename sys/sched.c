@@ -1,3 +1,4 @@
+#include <sys/gdt.h>
 #include <sys/sched.h>
 #include <sys/memory.h>
 #include <sys/console.h>
@@ -12,6 +13,9 @@ void start_task() {
     __asm__ __volatile__("retq");
 }
 */
+struct task_struct *getNextTask() {
+    return list_entry(runQueue.next, struct task_struct, tasks);
+}
 
 struct task_struct *getCurrentTask() {
     return list_entry(runQueue.prev, struct task_struct, tasks);
@@ -20,11 +24,22 @@ struct task_struct *getCurrentTask() {
 int addTasktoQueue(struct task_struct *task) {
     if(num_task + 1 > NR_TASKS)
         return -1;
-    list_add(&task->tasks, &runQueue);
+    list_add_tail(&task->tasks, &runQueue);
     num_task++;
     return 0;
 }
 
+void printSchedulerQueue() {
+     struct task_struct *tsk = NULL;
+     printk("PCB READY QUEUE: \n");
+     list_for_each_entry(tsk, &runQueue, tasks) {
+         printk("PID: %d\n", tsk->pid);
+     }
+}
+
+/*
+ * NOTE: Never put pritnk calls in schdeuler
+ */
 void schedule() {
     /* Implementing a round robin scheduling policy
      * Choose the task -> next task in the list
@@ -32,8 +47,8 @@ void schedule() {
      */
     //TODO: Ensure that runQueue is not empty
     /* Update global next and current task */
-    nextTask = list_entry(runQueue.next, struct task_struct, tasks);
-    currentTask = list_entry(runQueue.prev, struct task_struct, tasks);
+    nextTask = getNextTask();
+    currentTask = getCurrentTask();
    
     /* Skip schedule if next task is current task */
     if(nextTask->pid == currentTask->pid)
@@ -42,8 +57,7 @@ void schedule() {
     /* Move current task from head to tail */
     list_move_tail(&nextTask->tasks, &runQueue);
     
-    /*TODO: Switch cr3 */
-	__asm __volatile("movq %0, %%cr3":: "a"(currentTask->cr3_address));
+    /* Switch cr3 */
     /* Do context switch */
     //current = current->next_task;
     
@@ -88,8 +102,10 @@ void sys_yield() {
     /* Save rip and rsp */
     __asm__ __volatile__("movq %%rsp, %0":"=g"(currentTask->kernel_rsp)::"memory");
     
+	__asm __volatile("movq %0, %%cr3":: "a"(nextTask->cr3_address));
     /*tss.rsp0 Restore values */
     __asm__ __volatile__("movq %0, %%rsp"::"m"(nextTask->kernel_rsp));
+	tss.rsp0 = (uint64_t)&(nextTask->kstack[KERNEL_STACK_SIZE - 1]);
 
     __asm__ __volatile__("popq %r15");
     __asm__ __volatile__("popq %r14");

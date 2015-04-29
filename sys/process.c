@@ -68,10 +68,17 @@ struct task_struct *create_process(char *binary){
 	uint64_t *pml4e_pr;
 	
     struct task_struct *process = (struct task_struct *)(KERN_MEM + mem_allocate());
-    //allocate 3 pages for process struct, change this later
+    //allocate 10 pages for process struct, change this later
 	mem_allocate();
 	mem_allocate();
-	memset((void *)process,'\0',3*4096);
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	mem_allocate();
+	memset((void *)process,'\0',10*4096);
 	
     page_addr=(uint64_t *)mem_allocate();
 	pml4e_pr=(uint64_t *)((uint64_t)page_addr + KERN_MEM);
@@ -99,7 +106,7 @@ struct task_struct *create_process(char *binary){
     process->kernel_rsp = (uint64_t *)&process->kstack[42];
 
     process->kstack[63] = 0x23 ;                              //SS
-    process->kstack[62] = (uint64_t)(&process->stack[63]);      //  ESP
+    process->kstack[62] = (uint64_t)(&process->stack[USER_STACK_SIZE - 1]);      //  ESP
     process->kstack[61] = 0x246;                           // EFLAGS
     process->kstack[60] = 0x1b ;                           //CS
     
@@ -115,6 +122,7 @@ void init_process(uint64_t *stack)
 	struct task_struct *process = getCurrentTask();
 	
     while(gdb);
+    //printk("Executing task %d\n", process->pid);
 	__asm __volatile("movq %0, %%cr3":: "a"(process->cr3_address));
 	//__asm __volatile("movq %0,%%cr3" : : "r" (process->cr3_address));
 	__asm__ __volatile__ (

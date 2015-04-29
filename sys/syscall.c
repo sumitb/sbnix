@@ -1,3 +1,4 @@
+#include <string.h>
 #include <stdlib.h>
 #include <sys/defs.h>
 #include <sys/sched.h>
@@ -6,9 +7,12 @@
 
 volatile int ggd=1;
 
-int64_t sys_write(int fildes, char *buf, int size) {
-    ((char*)(buf))[size] = '\0';
-    return printk(buf);
+int64_t sys_write(uint64_t fildes, char *buf, uint64_t size) {
+    char tem_buf[size];
+
+    strncpy(tem_buf,buf,size);
+    tem_buf[size] = '\0';
+    return printk(tem_buf);
     /*if(fildes==1 || fildes==2) {
     }
     return -1;
@@ -26,7 +30,7 @@ void syscall_handler(){
 		case SYS_read: //sys_read
 			break;
 		case SYS_write: //sys_write
-            sys_write((int)param_1, (char*)param_2, (int)param_3);
+            sys_write((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
             break;
 		case SYS_fork:
 				{

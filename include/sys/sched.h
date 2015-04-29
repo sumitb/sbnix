@@ -5,7 +5,7 @@
 #include <sys/list.h>
 
 #define NR_TASKS    128
-#define USER_STACK_SIZE   64
+#define USER_STACK_SIZE     512
 #define KERNEL_STACK_SIZE   64
 #define NUM_REGISTERS_SAVED 15
 #define STACK_MAGIC 0xdeadbeef
@@ -71,9 +71,11 @@ uint16_t avail_pid;
 
 struct task_struct *initTask(uint64_t entry_point);
 int addTasktoQueue(struct task_struct *task);
+struct task_struct *getNextTask();
 struct task_struct *getCurrentTask();
 void sys_yield();
 void schedule();
+void printSchedulerQueue();
 
 struct task_struct *create_process(char *binary);
 void init_process(uint64_t *stack);

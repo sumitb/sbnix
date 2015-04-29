@@ -4,11 +4,13 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    write(1, "1\0", 1);
-    /*
+    int fd=1;
+    char str[15] = "Sumit Moiz\n\0";
+    write(1, "Hello \0", 6);
     while(1) {
-        write(1, "Hello\n\0", 6);
+        write(fd, str, 11);
     }
+    /*
     int cnt=0;
     *((char*)addr + cnt++)=49;
     *((char*)addr + cnt++)=0x07;
