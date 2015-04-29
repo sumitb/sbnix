@@ -5,6 +5,7 @@
 #include <sys/tarfs.h>
 #include <sys/syscall.h>
 #include <sys/console.h>
+#include <sys/memory.h>
 
 volatile int ggd=1;
 
@@ -22,6 +23,21 @@ int64_t sys_write(uint64_t fildes, const char *buf, uint64_t size) {
     */
 }
 
+int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
+
+    if(size>0){
+    	char tem_buf[size];
+    	tem_buf[size] = '\0';
+    	uint64_t len=0;
+    	len = scank(tem_buf);
+		if(len>size)
+    		len=size;	
+    	strncpy(buf,tem_buf,len);
+    	buf[len]='\0';
+    	return len;
+    }
+    return 0;
+}
 void syscall_handler(){
 	uint64_t s_cal_no, param_1, param_2, param_3;
 	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
@@ -34,18 +50,23 @@ void syscall_handler(){
 	switch(s_cal_no){
 		case SYS_read: //sys_read
 		{
-			break;
+			int num=0;
+		//	while(ggd);	
+			__asm__ __volatile__ ("sti");
+            		num = sys_read((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)num):"cc", "memory");
+            		break;
 		}
 		case SYS_write: //sys_write
 		{
-			while(ggd);	
+			//while(ggd);	
             		sys_write((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
             		break;
 		}
 		case SYS_fork:
 		{
 			//printk("inside sys_handler\n");
-			while(ggd);
+			//while(ggd);
 			pid_t pid = sys_fork();
 			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
 			break;
@@ -60,10 +81,18 @@ void syscall_handler(){
 		case SYS_open:
 		{
 			uint16_t fd;
-			while(ggd);
+//			while(ggd);
 			fd = sys_open((const char *)param_1, (int)param_2);
 			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
-                        break;
+            break;
+		}
+		case SYS_brk:
+		{
+			uint64_t addr;
+			while(ggd);
+			addr = sys_brk(param_1);
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)addr):"cc", "memory");
+			break;
 		}
 	}
 }

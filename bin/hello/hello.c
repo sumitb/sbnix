@@ -124,14 +124,32 @@ int main(int argc, char* argv[], char* envp[])
                         *((char*)0xffffffff80000000+0xb8001)=0x07;
                 }
 */
-//	int fd=0;
-//	fd = open("bin/sbush",0);
-	*((char*)0xffffffff80000000+0xb8000)=68;
-        *((char*)0xffffffff80000000+0xb8001)=0x07;
+	int fd=0;
+	char *str = (char *)malloc(20);
+	//int num=0;
+	//read(0,str,10);
+	printf("Enter string\n");
+	scanf("%s",str);
+	//if(num>0)
+	printf("str :%s\n",str);
+	char c;
+	int x;
+	fd = open("bin/sbush",0);
 	printf("1. hello\n");	
 	printf("2. Moiz\n");	
 	printf("3. Ali\n");	
-//	printf("%d\n",fd);
+	printf("file desc :%d\n",fd);
+	printf("Enter char\n");
+	scanf("%c",&c);
+	printf("c : %c\n",c);
+	printf("Enter Hex\n");
+	scanf("%x",&x);
+	printf("x : %x\n",x);
+	printf("str : %s,\t c : %c\n",str,c);
+	int y=4;
+	printf("Enter decimal\n");
+	scanf("%d",&y);
+	printf("val : %d\n",y);
     while(1);
     printk("Hello World 13 Apr\n");
     return 0;

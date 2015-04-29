@@ -39,7 +39,7 @@ int strrev(char *buff){
 	char ch;
 	int low=0;int high=0;int len=0;
 	len=strlen(buff);
-	high = len;
+	high = len-1;
 	while(high>low){
 		ch=buff[low];
 		buff[low]=buff[high];

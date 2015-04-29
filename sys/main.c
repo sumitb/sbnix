@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 1;
+volatile int dbg = 0;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -71,17 +71,19 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     addTasktoQueue(initTask((uint64_t)&baz));
     addTasktoQueue(initTask((uint64_t)&qux));
 */	/* Moiz: User process init */
+//	struct task_struct *task1=create_process("bin/foo");
+//        addTasktoQueue(task1);
 	struct task_struct *task=create_process("bin/hello");
         addTasktoQueue(task);
 
     init_process((uint64_t *)stack);
     schedule();
     printk("Die Kernel");
-    /*
-    init_tasks();
-	__asm__ __volatile__ ("sti");
-    start_task();
-    */
+    
+   // init_tasks();
+//	__asm__ __volatile__ ("sti");
+   // start_task();
+    
     // kernel starts here
     while(1);
 }
@@ -100,6 +102,7 @@ void boot(void)
 	reload_gdt();
 	setup_tss();
 	reload_idt();
+//	 __asm__ __volatile__ ("sti");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),
 		&physbase,
