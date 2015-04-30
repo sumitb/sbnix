@@ -73,7 +73,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 */	/* Moiz: User process init */
 //	struct task_struct *task1=create_process("bin/foo");
 //        addTasktoQueue(task1);
-	struct task_struct *task=create_process("bin/hello");
+	struct task_struct *task=create_process("bin/sbush");
         addTasktoQueue(task);
 
     init_process((uint64_t *)stack);

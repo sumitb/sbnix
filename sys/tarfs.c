@@ -39,6 +39,24 @@ uint64_t check_file(const char *file_name){
 	return 0;
 }
 
+char * sys_getcwd(){
+	char dir_name;
+	dir_name=(char *)malloc(24);
+	int len = strlen(runningTask->bin_name);
+	int i;int cnt=0;
+	for(i=0; i<len; i++){
+		if(runningTask->bin_name[i]=='/')
+			cnt++;
+	}	
+	for(i=0; i<len; i++){
+		if(runningTask->bin_name[i]=='/' && cnt>0){
+			cnt--;
+			dir_name[i]=runningTask->bin_name[i];
+		}
+	}
+	return dir_name;
+}
+
 //uint64_t open(char *file_name){
 uint16_t sys_open(const char *file_name, int flags){
 	int ind=0;

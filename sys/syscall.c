@@ -38,6 +38,18 @@ int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
     }
     return 0;
 }
+
+pid_t sys_getpid(){
+
+    return (running_proc.process.process_id);
+}
+
+pid_t sys_getppid(){
+
+    return(running_proc.process.parent_id);
+
+}
+
 void syscall_handler(){
 	uint64_t s_cal_no, param_1, param_2, param_3;
 	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
@@ -92,6 +104,30 @@ void syscall_handler(){
 			while(ggd);
 			addr = sys_brk(param_1);
 			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)addr):"cc", "memory");
+			break;
+		}
+		case SYS_getcwd:
+		{
+			char *dir_name;
+			dir_name = sys_getcwd();
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)dir_name):"cc", "memory");
+			break;
+		}
+		case SYS_getpid:
+		{
+			pid_t pid = sys_getpid();
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
+			break;
+		}
+		case SYS_getppid:
+		{
+			pid_t pid = sys_getppid();
+			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
+			break;
+		}
+		case SYS_execve:
+		{
+			
 			break;
 		}
 	}

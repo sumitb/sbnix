@@ -298,19 +298,21 @@ void setPATH(char* newPath, char* envp[])
 
 void setPS1(char* new_ps, char* envp[], char *new_path)
 {
-	int i=0, j=0, esc_flag=2;
+//	int i=0, j=0, esc_flag=2;
 	char *curr_path;
-	char home[fileSize], path[maxSize];
-    char user[charSize], hostname[charSize];
+//	char home[fileSize], path[maxSize];
+    //char user[charSize], hostname[charSize];
 	
     curr_path = malloc(fileSize * sizeof(char));
-	getcwd(curr_path, fileSize);
+//	getcwd(curr_path, fileSize);
+	strcpy(curr_path,"/home/sbush");
+	strcpy(new_path,"/home/sbush");
 	
-	memset(new_path, '\0', fileSize);
-	parsePATH(envp, home, path, user, hostname);
+//	memset(new_path, '\0', fileSize);
+//	parsePATH(envp, home, path, user, hostname);
 	
     //abc\u@\h
-	while(new_ps[i] != '\0') {
+/*	while(new_ps[i] != '\0') {
 		if(new_ps[i] == '\\') {
 			esc_flag=1;
 		}
@@ -331,8 +333,7 @@ void setPS1(char* new_ps, char* envp[], char *new_path)
 			j++;
 		}
 		i++;
-	}
-	//strcpy(new_ps,new_path);
+	}*/
 }
 
 int execCmd(char** cmd, char** argv, char** envp)
@@ -496,14 +497,14 @@ int main(int argc, char* argv[], char** envp)
     ps1 = malloc(fileSize * sizeof(char));
 	last_path = malloc(fileSize * sizeof(char));
 	sh_target = malloc(fileSize * sizeof(char));
-	getcwd(last_path, fileSize);
+//	getcwd(last_path, fileSize);
     strcpy(ps1, "\\w");
     
     // Feature3: Handle case when input is passed using argv of sbush
-    if(argc > 1)
-        execShell(argv[1], argv, envp);
+    //if(argc > 1)
+      //  execShell(argv[1], argv, envp);
     // Feature2: Run shell interactively
-    else {
+ //   else {
         printf("Welcome to sbu shell!\n");
         while(1) {
             setPS1(ps1, envp, sh_target);
@@ -517,9 +518,9 @@ int main(int argc, char* argv[], char** envp)
                 input[len_inp+1] = '\0';
                 //getline(input);
                 //if(strcmp(input, "\n"))
-                execLine(input, argv, envp);
+  //              execLine(input, argv, envp);
             }
         }
-    }
+   // }
     return 0;
 }
