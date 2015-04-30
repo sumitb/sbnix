@@ -48,5 +48,5 @@ typedef struct {
 	uint32_t	sh_entsize;
 } Elf64_Shdr;
 */
-void elf_load(struct task_struct *t, char *file_name);
+void elf_load(struct task_struct *t, const char *file_name);
 #endif

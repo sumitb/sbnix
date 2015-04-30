@@ -5,7 +5,7 @@
 #include <sys/syscall.h>
 #include <sys/console.h>
 
-volatile int ggd=1;
+volatile int ggd=0;
 
 int64_t sys_write(uint64_t fildes, char *buf, uint64_t size) {
     char tem_buf[size];

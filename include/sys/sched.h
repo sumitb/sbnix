@@ -67,6 +67,7 @@ struct task_struct {
 struct task_struct *currentTask;
 struct task_struct *nextTask;
 
+/* Pre-increment available pid while assigning */
 uint16_t avail_pid;
 
 struct task_struct *initTask(uint64_t entry_point);
@@ -77,7 +78,7 @@ void sys_yield();
 void schedule();
 void printSchedulerQueue();
 
-struct task_struct *create_process(char *binary);
+struct task_struct *create_process(const char *binary);
 void init_process(uint64_t *stack);
 void allocate(uint64_t pml4e_addr, void * addr, int len);
 vma* allocate_vma(vma **vma_head);

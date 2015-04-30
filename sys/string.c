@@ -145,7 +145,7 @@ int xtoa(int num,char *buff){
 	strrev(buff);
         return 0;
 }
-int strcpy(char *str1,char *str2){
+int strcpy(char *str1,const char *str2){
 	int i=0;
 	int len = 0;
 	len = strlen(str2);
@@ -169,7 +169,7 @@ int strcat(char *str1,char *str2){
 	return 0;
 }
 
-int strncpy(char *str1,char *str2,int cplen){
+int strncpy(char *str1,const char *str2,int cplen){
 	int i=0;
 	int len = 0;
 	len = strlen(str2);
@@ -181,7 +181,7 @@ int strncpy(char *str1,char *str2,int cplen){
 	str1[i]='\0';
 	return 0;
 }
-int strcmp(char *str1,char *str2){
+int strcmp(const char *str1,const char *str2){
 	int i=0;
 	int len1 = 0;int len2 = 0;
 	len1 = strlen(str1);
@@ -201,7 +201,7 @@ int strcmp(char *str1,char *str2){
 	return 0;
 }
 
-int strncmp(char *str1,char *str2,int cplen){
+int strncmp(const char *str1,const char *str2,int cplen){
 	int i=0;
 /*	int len1 = 0;int len2 = 0;
 	len1 = strlen(str1);
@@ -224,7 +224,7 @@ int strncmp(char *str1,char *str2,int cplen){
 //	}	
 	return 0;
 }
-int strlen(char *str1){
+int strlen(const char *str1){
 	int len=0;
 	if(*str1)
 	   while(*str1 != '\0'){

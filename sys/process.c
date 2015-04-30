@@ -63,7 +63,7 @@ struct task_struct* initTask(uint64_t entry_point) {
 }
 
 
-struct task_struct *create_process(char *binary){
+struct task_struct *create_process(const char *binary){
 	uint64_t *page_addr;
 	uint64_t *pml4e_pr;
 	
@@ -121,7 +121,6 @@ void init_process(uint64_t *stack)
 {
 	struct task_struct *process = getCurrentTask();
 	
-    while(gdb);
     //printk("Executing task %d\n", process->pid);
 	__asm __volatile("movq %0, %%cr3":: "a"(process->cr3_address));
 	//__asm __volatile("movq %0,%%cr3" : : "r" (process->cr3_address));
@@ -153,3 +152,14 @@ void init_process(uint64_t *stack)
 	__asm__ __volatile__ ("add $8, %rsp");
 	__asm__ __volatile__("iretq");
 }
+
+int execve(const char *filename,char *const argv[],char *const envp[]){
+    elf_header* elf=(elf_header *)filename;
+    if(elf->e_ident[1]=='E' && elf->e_ident[2]=='L' && elf->e_ident[3]=='F'){
+        struct task_struct *task=create_process(filename);
+        addTasktoQueue(task);
+        return 0;
+    }
+    return -1;
+}
+

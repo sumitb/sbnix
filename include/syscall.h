@@ -30,6 +30,7 @@ static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
     return ret;
 }
 
+/* Try rbx in place of rdi */
 static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
     uint64_t ret;
    	__asm volatile("movq %1,%%rax;"

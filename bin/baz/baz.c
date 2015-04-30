@@ -4,9 +4,11 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    write(1, "3\0", 1);
+    for(int i=0; i<2000; i++)
+        write(1, "3\n\0", 2);
     while(1) {
-        write(1, "Demon \0", 6);
+        write(1, "D\0", 1);
+        //write(1, "Demon \0", 6);
     }
     /*
     int cnt=0;

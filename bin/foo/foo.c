@@ -5,10 +5,24 @@
 int main(int argc, char* argv[], char* envp[])
 {
     int fd=1;
-    char str[15] = "Sumit Moiz\n\0";
+    //char str[15] = "Sumit Moiz\n\0";
     write(1, "Hello \0", 6);
-    while(1) {
-        write(fd, str, 11);
+    pid_t pid = fork();
+    
+    if(pid > 0) {
+        while(1) {
+            write(fd, "Parent\n\0", 7);
+        }
+    }
+    else if(pid == 0) {
+        while(1) {
+            write(fd, "Child\n\0", 6);
+        }
+    }
+    else {
+        while(1) {
+            write(fd, "Fucked\n\0", 7);
+        }
     }
     /*
     int cnt=0;
