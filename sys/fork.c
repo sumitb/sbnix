@@ -60,7 +60,6 @@ uint16_t sys_fork(){
 			c_vm->vm_start = p_vm->vm_start;
 			c_vm->vm_end = p_vm->vm_end;
 			c_vm->vm_mmsz=p_vm->vm_mmsz;
-			c_vm->vm_next=p_vm->vm_next;
 			c_vm->vm_file=p_vm->vm_file;
 			c_vm->vm_offset=p_vm->vm_offset;
 			allocate(cproc->pml4e_addr,(void *) c_vm->vm_start, c_vm->vm_mmsz);
