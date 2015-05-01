@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 0;
+volatile int dbg = 1;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];

@@ -33,6 +33,20 @@ uint64_t mem_allocate(){
 	return 0;
 }
 
+uint64_t kmalloc(uint64_t size){
+	int cnt=0;
+	int i=0;
+	cnt = size/4096;
+	if(size%4096>0)
+		cnt++;
+	uint64_t ret_addr;
+	ret_addr=(uint64_t)(KERN_MEM + mem_allocate());
+	for(i=1;i<cnt;i++){
+		mem_allocate();
+	}
+	return ret_addr;
+}
+
 void  mem_free(uint64_t addr_t){
 	long pg_no=(addr_t-INITIAL_MEM)/4096;
 	if(memmap[pg_no].addr==addr_t){
@@ -230,9 +244,6 @@ void protection_fault() {
 	printk("protection fault\n");
 }
 
-uint64_t *kmalloc(size_t bytes) {
-    /* Do not memset page to 0, as it will affect performance
-     * kernel space is already trusted just rewite on it
-     */
+/*uint64_t *kmalloc(size_t bytes) {
     return KERN_MEM + (uint64_t *)mem_allocate();
-}
+}*/
