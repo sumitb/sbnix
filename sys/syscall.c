@@ -22,7 +22,7 @@ int64_t sys_write(uint64_t fildes, char *buf, uint64_t size) {
 void syscall_handler(){
 	uint64_t s_cal_no, param_1, param_2, param_3;
 	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
-	__asm__ __volatile__("movq %%rdi, %0;":"=a"(param_1):);
+	__asm__ __volatile__("movq %%rbx, %0;":"=a"(param_1):);
 	__asm__ __volatile__("movq %%rsi, %0;":"=a"(param_2):);
 	__asm__ __volatile__("movq %%rdx, %0;":"=a"(param_3):);
 	
