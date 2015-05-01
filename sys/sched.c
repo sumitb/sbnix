@@ -21,6 +21,14 @@ struct task_struct *getCurrentTask() {
     return list_entry(runQueue.prev, struct task_struct, tasks);
 }
 
+int addTasktoQueueHead(struct task_struct *task) {
+    if(num_task + 1 > NR_TASKS)
+        return -1;
+    list_add(&task->tasks, &runQueue);
+    num_task++;
+    return 0;
+}
+
 int addTasktoQueue(struct task_struct *task) {
     if(num_task + 1 > NR_TASKS)
         return -1;

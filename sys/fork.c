@@ -27,7 +27,7 @@ uint16_t sys_fork(){
 	
 		pml4e_chld[511]=pml4e[511];
 		
-		addTasktoQueue(cproc);
+		addTasktoQueueHead(cproc);
 		cproc->cr3_address=page_addr;
 		cproc->ppid=pproc->pid;
 		cproc->pid=++avail_pid;
@@ -91,8 +91,8 @@ uint16_t sys_fork(){
         
 		//process->kstack[507] = pproc->process->kstack[507];
 		cproc->kstack[58] =0;  // assigning rax of child to zero;
-		cproc->kernel_rsp = (uint64_t *)(&cproc->kstack[42]);
-		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
+		cproc->kernel_rsp = (uint64_t *)(&cproc->kstack[-44]);
+		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
 		
 		return child_id;
 		//copy elf
