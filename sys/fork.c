@@ -9,7 +9,7 @@ uint16_t sys_fork(){
     __asm__ __volatile__("movq %%rsp, %0":"=g"(pproc_rsp)::"memory");
 	struct task_struct *pproc = getCurrentTask();
 	//struct task_struct *cproc = (struct task_struct *)(KERN_MEM + mem_allocate());
-	struct task_struct *cproc = (struct task_struct *)kmalloc(18*4096);
+	struct task_struct *cproc = (struct task_struct *)kmalloc(10*4096);
 	/*mem_allocate();
 	mem_allocate();
 	mem_allocate();
@@ -19,7 +19,7 @@ uint16_t sys_fork(){
 	mem_allocate();
 	mem_allocate();
 	mem_allocate();
-	*/memset((void *)cproc,'\0',18*4096);
+	*/memset((void *)cproc,'\0',10*4096);
 	if((uint64_t)cproc){
 		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 		uint64_t page_addr = (uint64_t )mem_allocate();
@@ -39,21 +39,30 @@ uint16_t sys_fork(){
 		cproc->mm->vma_addr=NULL;
 		
 		uint16_t child_id=cproc->pid;
-		/*uint64_t *stack_page_physical=(uint64_t *)(mem_allocate());
-		mem_allocate();
-		mem_allocate();
-		mem_allocate();
-		mem_allocate();
-		mem_allocate();
-		mem_allocate();
-		mem_allocate();*/
-		//uint64_t *stack_page_virtual=(uint64_t *)(KERN_MEM + (void *)stack_page_physical);
+		
+		cproc->stack=(uint64_t*)STACK_MEM;
+		//kmalloc_user_space(process->pml4e_addr,STACK_MEM,512*64)
+		
+		uint64_t *stack_page_physical=(uint64_t *)kmalloc((sizeof(uint64_t)*(USER_STACK_SIZE)));
+		uint64_t *stack_page_virtual=(uint64_t *)(KERN_MEM + (void *)stack_page_physical);
 		int i=0;
-	//	int j=0;
-		for(i=0; i<USER_STACK_SIZE; i++){
-			cproc->stack[i]=pproc->stack[i];
-	//		process->kstack[j]=pproc->process->kstack[j];
+		int j = 0;
+		for(j = 0; j < 512; j++) {
+			uint64_t* dest = stack_page_virtual+((sizeof(uint64_t))*j);
+			uint64_t* src = pproc->stack+((sizeof(uint64_t))*j);
+			dest = src;
+			src = dest;
 		}
+		
+		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
+		//copy stack
+		map_kernel(pml4e_chld,(uint64_t)cproc->stack,(uint64_t)stack_page_physical,(sizeof(uint64_t)*(USER_STACK_SIZE)));
+		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
+		
+		//for(i=0; i<USER_STACK_SIZE; i++){
+		//	cproc->stack[i]=pproc->stack[i];
+	//		process->kstack[j]=pproc->process->kstack[j];
+		//}
 		vma *p_vm = pproc->mm->vma_addr;
 		//copy vma
 		while(p_vm != NULL){
@@ -75,18 +84,13 @@ uint16_t sys_fork(){
 		
 		cproc->entry_pt=pproc->entry_pt;
 		
-		//__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-		//copy stack
-		//map_kernel(pml4e_chld,(uint64_t)cproc->stack,(uint64_t)stack_page_physical,32768);
-		//__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
-		
 		//proc->process->kstack[491] = (uint64_t)(&irq0+34);
 		for(i=0;i<KERNEL_STACK_SIZE;i++){
 			cproc->kstack[i]=pproc->kstack[i];
 		}
 
 		//process->kstack[511] = 0x23 ;                              //SS
-        cproc->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&cproc->stack[USER_STACK_SIZE - 1]);      //  ESP
+        cproc->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)((&cproc->stack)+((sizeof(uint64_t))*(USER_STACK_SIZE-1)));      //  ESP
 		cproc->kstack[KERNEL_STACK_SIZE-3] = 0x200286;                           // EFLAGS - 0x200286
         //process->kstack[508] = 0x1b ;                           //CS
         

@@ -45,7 +45,7 @@ struct task_struct {
     uint16_t ppid;
     
     //uint64_t *stack;     /* user stack */
-    uint64_t stack[USER_STACK_SIZE];
+    uint64_t *stack;
     uint64_t kstack[KERNEL_STACK_SIZE];     /* maintain one kernel stack per task */
 
     uint64_t *kernel_rsp;

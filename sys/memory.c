@@ -187,6 +187,20 @@ void page_insert(uint64_t *pml4e, uint64_t logical, uint64_t physical){
 	*pte=(physical | PAGE_PERM);
 }
 
+void kmalloc_user_space(uint64_t *pml4e,uint64_t logical, uint64_t size){
+	int cnt=0;
+	int i=0;
+	cnt = size/4096;
+	if(size%4096>0)
+		cnt++;
+	uint64_t p_addr=0;
+	uint64_t addr=0;
+	for(i=0;i<cnt;i++,addr+=4096){
+		p_addr=(uint64_t)(mem_allocate());
+		page_insert(pml4e,logical+addr,p_addr);
+	}
+}
+
 void page_fault(){
 	uint64_t *pte;
 	uint64_t *pml4e_addr;
