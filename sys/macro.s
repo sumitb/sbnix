@@ -1,22 +1,6 @@
-.include "sys/macro.s"
 
-.global handler_irq0
-.global handler_irq1
-.global handler_idt80
-
-handler_irq0:
-    push_registers
-    call call_timer
-    pop_registers
-    iretq
-
-handler_irq1:
-    push_registers
-    call kb_handler
-    pop_registers
-    iretq
-
-handler_idt80:
+.macro push_registers
+    pushq %rax
     pushq %rbx
     pushq %rcx
     pushq %rdx
@@ -31,8 +15,9 @@ handler_idt80:
     pushq %r13
     pushq %r14
     pushq %r15
-	movq %rsp, %rdi
-    call syscall_handler
+.endm
+
+.macro pop_registers
     popq %r15
     popq %r14
     popq %r13
@@ -47,5 +32,5 @@ handler_idt80:
     popq %rdx
     popq %rcx
     popq %rbx
-	iretq
-
+    popq %rax
+.endm

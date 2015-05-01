@@ -91,6 +91,7 @@ uint16_t sys_fork(){
         
 		//process->kstack[507] = pproc->process->kstack[507];
 		cproc->kstack[58] =0;  // assigning rax of child to zero;
+		//cproc->kstack[-8] = (uint64_t)&cproc->kstack[-6];
 		cproc->kernel_rsp = (uint64_t *)(&cproc->kstack[-44]);
 		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
 		

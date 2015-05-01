@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/defs.h>
 #include <sys/sched.h>
+#include <sys/tarfs.h>
 #include <sys/syscall.h>
 #include <sys/console.h>
 
@@ -33,12 +34,28 @@ void syscall_handler(){
             sys_write((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
             break;
 		case SYS_fork:
-				{
-					//printk("inside sys_handler\n");
-					while(ggd);
-					pid_t pid = sys_fork();
-					__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
-				}
+            {
+                while(ggd);
+                pid_t pid = sys_fork();
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
+            }
+            break;
+		case SYS_exit:
+            {
+                uint64_t status;
+                __asm__ __volatile__("movq %%rbx, %0;" :"=b"(status):);
+                //TODO call exit
+            }
+			break;
+		case SYS_open:
+            {
+                uint16_t fd = 0;
+                while(ggd);
+                //TODO call exit
+                //fd = sys_open((const char *)param_1, (int)param_2);
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
+            }
+            break;
 	}
 }
 

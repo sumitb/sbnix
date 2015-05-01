@@ -4,11 +4,36 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
+    int fd=1;
+    //char str[15] = "Sumit Moiz\n\0";
+    
+    write(1, "World \0", 6);
+    pid_t pid = fork();
+    write(1, "World \0", 6);
+    
+    if(pid > 0) {
+        while(1) {
+            write(fd, "Parent\n\0", 7);
+            write(fd, "PArent\n\0", 7);
+            write(fd, "PARent\n\0", 7);
+            write(fd, "PAREnt\n\0", 7);
+        }
+    }
+    else if(pid == 0) {
+        while(1) {
+            write(fd, "Go\0", 3);
+        }
+    }
+    else {
+        while(1) {
+            write(fd, "9\0", 1);
+        }
+    }
     write(1, "2\0", 1);
+    /*
     while(1) {
         write(1, "World \0", 6);
     }
-    /*
     int cnt=0;
     *((char*)addr + cnt++)=50;
     *((char*)addr + cnt++)=0x07;

@@ -32,7 +32,7 @@ char *getcwd(char *buf, size_t size);
 int chdir(const char *path);
 
 // files
-
+int file_fd;
 enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000 };
 int open(const char *pathname, int flags);
 ssize_t read(int fd, void *buf, size_t count);
@@ -47,19 +47,36 @@ int dup2(int oldfd, int newfd);
 
 // directories
 #define NAME_MAX 255
+int global_fd;    //  directory
 struct dirent {
 	long d_ino;
-	off_t d_off;
+	off_t d_off;                //offset of all the files
 	unsigned short d_reclen;
-	char d_name [NAME_MAX+1];
+	char d_name [NAME_MAX+1];   //name of all files
 };
+typedef struct dirent dirent;
+struct File{
+    char path[32];
+    dirent directory;
+    uint64_t offset;
+    int flags;
+}fd[200];
 struct opdir {
 	int fd;
 	long size;
 	long offset;
 	char *buffer;
+    char dir_name[NAME_MAX+1];
+    int status;
+    dirent curdirent;
 };
 typedef struct opdir DIR;
+struct dir{
+    char dir_name[NAME_MAX+1];
+    dirent curdirent;
+    int set;
+};
+typedef struct dir direct;
 void *opendir(const char *name);
 struct dirent *readdir(void *dir);
 int closedir(void *dir);
