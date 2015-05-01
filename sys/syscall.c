@@ -41,12 +41,14 @@ int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
 
 pid_t sys_getpid(){
 
-    return (running_proc.process.process_id);
+    struct task_struct *proc = getCurrentTask();
+    return (proc->pid);
 }
 
 pid_t sys_getppid(){
 
-    return(running_proc.process.parent_id);
+    struct task_struct *proc = getCurrentTask();
+    return (proc->pid);
 
 }
 
