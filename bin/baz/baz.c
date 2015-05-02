@@ -6,6 +6,19 @@ int main(int argc, char* argv[], char* envp[])
 {
     for(int i=0; i<2000; i++)
         write(1, "3\n\0", 2);
+    int pid = 0;
+    pid=fork();
+
+    if(pid>0){
+    while(1) {
+	write(1, "THIS IS PARENT 2\n\0", 20);
+	}
+	}
+	else{
+    while(1) {
+	write(1, "THIS IS CHILD 2\n\0", 20);
+	}
+	}
     while(1) {
         write(1, "D\0", 1);
         //write(1, "Demon \0", 6);

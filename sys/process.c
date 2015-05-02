@@ -95,8 +95,8 @@ struct task_struct *create_process(const char *binary){
 	process->mm->cnt=0;
 	process->mm->vma_addr=NULL;
 	
-	process->stack=(uint64_t*)STACK_MEM;
-	kmalloc_user_space(pml4e_pr,STACK_MEM,(sizeof(uint64_t)*(USER_STACK_SIZE)));
+	process->stack=(uint64_t*)STACK_MEM_TOP;
+	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
 	
 	//process->stack[63]= GDT_DS | P | W | DPL3,  /*** user data segment descriptor ***/
 	//process->stack[62]= (uint64_t)(&proc->process->stack[63]);
@@ -110,7 +110,8 @@ struct task_struct *create_process(const char *binary){
     process->kernel_rsp = (uint64_t *)&process->kstack[KERNEL_STACK_SIZE-22];
 
     process->kstack[KERNEL_STACK_SIZE-1] = 0x23 ;                              //SS
-    process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)((&process->stack)+((sizeof(uint64_t))*(USER_STACK_SIZE-1)));      //  ESP
+    //process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&(process->stack)+((USER_STACK_SIZE-1)));      //  ESP
+	process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)STACK_MEM_TOP-0x8;      //  ESP
     process->kstack[KERNEL_STACK_SIZE-3] = 0x246;                           // EFLAGS
     process->kstack[KERNEL_STACK_SIZE-4] = 0x1b ;                           //CS
     

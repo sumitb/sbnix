@@ -8,7 +8,7 @@
 #define MAX_MEM 32510  //total 4K pages for  Memory [100000-7FFE000]
 #define INITIAL_MEM 100000
 #define KERN_MEM 0xffffffff80000000
-#define STACK_MEM 0x80000000
+#define STACK_MEM_TOP 0xf0000000
 #define END_LIMIT 0x7ffe000
 #define VIDEO_MEM 0xb8000
 
