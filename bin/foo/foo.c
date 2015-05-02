@@ -14,16 +14,19 @@ int main(int argc, char* argv[], char* envp[])
     pid_t pid = fork();
     
     if(pid > 0) {
-        while(1) {
-            write(fd, &str, 1);
-        }
-    }
-    else if(pid == 0) {
+    	str = '7';
         while(1) {
             write(fd, &string, 1);
         }
     }
+    else if(pid == 0) {
+    	str = '6';
+        while(1) {
+            write(fd, &str, 1);
+        }
+    }
     else {
+    	str = '3';
         while(1) {
             write(fd, "9\0", 1);
         }

@@ -67,8 +67,10 @@ struct task_struct *create_process(const char *binary){
 	uint64_t *page_addr;
 	uint64_t *pml4e_pr;
 	
-    struct task_struct *process = (struct task_struct *)(KERN_MEM + mem_allocate());
+    //struct task_struct *process = (struct task_struct *)(KERN_MEM + mem_allocate());
+	struct task_struct *process = (struct task_struct *)kmalloc(10*4096);
     //allocate 10 pages for process struct, change this later
+	/*mem_allocate();
 	mem_allocate();
 	mem_allocate();
 	mem_allocate();
@@ -77,8 +79,7 @@ struct task_struct *create_process(const char *binary){
 	mem_allocate();
 	mem_allocate();
 	mem_allocate();
-	mem_allocate();
-	memset((void *)process,'\0',10*4096);
+	*/memset((void *)process,'\0',10*4096);
 	
     page_addr=(uint64_t *)mem_allocate();
 	pml4e_pr=(uint64_t *)((uint64_t)page_addr + KERN_MEM);
@@ -94,6 +95,9 @@ struct task_struct *create_process(const char *binary){
 	process->mm->cnt=0;
 	process->mm->vma_addr=NULL;
 	
+	process->stack=(uint64_t*)STACK_MEM_TOP;
+	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
+	
 	//process->stack[63]= GDT_DS | P | W | DPL3,  /*** user data segment descriptor ***/
 	//process->stack[62]= (uint64_t)(&proc->process->stack[63]);
 	//process->stack[61]= 0x246;                           //  EFlags
@@ -103,16 +107,17 @@ struct task_struct *create_process(const char *binary){
 	
     
     //proc->process->kstack[491] = (uint64_t)(&irq0+34);
-    process->kernel_rsp = (uint64_t *)&process->kstack[42];
+    process->kernel_rsp = (uint64_t *)&process->kstack[KERNEL_STACK_SIZE-22];
 
-    process->kstack[63] = 0x23 ;                              //SS
-    process->kstack[62] = (uint64_t)(&process->stack[USER_STACK_SIZE - 1]);      //  ESP
-    process->kstack[61] = 0x246;                           // EFLAGS
-    process->kstack[60] = 0x1b ;                           //CS
+    process->kstack[KERNEL_STACK_SIZE-1] = 0x23 ;                              //SS
+    //process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&(process->stack)+((USER_STACK_SIZE-1)));      //  ESP
+	process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)STACK_MEM_TOP-0x8;      //  ESP
+    process->kstack[KERNEL_STACK_SIZE-3] = 0x246;                           // EFLAGS
+    process->kstack[KERNEL_STACK_SIZE-4] = 0x1b ;                           //CS
     
     elf_load(process, binary);
     //process->heap_vma->vm_end = process->heap_vma->vm_start;
-    process->kstack[59] = (uint64_t)process->entry_pt;  //RIP
+    process->kstack[KERNEL_STACK_SIZE-5] = (uint64_t)process->entry_pt;  //RIP
     //asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 	return process;
 }
@@ -129,7 +134,7 @@ void init_process(uint64_t *stack)
             :
             :"r"(process->kernel_rsp)
     );
-	tss.rsp0 = (uint64_t)&(process->kstack[63]);
+	tss.rsp0 = (uint64_t)&(process->kstack[KERNEL_STACK_SIZE-1]);
 	__asm__ __volatile__("popq %r15");
 	__asm__ __volatile__("popq %r14");
 	__asm__ __volatile__("popq %r13");
