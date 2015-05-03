@@ -1,5 +1,6 @@
 #ifndef _TARFS_H
 #define _TARFS_H
+
 #include <stdlib.h>
 extern char _binary_tarfs_start;
 extern char _binary_tarfs_end;
@@ -39,7 +40,10 @@ struct tarfs {
 	}__attribute__((packed))tarfs_ind[MAX_BIN];
 
 void tarfs_initialize();
+uint64_t sys_getdents(int x,dirent* dirp,int count);
 uint64_t check_file(const char *file_name);
 uint16_t sys_open(const char *file_name, int flags);
 char * sys_getcwd();
+int sys_closedir(void* dir_type);
+
 #endif

@@ -70,7 +70,7 @@ static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
 static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
     uint64_t ret;
    	__asm volatile("movq %1,%%rax;"
-                   "movq %2,%%rdi;"
+                   "movq %2,%%rbx;"
                    "movq %3,%%rsi;"
                    "movq %4,%%rdx;"
                    "int $80;"
@@ -80,7 +80,7 @@ static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_
                    "r"(a1),
                    "r"(a2),
                    "r"(a3)
-    : "rax", "rdi", "rsi", "rdx", "memory");
+    : "rax", "rbx", "rsi", "rdx", "memory");
 
     return ret;
 }

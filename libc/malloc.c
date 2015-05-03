@@ -17,7 +17,6 @@ void* malloc(size_t size)
     uint64_t start;
     // Naive allocator
     start = syscall_1(SYS_brk, 0);
-   start = 0xffffff0f80000000;
     syscall_1(SYS_brk, ((uint64_t)start + size ));
     return (void*)start;
 }

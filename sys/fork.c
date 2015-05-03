@@ -28,7 +28,7 @@ uint16_t sys_fork(){
 	
 		pml4e_chld[511]=pml4e[511];
 		
-		addTasktoQueueHead(cproc);
+	//	addTasktoQueueHead(cproc);
 		cproc->cr3_address=page_addr;
 		cproc->ppid=pproc->pid;
 		cproc->pid=++avail_pid;

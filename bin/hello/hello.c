@@ -4,25 +4,13 @@
 #include <sys/console.h>
 #define MAXLEN 1024
 
-/*int listdir(const char *path) {
-    struct dirent *entry;
-    DIR *dp;
 
-    dp = opendir(path);
-    if (dp == NULL) {
-        printf("opendir error");
-        return -1;
-    }
-    entry = readdir(dp);
-    while((entry = readdir(dp)))
-        printf("%s\n", entry->d_name);
-
-    closedir(dp);
-    return 0;
-}
-*/
 int main(int argc, char* argv[], char* envp[])
 {
+//	listdir("bin");
+//	printf("Next file\n");
+
+//	listdir("hello");
 //  char str1[MAXLEN]="\0";
 //  char str2[MAXLEN]="\0";
 //  char** env;
@@ -104,8 +92,6 @@ int main(int argc, char* argv[], char* envp[])
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
 //    listdir("/");
-	*((char*)0xffffffff80000000+0xb8000)=65;
-	*((char*)0xffffffff80000000+0xb8001)=0x07;
    /* write(1, "ABCD\0", 2);
     pid_t pid = fork();
 		if(pid>0)

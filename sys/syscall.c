@@ -7,7 +7,7 @@
 #include <sys/console.h>
 #include <sys/memory.h>
 
-volatile int ggd=1;
+volatile int ggd=0;
 
 
 int64_t sys_write(uint64_t fildes, const char *buf, uint64_t size) {
@@ -56,8 +56,8 @@ void syscall_handler(){
 	uint64_t s_cal_no, param_1, param_2, param_3;
 	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
 //	__asm__ __volatile__("movq %%rdi, %0;":"=a"(param_1):);
-	__asm__ __volatile__("movq %%rsi, %0;":"=a"(param_2):);
 	__asm__ __volatile__("movq %%rbx, %0;":"=a"(param_1):);
+	__asm__ __volatile__("movq %%rsi, %0;":"=a"(param_2):);
 //	__asm__ __volatile__("movq %%rcx, %0;":"=a"(param_2):);
 	__asm__ __volatile__("movq %%rdx, %0;":"=a"(param_3):);
 	
@@ -88,7 +88,7 @@ void syscall_handler(){
 		case SYS_exit:
 		{
 			uint64_t status;
-        		__asm__ __volatile__("movq %%rbx, %0;" :"=b"(status):);
+        		__asm__ __volatile__("movq %%rax, %0;" :"=b"(status):);
 			//TODO call exit	
 			break;
 		}
@@ -98,7 +98,7 @@ void syscall_handler(){
 //			while(ggd);
 			fd = sys_open((const char *)param_1, (int)param_2);
 			__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
-            break;
+            		break;
 		}
 		case SYS_brk:
 		{
@@ -132,6 +132,13 @@ void syscall_handler(){
 			
 			break;
 		}
+		case SYS_getdents:
+		{
+      			while(ggd);
+       		  	uint64_t num_bytes=sys_getdents((int)param_1,(dirent*)param_2,(int)param_3);
+       		 	__asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)num_bytes):"cc", "memory");
+			break;
+        	}
 	}
 }
 
