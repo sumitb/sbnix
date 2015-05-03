@@ -133,37 +133,12 @@ static inline void list_move_tail(struct list_head *list,
 }
 
 /**
- * list_is_last - tests whether @list is the last entry in list @head
- * @list: the entry to test
- * @head: the head of the list
- */
-static inline int list_is_last(const struct list_head *list,
-                        const struct list_head *head)
-{
-        return list->next == head;
-}
-
-/**
  * list_empty - tests whether a list is empty
  * @head: the list to test.
  */
 static inline int list_empty(const struct list_head *head)
 {
         return head->next == head;
-}
-
-/**
- * list_rotate_left - rotate the list to the left
- * @head: the head of the list
- */
-static inline void list_rotate_left(struct list_head *head)
-{
-        struct list_head *first;
-
-        if (!list_empty(head)) {
-                first = head->next;
-                list_move_tail(first, head);
-        }
 }
 
 /**

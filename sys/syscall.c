@@ -35,23 +35,22 @@ void syscall_handler(){
             break;
 		case SYS_fork:
             {
-                while(ggd);
                 pid_t pid = sys_fork();
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
             }
             break;
-		case SYS_exit:
+		case SYS_execve:
             {
-                uint64_t status;
-                __asm__ __volatile__("movq %%rbx, %0;" :"=b"(status):);
-                //TODO call exit
+                int ret = sys_execve((char*)param_1, (char* const*)param_2, (char* const*)param_3);
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)ret):"cc", "memory");
             }
+            break;
+		case SYS_exit:
+            sys_exit(param_1);
 			break;
 		case SYS_open:
             {
                 uint16_t fd = 0;
-                while(ggd);
-                //TODO call exit
                 //fd = sys_open((const char *)param_1, (int)param_2);
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
             }

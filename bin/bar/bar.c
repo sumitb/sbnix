@@ -8,8 +8,8 @@ int main(int argc, char* argv[], char* envp[])
     //char str[15] = "Sumit Moiz\n\0";
     
     write(1, "World \0", 6);
-    pid_t pid = fork();
     write(1, "World \0", 6);
+    pid_t pid = fork();
     
     if(pid > 0) {
         while(1) {
@@ -21,7 +21,7 @@ int main(int argc, char* argv[], char* envp[])
     }
     else if(pid == 0) {
         while(1) {
-            write(fd, "Go\0", 3);
+            write(1, "Go\0", 2);
         }
     }
     else {

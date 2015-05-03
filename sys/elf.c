@@ -43,6 +43,5 @@ void elf_load(struct task_struct *t, const char *file_name){
 		t->mm->mmap->vm_start=start;
 		t->mm->mmap->vm_end=end;*/
 	}
-
 }
 

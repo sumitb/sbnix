@@ -4,11 +4,14 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
+    write(1, "Lorde\n\0", 6);
+    /*
+    while(1) {
+    }
     write(1, "4\0", 1);
     while(1) {
         write(1, "Lorde \0", 6);
     }
-    /*
     int cnt=0;
     *((char*)addr + cnt++)=52;
     *((char*)addr + cnt++)=0x07;

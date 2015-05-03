@@ -45,6 +45,16 @@ void printSchedulerQueue() {
      }
 }
 
+void sys_exit(int status) {
+    struct task_struct *process = getCurrentTask();
+    
+    /* Delete current task from running queue */
+    list_del(&process->tasks);
+    //printSchedulerQueue();
+    num_task--;
+    schedule();
+}
+
 /*
  * NOTE: Never put pritnk calls in schdeuler
  */
@@ -53,45 +63,29 @@ void schedule() {
      * Choose the task -> next task in the list
      * If doing priority scheduling pick max prio task
      */
-    //TODO: Ensure that runQueue is not empty
+    /* Skip schedule if:
+     *      1. running queue is empty
+     *      2. only a single process is in queue
+     */
+    //if(list_empty(&runQueue) || list_is_singular(&runQueue))
+    if(list_empty(&runQueue))
+        return;
+
     /* Update global next and current task */
     nextTask = getNextTask();
     currentTask = getCurrentTask();
-   
-    /* Skip schedule if next task is current task */
-    if(nextTask->pid == currentTask->pid)
-        return;
     
     /* Move current task from head to tail */
     list_move_tail(&nextTask->tasks, &runQueue);
     
-    /* Switch cr3 */
     /* Do context switch */
-    //current = current->next_task;
-    
     sys_yield();
     
-    /*
-     __asm__ __volatile__("movq %0, %%rip"::"b"(&current.saved_kernel_stack));
-    __asm__ __volatile__("jmpq *%0"::"b"(current->saved_kernel_stack));
-    __asm__ __volatile__("movq %0, %%rsp"::"b"(task1.saved_kernel_rsp));
-    __asm__ __volatile__("pushq 8(%rip)");
-    __asm__ __volatile__("popq %rax");
-    __asm__ __volatile__("movq %%rax, %0":"=g"(schedule_save)::"memory");
-    __asm__ __volatile__("popq %rdx");
-    __asm__ __volatile__("movq %%rdx, %0":"=g"(schedule_save)::"memory");
-    schedule_save += 0x4;
-    __asm__ __volatile__("jmpq 8(%rip)");
-    __asm__ __volatile__("pushq 8(%rip)");
-    __asm__ __volatile__("movq %%rsp, %0"::"b"(tss.rsp0));
-    __asm__ __volatile__("jmpq *%0"::"b"(current->kernel_stack));
-    __asm__ __volatile__("movq %0, %%rsp"::"m"(schedule_save));
-    */
-    /* move two instrn ahead: 0x80 */
     return;
 }
 
 void sys_yield() {
+    /*
     __asm__ __volatile__("pushq %rax");
     __asm__ __volatile__("pushq %rcx");
     __asm__ __volatile__("pushq %rdx");
@@ -107,11 +101,14 @@ void sys_yield() {
     __asm__ __volatile__("pushq %r13");
     __asm__ __volatile__("pushq %r14");
     __asm__ __volatile__("pushq %r15");
-    /* Save rip and rsp */
-    __asm__ __volatile__("movq %%rsp, %0":"=g"(currentTask->kernel_rsp)::"memory");
+    */
+    /* Save rsp */
+    //__asm__ __volatile__("movq %%rsp, %0":"=g"(currentTask->kernel_rsp)::"memory");
+    //__asm__ __volatile__("movq %0, %%rsp"::"m"(nextTask->kernel_rsp));
     
+    /* Switch cr3 */
 	__asm __volatile("movq %0, %%cr3":: "a"(nextTask->cr3_address));
-    /*tss.rsp0 Restore values */
+    /* Restore tss.rsp0 values */
     __asm__ __volatile__("movq %0, %%rsp"::"m"(nextTask->kernel_rsp));
 	tss.rsp0 = (uint64_t)&(nextTask->kstack[KERNEL_STACK_SIZE - 1]);
 
@@ -126,13 +123,12 @@ void sys_yield() {
     __asm__ __volatile__("popq %rbp");
     __asm__ __volatile__("popq %rdi");
     __asm__ __volatile__("popq %rsi");
-    __asm__ __volatile__("popq %rbx");
     __asm__ __volatile__("popq %rdx");
+    __asm__ __volatile__("popq %rbx");
     __asm__ __volatile__("popq %rcx");
     __asm__ __volatile__("popq %rax");
-    __asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
-    __asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
-	__asm__ __volatile__ ("sti");
-    __asm__ __volatile__("retq");
+    //__asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
+	//__asm__ __volatile__ ("sti");
+    __asm__ __volatile__("iretq");
 }
 

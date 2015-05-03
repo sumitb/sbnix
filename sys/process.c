@@ -103,22 +103,16 @@ struct task_struct *create_process(const char *binary){
 	//process->stack[61]= 0x246;                           //  EFlags
     //process->stack[60]= GDT_CS | P | DPL3 | L,  /*** user code segment descriptor ***/
 	
-	//proc->process->kernel_rsp = (uint64_t)(&proc->process->stack[63]);
-	
-    
-    //proc->process->kstack[491] = (uint64_t)(&irq0+34);
-    process->kernel_rsp = (uint64_t *)&process->kstack[KERNEL_STACK_SIZE-22];
-
-    process->kstack[KERNEL_STACK_SIZE-1] = 0x23 ;                              //SS
-    //process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&(process->stack)+((USER_STACK_SIZE-1)));      //  ESP
-	process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)STACK_MEM_TOP-0x8;      //  ESP
-    process->kstack[KERNEL_STACK_SIZE-3] = 0x246;                           // EFLAGS
-    process->kstack[KERNEL_STACK_SIZE-4] = 0x1b ;                           //CS
-    
     elf_load(process, binary);
-    //process->heap_vma->vm_end = process->heap_vma->vm_start;
-    process->kstack[KERNEL_STACK_SIZE-5] = (uint64_t)process->entry_pt;  //RIP
-    //asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
+
+    process->kstack[KERNEL_STACK_SIZE-6] = (uint64_t)process->entry_pt;     //RIP
+    process->kstack[KERNEL_STACK_SIZE-5] = 0x1b ;                           //CS
+    process->kstack[KERNEL_STACK_SIZE-4] = 0x246;                           //EFlags
+    //process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&(process->stack)+((USER_STACK_SIZE-1)));      //ESP
+	process->kstack[KERNEL_STACK_SIZE-3] = (uint64_t)STACK_MEM_TOP-0x8;     //ESP
+    process->kstack[KERNEL_STACK_SIZE-2] = 0x23 ;                           //SS
+    
+    process->kernel_rsp = (uint64_t *)&process->kstack[STACK_OFFSET];
 	return process;
 }
 
@@ -143,6 +137,7 @@ void init_process(uint64_t *stack)
 	__asm__ __volatile__("popq %r10");
 	__asm__ __volatile__("popq %r9");
 	__asm__ __volatile__("popq %r8");
+    __asm__ __volatile__("popq %rbp");
 	__asm__ __volatile__("popq %rdi");
 	__asm__ __volatile__("popq %rsi");
 	__asm__ __volatile__("popq %rdx");
@@ -152,19 +147,7 @@ void init_process(uint64_t *stack)
 
 	__asm__ __volatile__ ("mov $0x2b,%ax");
   	__asm__ __volatile__ ("ltr %ax");
-	__asm__ __volatile__ ("add $8, %rsp");
-	__asm__ __volatile__ ("add $8, %rsp");
-	__asm__ __volatile__ ("add $8, %rsp");
+	//__asm__ __volatile__ ("add $8, %rsp");
 	__asm__ __volatile__("iretq");
-}
-
-int execve(const char *filename,char *const argv[],char *const envp[]){
-    elf_header* elf=(elf_header *)filename;
-    if(elf->e_ident[1]=='E' && elf->e_ident[2]=='L' && elf->e_ident[3]=='F'){
-        struct task_struct *task=create_process(filename);
-        addTasktoQueue(task);
-        return 0;
-    }
-    return -1;
 }
 

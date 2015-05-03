@@ -4,11 +4,13 @@
 #include <sys/defs.h>
 #include <sys/list.h>
 
-#define NR_TASKS    128
+#define NR_TASKS            128
+#define TRAP_SIZE           5
 #define USER_STACK_SIZE     512
 #define KERNEL_STACK_SIZE   512
 #define NUM_REGISTERS_SAVED 15
 #define STACK_MAGIC 0xdeadbeef
+#define STACK_OFFSET        KERNEL_STACK_SIZE - NUM_REGISTERS_SAVED - TRAP_SIZE - 1
 
 /* A struct for saving and restoring processor state info. */
 /* Don't confuse with tss segment, defined in sys/gdt.h */
@@ -70,20 +72,25 @@ struct task_struct *nextTask;
 /* Pre-increment available pid while assigning */
 uint16_t avail_pid;
 
-uint16_t sys_fork();
-struct task_struct *initTask(uint64_t entry_point);
-int addTasktoQueue(struct task_struct *task);
-int addTasktoQueueHead(struct task_struct *task);
-struct task_struct *getNextTask();
-struct task_struct *getCurrentTask();
+/* Process related Syscalls */
 void sys_yield();
+uint16_t sys_fork();
+void sys_exit(int status);
+int sys_execve(const char *filename, char *const argv[], char *const envp[]);
+
+/* Scheduler funnctions */
 void schedule();
 void printSchedulerQueue();
+struct task_struct *getNextTask();
+struct task_struct *getCurrentTask();
+int addTasktoQueue(struct task_struct *task);
+int addTasktoQueueHead(struct task_struct *task);
 
+/* Process functions */
+struct task_struct *initTask(uint64_t entry_point);
 struct task_struct *create_process(const char *binary);
 void init_process(uint64_t *stack);
 void allocate(uint64_t pml4e_addr, void * addr, int len);
 vma* allocate_vma(vma **vma_head);
-void initialize_thread();
 #endif
 

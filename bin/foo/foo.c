@@ -20,7 +20,8 @@ int main(int argc, char* argv[], char* envp[])
         }
     }
     else if(pid == 0) {
-    	str = '6';
+    	//execve("bin/qux", argv, envp);
+        str = '6';
         while(1) {
             write(fd, &str, 1);
         }
@@ -31,10 +32,10 @@ int main(int argc, char* argv[], char* envp[])
             write(fd, "9\0", 1);
         }
     }
-    /*
     write(fd, "Parent\n\0", 7);
     write(fd, "Child\n\0", 6);
     write(fd, "Fuck\n\0", 5);
+    /*
     int cnt=0;
     *((char*)addr + cnt++)=49;
     *((char*)addr + cnt++)=0x07;
