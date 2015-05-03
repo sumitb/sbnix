@@ -10,7 +10,10 @@ int sys_execve(const char *filename,char *const argv[],char *const envp[]) {
     if(!check_file(filename))
         return -1;
     // Copy pid
-    addTasktoQueue(create_process(filename));
+    struct task_struct *process = create_process(filename);
+    --avail_pid;
+    process->pid = ((struct task_struct*)getCurrentTask())->pid;
+    addTasktoQueue(process);
     sys_exit(0);
     return 0;
 }

@@ -14,30 +14,6 @@ uint32_t* loader_stack;
 extern char kernmem, physbase;
 struct tss_t tss;
 
-void foo() {
-    int cnt=0;
-    while(1)
-        printk("%d. Hello\n", ++cnt);
-}
-
-void bar() {
-    int cnt=0;
-    while(1)
-        printk("%d. World\n", ++cnt);
-}
-
-void baz() {
-    int cnt=0;
-    while(1)
-        printk("%d. Demon\n", ++cnt);
-}
-
-void qux() {
-    int cnt=0;
-    while(1)
-        printk("%d. Lorde\n", ++cnt);
-}
-
 void start(uint32_t* modulep, void* physbase, void* physfree)
 {
 	/*
@@ -60,27 +36,20 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 
     /* Preemptive schdeuler
      * Add two processes to task list
-     * Debug: Print task run queue
-     * Call sys_yield
      */
 
-    //__asm volatile("callq handler_irq0");
 	while(dbg);
     /*
-    addTasktoQueue(initTask((uint64_t)&foo));
-    addTasktoQueue(initTask((uint64_t)&bar));
-    addTasktoQueue(initTask((uint64_t)&baz));
-    addTasktoQueue(initTask((uint64_t)&qux));
     addTasktoQueue(create_process("bin/foo"));
-    addTasktoQueue(create_process("bin/bar"));
-    addTasktoQueue(create_process("bin/baz"));
     addTasktoQueue(create_process("bin/hello"));
     */
 	/* Moiz: User process init */
     addTasktoQueue(create_process("bin/bar"));
+    addTasktoQueue(create_process("bin/baz"));
     addTasktoQueue(create_process("bin/qux"));
     printSchedulerQueue();
 	init_process((uint64_t *)stack);
+
     schedule();
     printk("Die Kernel");
     /*

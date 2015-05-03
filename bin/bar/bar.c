@@ -5,46 +5,27 @@
 int main(int argc, char* argv[], char* envp[])
 {
     int fd=1;
+    int arr[100];
     //char str[15] = "Sumit Moiz\n\0";
+
+    for(int i=0; i<100; i++)
+        arr[i] = i;
     
-    write(1, "World \0", 6);
-    write(1, "World \0", 6);
+    write(fd, &arr, 1);
+    write(fd, "World \0", 6);
     pid_t pid = fork();
     
     if(pid > 0) {
         while(1) {
             write(fd, "Parent\n\0", 7);
-            write(fd, "PArent\n\0", 7);
-            write(fd, "PARent\n\0", 7);
-            write(fd, "PAREnt\n\0", 7);
         }
     }
     else if(pid == 0) {
         while(1) {
-            write(1, "Go\0", 2);
+            write(fd, "Child\n\0", 6);
         }
     }
-    else {
-        while(1) {
-            write(fd, "9\0", 1);
-        }
-    }
-    write(1, "2\0", 1);
-    /*
-    while(1) {
-        write(1, "World \0", 6);
-    }
-    int cnt=0;
-    *((char*)addr + cnt++)=50;
-    *((char*)addr + cnt++)=0x07;
-    while(1) {
-        for(int i=0; i<26; i++) {
-            cnt = 2;
-            *((char*)addr + cnt++)=65+i;
-            *((char*)addr + cnt++)=0x07;
-        }
-    }
-    */
+    write(fd, "2\0", 1);
     //printf("%d. World\n", ++cnt);
     return 0;
 }

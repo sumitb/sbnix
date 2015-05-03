@@ -20,7 +20,7 @@ int main(int argc, char* argv[], char* envp[])
         }
     }
     else if(pid == 0) {
-    	//execve("bin/qux", argv, envp);
+    	execve("bin/qux", argv, envp);
         str = '6';
         while(1) {
             write(fd, &str, 1);

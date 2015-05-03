@@ -124,8 +124,8 @@ void sys_yield() {
     __asm__ __volatile__("popq %rdi");
     __asm__ __volatile__("popq %rsi");
     __asm__ __volatile__("popq %rdx");
-    __asm__ __volatile__("popq %rbx");
     __asm__ __volatile__("popq %rcx");
+    __asm__ __volatile__("popq %rbx");
     __asm__ __volatile__("popq %rax");
     //__asm__ __volatile__("add $8, %rsp"); /* retq subtracts rsp, countering for it */
 	//__asm__ __volatile__ ("sti");
