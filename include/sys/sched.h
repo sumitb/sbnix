@@ -41,6 +41,12 @@ struct mm_struct {
 	uint16_t cnt;
 };
 
+struct heap_mem {
+    uint64_t bump_ptr;
+    uint64_t rem_size;
+    uint64_t end_addr;
+};
+
 struct task_struct {
     volatile int16_t state;    /* -1 unrunnable, 0 runnable, >0 stopped */
     uint32_t flags;     /* REML: per process flags, defined below */
@@ -59,6 +65,7 @@ struct task_struct {
     uint64_t entry_pt;
     
     vma *heap_vma;
+    struct heap_mem heap;
     struct mm_struct *mm;
     struct task_struct *parent;
     struct list_head tasks;

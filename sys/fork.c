@@ -55,6 +55,7 @@ uint16_t sys_fork() {
         strcpy(cproc->bin_name, (const char*)pproc->bin_name);
 		uint16_t child_id=cproc->pid;
 		
+		//copy user stack
 		cproc->stack=(uint64_t*)STACK_MEM_TOP;
 		//kmalloc_user_space(process->pml4e_addr,STACK_MEM,512*64)
 		
@@ -63,20 +64,15 @@ uint16_t sys_fork() {
         __asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
         
         uint64_t *temp = pproc->stack - USER_STACK_SIZE;
-        for(int i=0; i < 511; i++) {
+        for(int i=0; i < USER_STACK_SIZE-1; i++) {
 			stack_page_virtual[i] = temp[i];
 		}
 		
 		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-		//copy user stack
 		map_kernel(pml4e_chld,(uint64_t)cproc->stack - (sizeof(uint64_t)*(USER_STACK_SIZE)),
 			(uint64_t)stack_page_physical,(sizeof(uint64_t)*(USER_STACK_SIZE)));
 		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 		
-		//for(i=0; i<USER_STACK_SIZE; i++){
-		//	cproc->stack[i]=pproc->stack[i];
-	//		process->kstack[j]=pproc->process->kstack[j];
-		//}
 		vma *p_vm = pproc->mm->vma_addr;
 		//copy vma
 		while(p_vm != NULL){
@@ -97,6 +93,22 @@ uint16_t sys_fork() {
 		
 		cproc->entry_pt=pproc->entry_pt;
 		
+		//copy heap
+		cproc->heap.bump_ptr=BUMP_PTR;
+		uint64_t size = pproc->heap.bump_ptr - BUMP_PTR;
+		uint64_t *heap_page_virtual=(uint64_t *)kmalloc(pproc->heap.bump_ptr - BUMP_PTR);
+		uint64_t *heap_page_physical=(uint64_t *)((void *)heap_page_virtual-KERN_MEM);
+        __asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
+        
+        uint64_t *temp_heap = (uint64_t*)BUMP_PTR;
+        for(int i=0; i < size; i++) {
+			heap_page_virtual[i] = temp_heap[i];
+		}
+		
+		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
+		map_kernel(pml4e_chld, BUMP_PTR, (uint64_t)heap_page_physical, pproc->heap.bump_ptr - BUMP_PTR);
+		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
+
 		//proc->process->kstack[491] = (uint64_t)(&irq0+34);
 		for(int i=KERNEL_STACK_SIZE-1; i>=STACK_OFFSET; i--) {
 			cproc->kstack[i]=pproc->kstack[i];

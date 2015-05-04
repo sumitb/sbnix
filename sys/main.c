@@ -40,13 +40,13 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 
 	while(dbg);
     /*
+    addTasktoQueue(create_process("bin/hello"));
+    */
+	/* Moiz: User process init */
     addTasktoQueue(create_process("bin/foo"));
     addTasktoQueue(create_process("bin/bar"));
     addTasktoQueue(create_process("bin/baz"));
     addTasktoQueue(create_process("bin/qux"));
-    */
-	/* Moiz: User process init */
-    addTasktoQueue(create_process("bin/hello"));
     //printSchedulerQueue();
 	init_process((uint64_t *)stack);
 

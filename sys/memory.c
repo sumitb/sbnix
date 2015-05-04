@@ -262,21 +262,21 @@ void protection_fault() {
 }
 
 uint64_t sys_brk(uint64_t bump_addr){
-    struct task_struct *runningTask = getCurrentTask();
-	static uint64_t bump_ptr=BUMP_PTR;
-	static uint64_t rem_size=0; //remaining size in page after allocating memory
+	struct task_struct *proc = getCurrentTask();
+	//static uint64_t bump_ptr=BUMP_PTR;
+	//static uint64_t rem_size=0; //remaining size in page after allocating memory
 	if(bump_addr==0)
-		return bump_ptr;
+		return proc->heap.bump_ptr;
 	else{
 		uint64_t size;
-		size = bump_addr - bump_ptr;
+		size = bump_addr - proc->heap.bump_ptr;
 		uint64_t ret_addr;
-		ret_addr = bump_ptr;
+		ret_addr = proc->heap.bump_ptr;
 		uint64_t blk_cnt=0;
 		if(size>0){
-			if(rem_size>size){  //available size is greater than requested
-				rem_size = rem_size-size;
-				bump_ptr = bump_ptr+size;
+			if(proc->heap.rem_size>size){  //available size is greater than requested
+				proc->heap.rem_size = proc->heap.rem_size-size;
+				proc->heap.bump_ptr = proc->heap.bump_ptr+size;
 				return ret_addr;
 			}
 			else{   //available is less than requested, allocate more pages
@@ -285,10 +285,10 @@ uint64_t sys_brk(uint64_t bump_addr){
 				uint64_t *pte;
 				uint64_t physical;
 				uint64_t logical;
-				logical = bump_ptr + rem_size;
+				logical = proc->heap.bump_ptr + proc->heap.rem_size;
 				//pml4e_addr=(uint64_t *)currentTask->pml4e_addr;
-				pml4e_addr=(uint64_t *)runningTask->pml4e_addr;
-				less_mem = size - rem_size;  //required memory to be allocated = requested - remaining
+				pml4e_addr=(uint64_t *)proc->pml4e_addr;
+				less_mem = size - proc->heap.rem_size;  //required memory to be allocated = requested - remaining
 				blk_cnt = less_mem/4096;
 				if((size%4096)>0)
 					blk_cnt++;
@@ -299,11 +299,11 @@ uint64_t sys_brk(uint64_t bump_addr){
 							mem_free(*pte);
 						*pte=(physical | PAGE_PERM);
 						logical = logical + 4096;
-						rem_size = rem_size+4096; //remaining memory increase by 4096 after eacch page allocation
+						proc->heap.rem_size = proc->heap.rem_size+4096; //remaining memory increase by 4096 after eacch page allocation
 						blk_cnt--;
 				}
-				rem_size = rem_size-size; //allocate requested memory and decrease remaining memory
-				bump_ptr = bump_ptr+size;
+				proc->heap.rem_size = proc->heap.rem_size-size; //allocate requested memory and decrease remaining memory
+				proc->heap.bump_ptr = proc->heap.bump_ptr+size;
 				return ret_addr;
 			}
 		}
