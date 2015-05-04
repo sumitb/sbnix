@@ -9,7 +9,7 @@ extern void outportb(uint16_t port, uint8_t val);
 extern uint8_t inportb(uint16_t port);
 char kbuffer[512];
 int count=0;
-bool flag=false;
+volatile bool flag=false;
 
 unsigned char keyborard_character_set_normal[128] =
 {
@@ -95,73 +95,93 @@ unsigned char Keyboard_character_set_shift[128] =
     0,	/* F12 Key */
     0,	/* All other keys are undefined */ //88
  
-};		
+};
 
 int shift_key=0;
 
 void kb_handler()
 {
-    int x, y;
+    //int x, y;
 	unsigned char check_code;
   
   	check_code = inportb(0x60);
 
+	if (check_code == 28){
+		flag=false;
+	}
 	if (check_code & 0x80){
 		if(check_code == 0x2A)
   		{
-      			shift_key = 0;
+            shift_key = 0;
 		}
 	}
 	else
   	{
 		if(check_code == 0x2A)
 		{
-      			shift_key = 1;
+            shift_key = 1;
 		}
 		else{
             // Get current cursor position
-            x = getcsr_x(); y = getcsr_y();
+            //x = getcsr_x(); y = getcsr_y();
             // Move to bottom right corner
-            gotoxy(60, 22);
+            //gotoxy(60, 22);
 			if(shift_key == 1){
 				if(Keyboard_character_set_shift[check_code]=='\n')
-					printk("\n");	
-				else
-					printk("%c",Keyboard_character_set_shift[check_code]);	
+					printk("\n");
+				else{
+					printk("%c",Keyboard_character_set_shift[check_code]);
+					if(flag==1){
+						if(check_code == 14)
+							count--;
+						else
+							kbuffer[count++]=Keyboard_character_set_shift[check_code];
+					}
+				}
 				shift_key = 0;
 			}
 			else{
 				if(keyborard_character_set_normal[check_code]=='\n')
-					printk("\n");	
-				else
-					printk("%c",keyborard_character_set_normal[check_code]);	
-			}	
+					printk("\n");
+				else{
+					printk("%c",keyborard_character_set_normal[check_code]);
+					if(flag==1){
+						if(check_code == 14)
+							count--;
+						else
+							kbuffer[count++]=keyborard_character_set_normal[check_code];
+					}
+				}
+			}
             // Reset cursor position
-            gotoxy(x, y);
-		}	
+            //gotoxy(x, y);
+		}
 	}
 	outportb(0x20, 0x20);
 }
 
-/*
-int read(int fildes,void *buf,int nbyte){
+int scank(char *buf){
     int i=0;
-    Flag=true;
-    count=0;
-    
+    int j=0;
     for(i=0;i<512;i++)
         kbuffer[i]='\0';
-    while(Flag);
-    for(i=0;i<512;i++)
-        buf[i]='\0';
         
-    kbuffer[count] = '\0';
-    strcpy(buf,kbuffer);
-
+    flag=true;
+    count=0;
+          
+    while(flag);
+    while(kbuffer[j]!='\0'){
+        buf[j]=kbuffer[j];
+        j++;
+    }
+    buf[j]='\0';
+            
+    //kbuffer[count] = '\0';
+    //strcpy(buf,kbuffer);
+   
     for(i=0;i<512;i++)
         kbuffer[i]='\0';
 
-    return count;
+    return j;
 }
-*/
 

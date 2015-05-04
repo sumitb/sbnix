@@ -94,6 +94,7 @@ struct task_struct *create_process(const char *binary){
 	process->mm=(struct mm_struct *)(KERN_MEM + mem_allocate());
 	process->mm->cnt=0;
 	process->mm->vma_addr=NULL;
+	strcpy(process->bin_name, binary);
 	
 	process->stack=(uint64_t*)STACK_MEM_TOP;
 	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
@@ -105,12 +106,12 @@ struct task_struct *create_process(const char *binary){
 	
     elf_load(process, binary);
 
-    process->kstack[KERNEL_STACK_SIZE-6] = (uint64_t)process->entry_pt;     //RIP
-    process->kstack[KERNEL_STACK_SIZE-5] = 0x1b ;                           //CS
-    process->kstack[KERNEL_STACK_SIZE-4] = 0x246;                           //EFlags
+    process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-5] = (uint64_t)process->entry_pt;     //RIP
+    process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-4] = 0x1b ;                           //CS
+    process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-3] = 0x246;                           //EFlags
     //process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&(process->stack)+((USER_STACK_SIZE-1)));      //ESP
-	process->kstack[KERNEL_STACK_SIZE-3] = (uint64_t)STACK_MEM_TOP-0x8;     //ESP
-    process->kstack[KERNEL_STACK_SIZE-2] = 0x23 ;                           //SS
+	process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-2] = (uint64_t)STACK_MEM_TOP-0x8;     //ESP
+    process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-1] = 0x23 ;                           //SS
     
     process->kernel_rsp = (uint64_t *)&process->kstack[STACK_OFFSET];
 	return process;

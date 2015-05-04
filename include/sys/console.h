@@ -4,6 +4,7 @@
 #include <sys/defs.h>
 
 int printk(const char *fmt, ...);
+int scank(char *buf);
 int getcsr_x();
 int getcsr_y();
 void gotoxy(int x, int y);

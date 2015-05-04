@@ -14,13 +14,13 @@ int scanf(const char *format, ...) {
 	va_start(val, format);
 	int n=0;
 	n=read(0, buf, MAXLENGTH);
-	buf[n-1]='\0';
+	buf[n]='\0';
 	while(*format) {
 		if(*format == '%')
 		++format;
 		switch(*format){
 			case 'd':
-				num = va_arg (val, int *);	 	
+				num = va_arg (val, int *);
 				*num=atoi(buf);
 				break;
 			case 's':
@@ -28,7 +28,7 @@ int scanf(const char *format, ...) {
 				strcpy(t,buf);
 				break;
 			case 'x':
-				num = va_arg (val, int *);	 	
+				num = va_arg (val, int *);
 				*num=atox(buf);
 				break;
 			case 'c':

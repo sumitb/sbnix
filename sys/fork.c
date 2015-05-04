@@ -13,7 +13,7 @@ int sys_execve(const char *filename,char *const argv[],char *const envp[]) {
     struct task_struct *process = create_process(filename);
     --avail_pid;
     process->pid = ((struct task_struct*)getCurrentTask())->pid;
-    addTasktoQueue(process);
+    addTasktoQueueHead(process);
     sys_exit(0);
     return 0;
 }
@@ -51,7 +51,8 @@ uint16_t sys_fork() {
 		cproc->mm=(struct mm_struct *)(KERN_MEM + mem_allocate());
 		cproc->mm->cnt=0;
 		cproc->mm->vma_addr=NULL;
-		
+
+        strcpy(cproc->bin_name, (const char*)pproc->bin_name);
 		uint16_t child_id=cproc->pid;
 		
 		cproc->stack=(uint64_t*)STACK_MEM_TOP;
@@ -106,8 +107,8 @@ uint16_t sys_fork() {
         //process->kstack[508] = 0x1b ;                           //CS
         
 		//process->kstack[507] = pproc->process->kstack[507];
-		cproc->kstack[KERNEL_STACK_SIZE-7] = 0;  // assigning rax of child to zero;
-		cproc->kstack[KERNEL_STACK_SIZE-4] = 0x200286;                           // EFLAGS - 0x200286
+		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-6] = 0;  // assigning rax of child to zero;
+		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-3] = 0x200286;                           // EFLAGS - 0x200286
 		cproc->kernel_rsp = (uint64_t *)(&cproc->kstack[STACK_OFFSET]);	        //-50
 		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
 		

@@ -8,6 +8,7 @@
 #define MAX_MEM 32510  //total 4K pages for  Memory [100000-7FFE000]
 #define INITIAL_MEM 100000
 #define KERN_MEM 0xffffffff80000000
+#define BUMP_PTR 0xffffff0f80000000
 #define STACK_MEM_TOP 0xf0000000
 #define END_LIMIT 0x7ffe000
 #define VIDEO_MEM 0xb8000
@@ -45,6 +46,7 @@ void mem_free(uint64_t addr_t);
 void init_memmap(void*  physfree);
 void mem_init(void* physbase,void* physfree);
 uint64_t kmalloc(size_t bytes);
+uint64_t sys_brk(uint64_t bump_addr);
 
 uint64_t page_roundoff_4096(uint64_t addr);
 uint64_t addr_res(uint64_t logical, int flag);

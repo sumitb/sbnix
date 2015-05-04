@@ -21,7 +21,7 @@ int atox(char *buff){
         while(buff[i] != '\0' &&  buff[i] != '\n'){
 		if(buff[i]>='0' && buff[i] < '9')
 			num = num * 16 + ((buff[i]) - '0');
-		else 
+		else
 			num = num * 16 + ((buff[i]) - 'a' + 10);
                 i++;
         }
@@ -39,7 +39,7 @@ int strrev(char *buff){
 	char ch;
 	int low=0;int high=0;int len=0;
 	len=strlen(buff);
-	high = len;
+	high = len-1;
 	while(high>low){
 		ch=buff[low];
 		buff[low]=buff[high];
@@ -59,7 +59,7 @@ int itoa(int num,char *buff){
 		return 0;
 	}
 	if(num<0){
-		neg = -1;	
+		neg = -1;
 		num = -num;
 	}
 	if(num > 0){
@@ -154,7 +154,7 @@ int strcmp(const char *str1,const char *str2){
 			else if(str2[i]>str1[i])
 				return -1;
 		}
-	}	
+	}
 	return 0;
 }
 
@@ -178,7 +178,7 @@ int strncmp(const char *str1,const char *str2,int cplen){
 			else if(str2[i]>str1[i])
 				return -1;
 		}
-//	}	
+//	}
 	return 0;
 }
 int strlen(const char *str1){

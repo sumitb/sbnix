@@ -65,7 +65,7 @@ struct opdir {
 	int fd;
 	long size;
 	long offset;
-	char *buffer;
+	char buffer[4000];          // REVW
     char dir_name[NAME_MAX+1];
     int status;
     dirent curdirent;

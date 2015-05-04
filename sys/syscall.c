@@ -3,6 +3,7 @@
 #include <sys/defs.h>
 #include <sys/sched.h>
 #include <sys/tarfs.h>
+#include <sys/memory.h>
 #include <sys/syscall.h>
 #include <sys/console.h>
 
@@ -20,6 +21,32 @@ int64_t sys_write(uint64_t fildes, char *buf, uint64_t size) {
     */
 }
 
+int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
+
+    if(size>0){
+    	char tem_buf[size];
+    	tem_buf[size] = '\0';
+    	uint64_t len=0;
+    	len = scank(tem_buf);
+		if(len>size)
+    		len=size;
+    	strncpy(buf,tem_buf,len);
+    	buf[len]='\0';
+    	return len;
+    }
+    return 0;
+}
+
+pid_t sys_getpid() {
+    struct task_struct *proc = getCurrentTask();
+    return (proc->pid);
+}
+
+pid_t sys_getppid() {
+    struct task_struct *proc = getCurrentTask();
+    return (proc->ppid);
+}
+
 void syscall_handler(){
 	uint64_t s_cal_no, param_1, param_2, param_3;
 	__asm__ __volatile__("movq %%rax, %0;":"=a"(s_cal_no):);
@@ -29,6 +56,12 @@ void syscall_handler(){
 	
 	switch(s_cal_no){
 		case SYS_read: //sys_read
+            {
+                int num=0;
+                __asm__ __volatile__ ("sti");
+                num = sys_read((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)num):"cc", "memory");
+            }
 			break;
 		case SYS_write: //sys_write
             sys_write((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
@@ -54,6 +87,39 @@ void syscall_handler(){
                 //fd = sys_open((const char *)param_1, (int)param_2);
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
             }
+            break;
+		case SYS_brk:
+            {
+                uint64_t addr;
+                while(ggd);
+                addr = sys_brk(param_1);
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)addr):"cc", "memory");
+            }
+            break;
+		case SYS_getcwd:
+            {
+                char *dir_name;
+                dir_name = sys_getcwd();
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)dir_name):"cc", "memory");
+                break;
+            }
+		case SYS_getpid:
+            {
+                pid_t pid = sys_getpid();
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
+                break;
+            }
+		case SYS_getppid:
+            {
+                pid_t pid = sys_getppid();
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)pid):"cc", "memory");
+            }
+            break;
+		case SYS_getdents:
+            {
+                    uint64_t num_bytes=sys_getdents((int)param_1,(dirent*)param_2,(int)param_3);
+                    __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)num_bytes):"cc", "memory");
+        	}
             break;
 	}
 }

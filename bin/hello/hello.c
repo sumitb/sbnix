@@ -4,25 +4,13 @@
 #include <sys/console.h>
 #define MAXLEN 1024
 
-/*int listdir(const char *path) {
-    struct dirent *entry;
-    DIR *dp;
 
-    dp = opendir(path);
-    if (dp == NULL) {
-        printf("opendir error");
-        return -1;
-    }
-    entry = readdir(dp);
-    while((entry = readdir(dp)))
-        printf("%s\n", entry->d_name);
-
-    closedir(dp);
-    return 0;
-}
-*/
 int main(int argc, char* argv[], char* envp[])
 {
+//	listdir("bin");
+//	printf("Next file\n");
+
+//	listdir("hello");
 //  char str1[MAXLEN]="\0";
 //  char str2[MAXLEN]="\0";
 //  char** env;
@@ -104,21 +92,34 @@ int main(int argc, char* argv[], char* envp[])
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
 //    listdir("/");
-	*((char*)0xffffffff80000000+0xb8000)=65;
-	*((char*)0xffffffff80000000+0xb8001)=0x07;
-    write(1, "ABCD\0", 2);
-    pid_t pid = fork();
-		if(pid>0)
-		{
-		        *((char*)0xffffffff80000000+0xb8000)=66;
-       			*((char*)0xffffffff80000000+0xb8001)=0x07;
-		}
-		else if(pid==0)
-                {
-                        *((char*)0xffffffff80000000+0xb8000)=67;
-                        *((char*)0xffffffff80000000+0xb8001)=0x07;
-                }
-
+   /* write(1, "ABCD\0", 2);
+*/
+	int fd=0;
+	char *str = (char *)malloc(20);
+	//int num=0;
+	//read(0,str,10);
+	printf("Enter string\n");
+	scanf("%s",str);
+	//if(num>0)
+	printf("str :%s\n",str);
+	char c;
+	int x;
+	fd = open("bin/sbush",0);
+	printf("1. hello\n");
+	printf("2. Moiz\n");
+	printf("3. Ali\n");
+	printf("file desc :%d\n",fd);
+	printf("Enter char\n");
+	scanf("%c",&c);
+	printf("c : %c\n",c);
+	printf("Enter Hex\n");
+	scanf("%x",&x);
+	printf("x : %x\n",x);
+	printf("str : %s,\t c : %c\n",str,c);
+	int y=4;
+	printf("Enter decimal\n");
+	scanf("%d",&y);
+	printf("val : %d\n",y);
     while(1);
     printk("Hello World 13 Apr\n");
     return 0;

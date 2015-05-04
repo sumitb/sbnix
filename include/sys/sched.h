@@ -6,11 +6,13 @@
 
 #define NR_TASKS            128
 #define TRAP_SIZE           5
+#define TSS_OFFSET          2
+#define BINARY_LEN          24
 #define USER_STACK_SIZE     512
 #define KERNEL_STACK_SIZE   512
 #define NUM_REGISTERS_SAVED 15
-#define STACK_MAGIC 0xdeadbeef
-#define STACK_OFFSET        KERNEL_STACK_SIZE - NUM_REGISTERS_SAVED - TRAP_SIZE - 1
+#define STACK_MAGIC         0xdeadbeef
+#define STACK_OFFSET        KERNEL_STACK_SIZE - NUM_REGISTERS_SAVED - TRAP_SIZE - TSS_OFFSET
 
 /* A struct for saving and restoring processor state info. */
 /* Don't confuse with tss segment, defined in sys/gdt.h */
@@ -45,6 +47,7 @@ struct task_struct {
 
     uint16_t pid;
     uint16_t ppid;
+    char bin_name[BINARY_LEN];
     
     //uint64_t *stack;     /* user stack */
     uint64_t *stack;

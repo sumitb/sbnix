@@ -1,6 +1,7 @@
 #include <sys/console.h>
 #include <sys/tarfs.h>
 #include <sys/memory.h>
+#include <sys/sched.h>
 
 int file_fd=3;
 
@@ -38,41 +39,105 @@ uint64_t check_file(const char *file_name){
 	}
 	return 0;
 }
+
+char * sys_getcwd(char *dir_name, uint64_t size){
+    	struct task_struct *proc = getCurrentTask();
+	int len = strlen(proc->bin_name);
+	int i;int cnt=0;
+	for(i=0; i<len; i++){
+		if(proc->bin_name[i]=='/')
+			cnt++;
+	}	
+	for(i=0; i<len; i++){
+		if(proc->bin_name[i]=='/' && cnt>0){
+			cnt--;
+		}
+		if(cnt)
+			dir_name[i]=proc->bin_name[i];
+	}
+	return dir_name;
+}
+
 //uint64_t open(char *file_name){
 uint16_t sys_open(const char *file_name, int flags){
 	int ind=0;
+	int len=0;
+	len=strlen(file_name);
 	for(ind=0;ind<MAX_BIN;ind++){
-	if(strcmp(file_name,tarfs_ind[ind].name)==0 && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
-		tarfs_ind[ind].ref_cnt++;
+	if((strncmp(file_name,tarfs_ind[ind].name,len)==0) && ((tarfs_ind[ind].name[len]=='/' && tarfs_ind[ind].name[len+1]=='\0') || tarfs_ind[ind].name[len]=='\0')){		
+	// && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
+	tarfs_ind[ind].ref_cnt++;
         fd[file_fd].offset=tarfs_ind[ind].bin_start_addr;
         fd[file_fd].flags=flags;
-       	strcpy(fd[file_fd].path,file_name);
+       	//strcpy(fd[file_fd].path,file_name);
+       	strcpy(fd[file_fd].path,tarfs_ind[ind].name);
         file_fd++;
 	//	return tarfs_ind[ind].bin_start_addr;
         return file_fd-1;
 		}
 	}
 	printk("No such file\n");
-	return -1;
+	return 0;
 }
+uint64_t sys_getdents(int x,dirent* dirp,int count){
+   // int x=fd;
+    int i=0;
+    int ind=0;
+    uint64_t num_bytes=0;
+     //dirent *arr=(dirent *)(KERN_MEM+mem_allocate());
+     dirent *arr=dirp;
+     int len=strlen(fd[x].path);
+ 
+    // void * buff=malloc(4096);
+    if(len>0){
+    for(ind=0;ind<MAX_BIN;ind++){
+         if(strncmp(fd[x].path,tarfs_ind[ind].name,len)==0 && (tarfs_ind[ind].name[len]!='\0')){
+             if((strlen(tarfs_ind[ind].name))>len){
+                strcpy(arr[i].d_name,tarfs_ind[ind].name);
+                 arr[i].d_off=tarfs_ind[ind].bin_start_addr;
+		 arr[i].d_reclen=sizeof(dirent);
+          //   printk("%s\n",tarfs_ind[ind].name);
+		num_bytes = num_bytes + sizeof(dirent);	
+                i++;
+              }
+         }
+     }
+   }
+     // buff=(void*)arr[i];
+    // dirp=arr;
+   return num_bytes;
+ }
 
-/*
 //void close(uint64_t addr){
-int close(int filedes){
+int sys_close(int filedes){
 	int ind=0;
 	for(ind=0;ind<MAX_BIN;ind++){
 //	if(addr==tarfs_ind[ind].bin_start_addr){
-    if(tarfs_ind[ind].bin_start_addr=fd[filedes]->offset){
-    tarfs_ind[ind].ref_cnt--;
-    fd[filedes]->offset=0;
-    strcpy(fd[filedes]->path," ");
-    fd[filedes]->flag=0;
-	return 0;
+    	    if(tarfs_ind[ind].bin_start_addr==fd[filedes].offset){
+    		tarfs_ind[ind].ref_cnt--;
+    		fd[filedes].offset=0;
+    		strcpy(fd[filedes].path," ");
+    		fd[filedes].flags=0;
+		return 1;
 	    }
 	}
+	return 0;
 }
-    return -1;
+
+/*int sys_closedir(void* dir_type){
+	int ind=0;
+    DIR *dir= (DIR *) dir_type;
+	for(ind=0;ind<MAX_BIN;ind++){
+	if(dir->offset==tarfs_ind[ind].bin_start_addr){
+		tarfs_ind[ind].ref_cnt--;
+        dir->status=0;
+//        free(dir);
+		return 1;
+	    }
+	}
+    return 0;
 }
+
 
 void *opendir(char *dir){
 	int ind=0;
@@ -94,19 +159,8 @@ void *opendir(char *dir){
 	return NULL;
 }
 
-int closedir(void* dir_type){
-	int ind=0;
-    DIR *dir= (DIR *) dir_type;
-	for(ind=0;ind<MAX_BIN;ind++){
-	if(dir->offset==tarfs_ind[ind].bin_start_addr){
-		tarfs_ind[ind].ref_cnt--;
-        dir->status=0;
-        free(dir);
-		return 0;
-	    }
-	}
-    return -1;
-}
+
+
 
 dirent *readdir(void *dir){
 	int ind=0;
@@ -117,8 +171,8 @@ dirent *readdir(void *dir){
     dirent *arr=(dirent *)malloc(4096); 
     memset(arr,'0',4096);
 	for(ind=0;ind<MAX_BIN;ind++){
-    if(strncmp(dir_type->dir_name,tarfs_ind[ind].name,len)==0 && tarfs_ind[ind].name[len]=='/'){
- //   && strcmp(tarfs_ind[ind].typeflag,FILE)==0 && (strcmp(dir,tarfs_ind[ind].name))){
+		if(strncmp(dir_type->dir_name,tarfs_ind[ind].name,len)==0 && tarfs_ind[ind].name[len]=='/'){
+                                                 //   && strcmp(tarfs_ind[ind].typeflag,FILE)==0 && (strcmp(dir,tarfs_ind[ind].name))){
             if((strlen(tarfs_ind[ind].name))>len){
 		        arr[i]->d_name=tarfs_[ind].name;
                 arr[i]->d_off=tarfs_[ind].bin_start_addr;
@@ -131,7 +185,7 @@ dirent *readdir(void *dir){
 }
 
 ssize_t read(int filedes,void *buf, size_t count){
-	int ind=0; int i=0;
+    int ind=0; int i=0;
 	char *dest;
 	char *src;
 	dest =(char*)buf;

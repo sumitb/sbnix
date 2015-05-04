@@ -261,3 +261,53 @@ void protection_fault() {
 	printk("protection fault\n");
 }
 
+uint64_t sys_brk(uint64_t bump_addr){
+    struct task_struct *runningTask = getCurrentTask();
+	static uint64_t bump_ptr=BUMP_PTR;
+	static uint64_t rem_size=0; //remaining size in page after allocating memory
+	if(bump_addr==0)
+		return bump_ptr;
+	else{
+		uint64_t size;
+		size = bump_addr - bump_ptr;
+		uint64_t ret_addr;
+		ret_addr = bump_ptr;
+		uint64_t blk_cnt=0;
+		if(size>0){
+			if(rem_size>size){  //available size is greater than requested
+				rem_size = rem_size-size;
+				bump_ptr = bump_ptr+size;
+				return ret_addr;
+			}
+			else{   //available is less than requested, allocate more pages
+				uint64_t less_mem=0;
+				uint64_t *pml4e_addr;
+				uint64_t *pte;
+				uint64_t physical;
+				uint64_t logical;
+				logical = bump_ptr + rem_size;
+				//pml4e_addr=(uint64_t *)currentTask->pml4e_addr;
+				pml4e_addr=(uint64_t *)runningTask->pml4e_addr;
+				less_mem = size - rem_size;  //required memory to be allocated = requested - remaining
+				blk_cnt = less_mem/4096;
+				if((size%4096)>0)
+					blk_cnt++;
+				while(blk_cnt){
+						physical=mem_allocate();
+						pte=walk_pages(pml4e_addr,logical);
+						if(*pte & PAGE_PRESENT)
+							mem_free(*pte);
+						*pte=(physical | PAGE_PERM);
+						logical = logical + 4096;
+						rem_size = rem_size+4096; //remaining memory increase by 4096 after eacch page allocation
+						blk_cnt--;
+				}
+				rem_size = rem_size-size; //allocate requested memory and decrease remaining memory
+				bump_ptr = bump_ptr+size;
+				return ret_addr;
+			}
+		}
+	}
+	return 0;
+}
+

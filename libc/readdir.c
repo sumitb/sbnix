@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <syscall.h>
 #include <sys/syscall.h>
@@ -10,7 +11,7 @@ struct dirent *readdir(void *dir)
 
     if(dp->offset >= dp->size)
         return NULL;
-    dirn = (struct dirent*)(dp->buffer + dp->offset);
+    dirn = (struct dirent *)((char *)dp->buffer + dp->offset);
     dp->offset += dirn->d_reclen;
     return dirn;
 }
