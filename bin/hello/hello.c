@@ -111,7 +111,7 @@ int main(int argc, char* argv[], char* envp[])
                 }
 */
 	int fd=0;
-	char *str = (char *)malloc(20);
+	char *str = (char *)malloc(40000);
 	//int num=0;
 	//read(0,str,10);
 	printf("Enter string\n");

@@ -74,7 +74,6 @@ uint16_t sys_fork(){
 		}
 		
 		cproc->entry_pt=pproc->entry_pt;
-		
 		//__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
 		//copy stack
 		//map_kernel(pml4e_chld,(uint64_t)cproc->stack,(uint64_t)stack_page_physical,32768);

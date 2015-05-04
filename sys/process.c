@@ -94,6 +94,7 @@ struct task_struct *create_process(const char *binary){
 	process->mm=(struct mm_struct *)(KERN_MEM + mem_allocate());
 	process->mm->cnt=0;
 	process->mm->vma_addr=NULL;
+	process->heap.bump_ptr=BUMP_PTR;
 	strcpy(process->bin_name,binary);
 	
 	//process->stack[63]= GDT_DS | P | W | DPL3,  /*** user data segment descriptor ***/
