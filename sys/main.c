@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 1;
+volatile int dbg = 0;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -74,7 +74,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 //	struct task_struct *task1=create_process("bin/foo");
 //        addTasktoQueue(task1);
 	//struct task_struct *task=create_process("bin/hello");
-	struct task_struct *task=create_process("bin/ls");
+	struct task_struct *task=create_process("bin/sbush");
         addTasktoQueue(task);
 
     init_process((uint64_t *)stack);

@@ -13,6 +13,8 @@ void execLine(char* input, char** argv, char** envp);
 char* last_path;
 char* ps1;
 
+char curr_shell_path[40];
+
 /* Read single line from input including pipes */
 int getline(char str[])
 {
@@ -129,7 +131,9 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
 
     return 0;
 }
-
+void chdir_shell(char *path){
+	strcpy(curr_shell_path,path);
+}
 
 /* Feature 1: cd command */
 void changeDir(char* dirPath, char* home)
@@ -137,10 +141,12 @@ void changeDir(char* dirPath, char* home)
     //do not copy character pointer, always use strcpy
     // Bug: cd - not working
     // Bug: cd ~/sbnix not working
-	char buffer[200]="\0";int i=0,j=0;
+    char buffer[200]="\0";int i=0,j=0;
     if(dirPath == NULL) {
 		getcwd(last_path, fileSize);
-        chdir(home);
+        //T chdir(home);
+	printf("curr path : %s\n",last_path);
+        chdir_shell(home);
     }
     else {
         if(!strcmp(dirPath, "~") || !strcmp(dirPath, ""))
@@ -158,8 +164,9 @@ void changeDir(char* dirPath, char* home)
 			strcpy(dirPath,buffer);
 		}
 		getcwd(last_path, fileSize);
-		if(chdir(dirPath))
-            printf("%s: No such file or directory.\n", dirPath);
+		chdir_shell(dirPath);
+		//T if(chdir_shell(dirPath))
+           //T  printf("%s: No such file or directory.\n", dirPath);
 	}
     
 }
@@ -298,21 +305,24 @@ void setPATH(char* newPath, char* envp[])
 
 void setPS1(char* new_ps, char* envp[], char *new_path)
 {
-//	int i=0, j=0, esc_flag=2;
+	int i=0, j=0, esc_flag=2;
 	char *curr_path;
-//	char home[fileSize], path[maxSize];
-    //char user[charSize], hostname[charSize];
+	//char home[fileSize];
+	//char  path[maxSize];
+    char user[charSize], hostname[charSize];
 	
     curr_path = malloc(fileSize * sizeof(char));
-//	getcwd(curr_path, fileSize);
-	strcpy(curr_path,"/home/sbush");
-	strcpy(new_path,"/home/sbush");
+	getcwd(curr_path, fileSize);
+//	strcpy(curr_path,"/home/sbush");
+//	strcpy(new_path,"/home/sbush");
 	
-//	memset(new_path, '\0', fileSize);
+	memset(new_path, '\0', fileSize);
 //	parsePATH(envp, home, path, user, hostname);
+	strcpy(hostname,"sbrocks");
+	strcpy(user,"moizali");
 	
     //abc\u@\h
-/*	while(new_ps[i] != '\0') {
+	while(new_ps[i] != '\0') {
 		if(new_ps[i] == '\\') {
 			esc_flag=1;
 		}
@@ -333,24 +343,24 @@ void setPS1(char* new_ps, char* envp[], char *new_path)
 			j++;
 		}
 		i++;
-	}*/
+	}
 }
 
 int execCmd(char** cmd, char** argv, char** envp)
 {
     char* input = cmd[0];
-    char home[fileSize], path[maxSize];
-    char user[charSize], hostname[charSize];
+    char home[fileSize]; //T, path[maxSize];
+    // T char user[charSize], hostname[charSize];
     
-    parsePATH(envp, home, path, user, hostname);
+//T    parsePATH(envp, home, path, user, hostname);
     // Check if valid command, ignore null or blank
     if( strcmp(input, " ") && strlen(input) > 0) {
         
         if(!strcmp(input, "cd"))
             changeDir(cmd[1], home);
-        else if(!strcmp(input, "exit"))
+       /*T else if(!strcmp(input, "exit"))
             exit(0);
-        else if(!strcmp(input, "set")) {
+*/        else if(!strcmp(input, "set")) {
             if(cmd[1] == NULL || cmd[2] == NULL)
                 printf("set: Insufficient arguments.\n");
             else if(cmd[3] != NULL)
@@ -363,9 +373,9 @@ int execCmd(char** cmd, char** argv, char** envp)
                     setPATH(cmd[2], envp);
             }
         }
-        else {
+ /*       else {
             execBin(input, path, cmd, envp);
-        }
+        }*/
         //printf("%s len(%d) ", input, strlen(input));
     }
     return 0;
@@ -497,7 +507,7 @@ int main(int argc, char* argv[], char** envp)
     ps1 = malloc(fileSize * sizeof(char));
 	last_path = malloc(fileSize * sizeof(char));
 	sh_target = malloc(fileSize * sizeof(char));
-//	getcwd(last_path, fileSize);
+	getcwd(last_path, fileSize);
     strcpy(ps1, "\\w");
     
     // Feature3: Handle case when input is passed using argv of sbush
@@ -516,9 +526,9 @@ int main(int argc, char* argv[], char** envp)
 				len_inp = strlen(input);
                 input[len_inp] = '\n';
                 input[len_inp+1] = '\0';
-                //getline(input);
+               // getline(input);
                 //if(strcmp(input, "\n"))
-  //              execLine(input, argv, envp);
+                execLine(input, argv, envp);
             }
         }
    // }
