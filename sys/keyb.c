@@ -9,7 +9,6 @@ extern void outportb(uint16_t port, uint8_t val);
 extern uint8_t inportb(uint16_t port);
 char kbuffer[512];
 int count=0;
-volatile bool flag=false;
 
 unsigned char keyborard_character_set_normal[128] =
 {
@@ -52,11 +51,11 @@ unsigned char keyborard_character_set_normal[128] =
     '!', '@', '#', '$', '%', '^', '&', '*',	/* 9 */
   '(', ')', '_', '+'
  
-};		
+};
 
 unsigned char Keyboard_character_set_shift[128] =
 {
-    0,  27, 
+    0,  27,
     '!', '@', '#', '$', '%', '^', '&', '*',	/* 9 */
   '(', ')', '_', '+',
     '\b',	/* Backspace */
@@ -107,7 +106,7 @@ void kb_handler()
   	check_code = inportb(0x60);
 
 	if (check_code == 28){
-		flag=false;
+        scan_flag=false;
 	}
 	if (check_code & 0x80){
 		if(check_code == 0x2A)
@@ -131,7 +130,7 @@ void kb_handler()
 					printk("\n");
 				else{
 					printk("%c",Keyboard_character_set_shift[check_code]);
-					if(flag==1){
+					if(scan_flag==1){
 						if(check_code == 14)
 							count--;
 						else
@@ -145,7 +144,7 @@ void kb_handler()
 					printk("\n");
 				else{
 					printk("%c",keyborard_character_set_normal[check_code]);
-					if(flag==1){
+					if(scan_flag==1){
 						if(check_code == 14)
 							count--;
 						else
@@ -166,10 +165,10 @@ int scank(char *buf){
     for(i=0;i<512;i++)
         kbuffer[i]='\0';
         
-    flag=true;
+    scan_flag=true;
     count=0;
           
-    while(flag);
+    while(scan_flag);
     while(kbuffer[j]!='\0'){
         buf[j]=kbuffer[j];
         j++;

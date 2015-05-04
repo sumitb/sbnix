@@ -1,6 +1,7 @@
 #ifndef __SCHED_H
 #define __SCHED_H
 
+#include <stdlib.h>
 #include <sys/defs.h>
 #include <sys/list.h>
 
@@ -87,6 +88,7 @@ void sys_yield();
 uint16_t sys_fork();
 void sys_exit(int status);
 int sys_execve(const char *filename, char *const argv[], char *const envp[]);
+pid_t sys_waitpid(pid_t pid, int *status, int options);
 
 /* Scheduler funnctions */
 void schedule();

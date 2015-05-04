@@ -3,6 +3,8 @@
 
 #include <sys/defs.h>
 
+volatile bool scan_flag;
+
 int printk(const char *fmt, ...);
 int scank(char *buf);
 int getcsr_x();

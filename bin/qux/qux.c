@@ -4,10 +4,8 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    write(1, "4\0", 1);
-    while(1) {
-        write(1, "Lorde \0", 6);
-    }
-    //printf("%d. Lorde\n", ++cnt);
+    int cnt = 0;
+    printf("%d. Lorde\n", ++cnt);
+    while(1);
     return 0;
 }

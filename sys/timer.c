@@ -104,7 +104,7 @@ void call_timer() {
     outportb(0x20, 0x20);
     /* Every 18 clocks (approximately 1 second), we will
      * display a message on the screen */
-    if (counter % 18 == 0) {
+    if (!scan_flag && (counter % 18 == 0)) {
         //printk("One second has passed\n");
         /* Context switch */
         schedule();

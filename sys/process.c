@@ -122,7 +122,8 @@ void init_process(uint64_t *stack)
 {
 	struct task_struct *process = getCurrentTask();
 	
-    //printk("Executing task %d\n", process->pid);
+    /* Update global current task */
+    currentTask = getCurrentTask();
 	__asm __volatile("movq %0, %%cr3":: "a"(process->cr3_address));
 	//__asm __volatile("movq %0,%%cr3" : : "r" (process->cr3_address));
 	__asm__ __volatile__ (

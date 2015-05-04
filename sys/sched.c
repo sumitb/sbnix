@@ -5,6 +5,7 @@
 
 static uint64_t num_task = 0;
 LIST_HEAD(runQueue);
+LIST_HEAD(waitQueue);
 
 /*
 void start_task() {
@@ -53,6 +54,20 @@ void sys_exit(int status) {
     //printSchedulerQueue();
     num_task--;
     schedule();
+}
+
+pid_t sys_waitpid(pid_t pid, int *status, int options) {
+     struct task_struct *tsk = NULL;
+    /* If child pid exists, wait */
+    list_for_each_entry(tsk, &runQueue, tasks) {
+        if(tsk->pid == pid) {
+            /* Move current task from head to tail */
+            list_move(&nextTask->tasks, &waitQueue);
+            schedule();
+            return pid;
+        }
+    }
+    return -1;
 }
 
 /*

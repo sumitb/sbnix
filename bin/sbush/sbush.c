@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define maxArgs 50
-#define charSize 512
+#define maxArgs 5
+#define charSize 22
 #define cmdSize maxArgs * charSize
-#define fileSize 1024
-#define maxSize 4096
+#define fileSize 512
+#define maxSize 1024
 
 void execLine(char* input, char** argv, char** envp);
 
