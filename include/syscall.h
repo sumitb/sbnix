@@ -5,7 +5,7 @@
 #include <sys/syscall.h>
 
 static __inline uint64_t syscall_0(uint64_t n) {
-	uint64_t ret;
+	int64_t ret;
    	__asm volatile("movq %1,%%rax;"
                    "int $80;"
                    "movq %%rax,%0;"
@@ -17,7 +17,7 @@ static __inline uint64_t syscall_0(uint64_t n) {
 }
 
 static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
-	uint64_t ret;
+	int64_t ret;
    	__asm volatile("movq %1,%%rax;"
                    "movq %2,%%rbx;"
                    "int $80;"
@@ -31,7 +31,7 @@ static __inline uint64_t syscall_1(uint64_t n, uint64_t a1) {
 }
 
 static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
-    uint64_t ret;
+    int64_t ret;
    	__asm volatile("movq %1,%%rax;"
                    "movq %2,%%rbx;"
                    "movq %3,%%rsi;"
@@ -47,7 +47,7 @@ static __inline uint64_t syscall_2(uint64_t n, uint64_t a1, uint64_t a2) {
 }
 
 static __inline uint64_t syscall_3(uint64_t n, uint64_t a1, uint64_t a2, uint64_t a3) {
-    uint64_t ret;
+    int64_t ret;
    	__asm volatile("movq %1,%%rax;"
                    "movq %2,%%rbx;"
                    "movq %3,%%rsi;"

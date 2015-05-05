@@ -96,14 +96,16 @@ struct task_struct *create_process(const char *binary){
 	process->mm->vma_addr=NULL;
 	process->heap.bump_ptr=BUMP_PTR;
 	strcpy(process->bin_name, binary);
-	
+	process->is_sleep=false;
+    process->sleep_time=0;
+
 	//intialize  dup array
 	for(int i=0;i<25;i++){
 		process->dup_arr[i]=i;
 	}
 	process->fd_cnt=2;
-	
-	process->stack=(uint64_t*)STACK_MEM_TOP;
+
+    process->stack=(uint64_t*)STACK_MEM_TOP;
 	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
 	
 	//process->stack[63]= GDT_DS | P | W | DPL3,  /*** user data segment descriptor ***/

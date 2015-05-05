@@ -6,7 +6,7 @@ int main(){
     char buf[30];
     strcpy(buf,"hello");
     for(int i=0; i<5; i++){
-        printf("%s", buf[i]);
+        printf("%c", buf[i]);
     }
     while(1);
     return 0;

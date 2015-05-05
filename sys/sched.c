@@ -39,32 +39,120 @@ int addTasktoQueue(struct task_struct *task) {
 }
 
 void printSchedulerQueue() {
-     struct task_struct *tsk = NULL;
+     struct task_struct *process = NULL;
      printk("PCB READY QUEUE: \n");
-     list_for_each_entry(tsk, &runQueue, tasks) {
-         printk("PID: %d\n", tsk->pid);
+     list_for_each_entry(process, &runQueue, tasks) {
+         printk("PID: %d\n", process->pid);
      }
 }
 
-void sys_exit(int status) {
-    struct task_struct *process = getCurrentTask();
-    
-    /* Delete current task from running queue */
-    list_del(&process->tasks);
-    //printSchedulerQueue();
-    num_task--;
-    schedule();
+int64_t sys_getpid(void) {
+    return currentTask->pid;
 }
 
-pid_t sys_waitpid(pid_t pid, int *status, int options) {
-     struct task_struct *tsk = NULL;
+int64_t sys_getppid(void) {
+    return currentTask->ppid;
+}
+
+int64_t sys_exit(int error_code) {
+    struct task_struct *process = getCurrentTask();
+    
+    /* Wake parent process before exiting */
+    awakepid(process->ppid);
+    /* Delete current task from running queue */
+    list_del(&process->tasks);
+    num_task--;
+    schedule();
+    return -1;
+}
+
+int64_t sys_sleep(uint64_t seconds) {
+    currentTask->is_sleep = true;
+    currentTask->sleep_time = seconds;
+    /* Move current task to wait queue */
+    list_move(&currentTask->tasks, &waitQueue);
+    schedule();
+    return 0;
+}
+
+void awake() {
+    struct task_struct *process = NULL;
     /* If child pid exists, wait */
-    list_for_each_entry(tsk, &runQueue, tasks) {
-        if(tsk->pid == pid) {
-            /* Move current task from head to tail */
-            list_move(&nextTask->tasks, &waitQueue);
+    list_for_each_entry(process, &waitQueue, tasks) {
+        if(process->is_sleep) {
+            process->sleep_time--;
+            if(process->sleep_time == 0) {
+                /* Move current task to run queue */
+                list_move(&process->tasks, &runQueue);
+            }
+        }
+    }
+}
+
+int64_t sys_waitpid(pid_t pid, int *status_addr, int options) {
+    struct task_struct *process = NULL;
+    /* If child pid exists, wait */
+    list_for_each_entry(process, &runQueue, tasks) {
+        if(process->pid == pid) {
+            /* Move current task to wait queue */
+            list_move(&currentTask->tasks, &waitQueue);
             schedule();
             return pid;
+        }
+    }
+    list_for_each_entry(process, &waitQueue, tasks) {
+        if(process->pid == pid) {
+            /* Move current task to wait queue */
+            list_move(&currentTask->tasks, &waitQueue);
+            schedule();
+            return pid;
+        }
+    }
+    return -1;
+}
+
+/* Awake given process from wait queue */
+void awakepid(pid_t pid) {
+    struct task_struct *process = NULL;
+    /* If child pid exists, wait */
+    list_for_each_entry(process, &waitQueue, tasks) {
+        if(process->pid == pid) {
+            /* Move current task to run queue */
+            list_move(&process->tasks, &runQueue);
+            break;
+        }
+    }
+}
+
+int64_t sys_kill(int pid, int sig) {
+    /* We are only handling SIGKILL signal here */
+    if(sig == SIGKILL) {
+        /* If current process, exit */
+        if(pid == sys_getpid())
+            sys_exit(0);
+        else {
+            struct task_struct *process = NULL;
+            /* If pid exists, kill */
+            list_for_each_entry(process, &runQueue, tasks) {
+                if(process->pid == pid) {
+                    /* Wake parent process before exiting */
+                    awakepid(process->ppid);
+                    /* Delete task from running queue */
+                    list_del(&process->tasks);
+                    num_task--;
+                    return 0;
+                }
+            }
+            list_for_each_entry(process, &waitQueue, tasks) {
+                if(process->pid == pid) {
+                    /* Wake parent process before exiting */
+                    awakepid(process->ppid);
+                    /* Delete task from wait queue */
+                    list_del(&process->tasks);
+                    num_task--;
+                    return 0;
+                }
+            }
         }
     }
     return -1;
@@ -90,7 +178,9 @@ void schedule() {
     nextTask = getNextTask();
     currentTask = getCurrentTask();
     
-    /* Move current task from head to tail */
+    /* Move current task from head to tail.
+     * We are moving next task because it'll become current task
+     */
     list_move_tail(&nextTask->tasks, &runQueue);
     
     /* Do context switch */

@@ -264,7 +264,7 @@ void protection_fault() {
 	printk("protection fault\n");
 }
 
-uint64_t sys_brk(uint64_t bump_addr){
+int64_t sys_brk(uint64_t bump_addr){
 	struct task_struct *proc = getCurrentTask();
 	//static uint64_t bump_ptr=BUMP_PTR;
 	//static uint64_t rem_size=0; //remaining size in page after allocating memory

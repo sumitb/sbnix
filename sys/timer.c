@@ -106,6 +106,8 @@ void call_timer() {
      * display a message on the screen */
     if (!scan_flag && (counter % 18 == 0)) {
         //printk("One second has passed\n");
+        /* Wake any sleeping processes from wait queue */
+        awake();
         /* Context switch */
         schedule();
     }

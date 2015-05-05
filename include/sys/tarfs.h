@@ -39,12 +39,6 @@ struct tarfs {
 	}__attribute__((packed))tarfs_ind[MAX_BIN];
 
 void tarfs_initialize();
-uint64_t sys_getdents(int x,dirent* dirp,int count);
 uint64_t check_file(const char *file_name);
-uint16_t sys_open(const char *file_name, int flags);
-char * sys_getcwd();
-int sys_pipe(int fd[]);
-int sys_dup2(int old_fd, int new_fd);
-int sys_closedir(void* dir_type);
 
 #endif
