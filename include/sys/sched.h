@@ -5,9 +5,10 @@
 #include <sys/defs.h>
 #include <sys/list.h>
 
+#define SIGKILL             9
 #define NR_TASKS            128
 #define TRAP_SIZE           5
-#define TSS_OFFSET          2
+#define TSS_OFFSET          1
 #define BINARY_LEN          24
 #define USER_STACK_SIZE     512
 #define KERNEL_STACK_SIZE   512
@@ -50,14 +51,14 @@ struct heap_mem {
 
 struct task_struct {
     volatile int16_t state;    /* -1 unrunnable, 0 runnable, >0 stopped */
-    uint32_t flags;     /* REML: per process flags, defined below */
 
     uint16_t pid;
     uint16_t ppid;
     char bin_name[BINARY_LEN];
+    bool is_sleep;
+    uint64_t sleep_time;
     
-    //uint64_t *stack;     /* user stack */
-    uint64_t *stack;
+    uint64_t *stack;     /* user stack */
     uint64_t kstack[KERNEL_STACK_SIZE];     /* maintain one kernel stack per task */
 
     uint64_t *kernel_rsp;
@@ -84,8 +85,10 @@ struct task_struct *nextTask;
 uint16_t avail_pid;
 
 /* Scheduler funnctions */
+void awake();
 void schedule();
 void sys_yield();
+void awakepid(pid_t pid);
 void printSchedulerQueue();
 struct task_struct *getNextTask();
 struct task_struct *getCurrentTask();

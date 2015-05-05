@@ -54,6 +54,8 @@ int64_t sys_fork() {
 		cproc->mm->vma_addr=NULL;
 
         strcpy(cproc->bin_name, (const char*)pproc->bin_name);
+        cproc->is_sleep=false;
+        cproc->sleep_time=0;
 		uint16_t child_id=cproc->pid;
 		
 		//copy user stack
