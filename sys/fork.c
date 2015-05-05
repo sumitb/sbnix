@@ -2,10 +2,11 @@
 #include <sys/tarfs.h>
 #include <sys/sched.h>
 #include <sys/memory.h>
+#include <sys/syscall.h>
 #include <sys/console.h>
 
 
-int sys_execve(const char *filename,char *const argv[],char *const envp[]) {
+int64_t sys_execve(const char *filename,char *const argv[],char *const envp[]) {
 	/* File type is not ELF */
     if(!check_file(filename))
         return -1;
@@ -18,7 +19,7 @@ int sys_execve(const char *filename,char *const argv[],char *const envp[]) {
     return 0;
 }
 
-uint16_t sys_fork() {
+int64_t sys_fork() {
     //uint64_t pproc_rsp;
     //__asm__ __volatile__("movq %%rsp, %0":"=g"(pproc_rsp)::"memory");
 	struct task_struct *pproc = getCurrentTask();

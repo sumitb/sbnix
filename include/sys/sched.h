@@ -83,15 +83,9 @@ struct task_struct *nextTask;
 /* Pre-increment available pid while assigning */
 uint16_t avail_pid;
 
-/* Process related Syscalls */
-void sys_yield();
-uint16_t sys_fork();
-void sys_exit(int status);
-int sys_execve(const char *filename, char *const argv[], char *const envp[]);
-pid_t sys_waitpid(pid_t pid, int *status, int options);
-
 /* Scheduler funnctions */
 void schedule();
+void sys_yield();
 void printSchedulerQueue();
 struct task_struct *getNextTask();
 struct task_struct *getCurrentTask();

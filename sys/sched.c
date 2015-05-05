@@ -39,32 +39,66 @@ int addTasktoQueue(struct task_struct *task) {
 }
 
 void printSchedulerQueue() {
-     struct task_struct *tsk = NULL;
+     struct task_struct *process = NULL;
      printk("PCB READY QUEUE: \n");
-     list_for_each_entry(tsk, &runQueue, tasks) {
-         printk("PID: %d\n", tsk->pid);
+     list_for_each_entry(process, &runQueue, tasks) {
+         printk("PID: %d\n", process->pid);
      }
 }
 
-void sys_exit(int status) {
+int64_t sys_getpid(void) {
+    return currentTask->pid;
+}
+
+int64_t sys_getppid(void) {
+    return currentTask->ppid;
+}
+
+int64_t sys_exit(int error_code) {
     struct task_struct *process = getCurrentTask();
     
     /* Delete current task from running queue */
     list_del(&process->tasks);
-    //printSchedulerQueue();
     num_task--;
     schedule();
+    return -1;
 }
 
-pid_t sys_waitpid(pid_t pid, int *status, int options) {
-     struct task_struct *tsk = NULL;
+int64_t sys_sleep(uint64_t seconds) {
+    return -1;
+}
+
+int64_t sys_waitpid(pid_t pid, int *status_addr, int options) {
+    struct task_struct *process = NULL;
     /* If child pid exists, wait */
-    list_for_each_entry(tsk, &runQueue, tasks) {
-        if(tsk->pid == pid) {
+    list_for_each_entry(process, &runQueue, tasks) {
+        if(process->pid == pid) {
             /* Move current task from head to tail */
             list_move(&nextTask->tasks, &waitQueue);
             schedule();
             return pid;
+        }
+    }
+    return -1;
+}
+
+int64_t sys_kill(int pid, int sig) {
+    struct task_struct *process = NULL;
+    /* If child pid exists, kill */
+    list_for_each_entry(process, &runQueue, tasks) {
+        if(process->pid == pid) {
+            /* Delete child task from running queue */
+            list_del(&process->tasks);
+            num_task--;
+            return 0;
+        }
+    }
+    list_for_each_entry(process, &waitQueue, tasks) {
+        if(process->pid == pid) {
+            /* Delete child task from wait queue */
+            list_del(&process->tasks);
+            num_task--;
+            return 0;
         }
     }
     return -1;

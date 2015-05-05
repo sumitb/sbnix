@@ -59,7 +59,7 @@ char * sys_getcwd(char *dir_name, uint64_t size){
 }
 
 //uint64_t open(char *file_name){
-uint16_t sys_open(const char *file_name, int flags){
+int64_t sys_open(const char *file_name, int flags){
 	int ind=0;
 	int len=0;
 	len=strlen(file_name);
@@ -79,7 +79,7 @@ uint16_t sys_open(const char *file_name, int flags){
 	printk("No such file\n");
 	return 0;
 }
-uint64_t sys_getdents(int x,dirent* dirp,int count){
+int64_t sys_getdents(int x,dirent* dirp,int count){
    // int x=fd;
     int i=0;
     int ind=0;
@@ -109,7 +109,7 @@ uint64_t sys_getdents(int x,dirent* dirp,int count){
  }
 
 //void close(uint64_t addr){
-int sys_close(int filedes){
+int64_t sys_close(int32_t filedes) {
 	int ind=0;
 	for(ind=0;ind<MAX_BIN;ind++){
 //	if(addr==tarfs_ind[ind].bin_start_addr){
