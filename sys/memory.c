@@ -37,17 +37,20 @@ uint64_t mem_allocate(){
  * kernel space is already trusted just rewite on it
  */
 uint64_t kmalloc(uint64_t size){
-	int cnt=0;
-	int i=0;
-	cnt = size/4096;
-	if(size%4096>0)
-		cnt++;
-	uint64_t ret_addr;
-	ret_addr=(uint64_t)(KERN_MEM + mem_allocate());
-	for(i=1;i<cnt;i++){
-		mem_allocate();
+	if(size>0){
+		int cnt=0;
+		int i=0;
+		cnt = size/4096;
+		if(size%4096>0)
+			cnt++;
+		uint64_t ret_addr;
+		ret_addr=(uint64_t)(KERN_MEM + mem_allocate());
+		for(i=1;i<cnt;i++){
+			mem_allocate();
+		}
+		return ret_addr;
 	}
-	return ret_addr;
+	return 0;
 }
 
 void  mem_free(uint64_t addr_t){

@@ -64,7 +64,10 @@ struct task_struct {
     uint64_t cr3_address;
     uint64_t pml4e_addr;            /* REML: Virtual address of cr3 */
     uint64_t entry_pt;
-    
+    struct File fd[25];
+	uint64_t dup_arr[25];
+	int fd_cnt;
+	
     vma *heap_vma;
     struct heap_mem heap;
     struct mm_struct *mm;

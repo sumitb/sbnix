@@ -60,7 +60,7 @@ struct File{
     dirent directory;
     uint64_t offset;
     int flags;
-}fd[200];
+};
 struct opdir {
 	int fd;
 	long size;

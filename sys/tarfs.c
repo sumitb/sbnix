@@ -3,7 +3,7 @@
 #include <sys/memory.h>
 #include <sys/sched.h>
 
-int file_fd=3;
+
 
 void tarfs_initialize(){
 	struct posix_header_ustar *tarfs_str;
@@ -63,17 +63,18 @@ uint16_t sys_open(const char *file_name, int flags){
 	int ind=0;
 	int len=0;
 	len=strlen(file_name);
+	struct task_struct *process = getCurrentTask();
 	for(ind=0;ind<MAX_BIN;ind++){
 	if((strncmp(file_name,tarfs_ind[ind].name,len)==0) && ((tarfs_ind[ind].name[len]=='/' && tarfs_ind[ind].name[len+1]=='\0') || tarfs_ind[ind].name[len]=='\0')){		
 	// && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
 	tarfs_ind[ind].ref_cnt++;
-        fd[file_fd].offset=tarfs_ind[ind].bin_start_addr;
-        fd[file_fd].flags=flags;
+        process->fd[process->fd_cnt].offset=tarfs_ind[ind].bin_start_addr;
+        process->fd[process->fd_cnt].flags=flags;
        	//strcpy(fd[file_fd].path,file_name);
-       	strcpy(fd[file_fd].path,tarfs_ind[ind].name);
-        file_fd++;
+       	strcpy(process->fd[process->fd_cnt].path,tarfs_ind[ind].name);
+        process->fd_cnt++;
 	//	return tarfs_ind[ind].bin_start_addr;
-        return file_fd-1;
+        return process->fd_cnt-1;
 		}
 	}
 	printk("No such file\n");
@@ -86,12 +87,13 @@ uint64_t sys_getdents(int x,dirent* dirp,int count){
     uint64_t num_bytes=0;
      //dirent *arr=(dirent *)(KERN_MEM+mem_allocate());
      dirent *arr=dirp;
-     int len=strlen(fd[x].path);
+	 struct task_struct *process = getCurrentTask();
+     int len=strlen(process->fd[x].path);
  
     // void * buff=malloc(4096);
     if(len>0){
     for(ind=0;ind<MAX_BIN;ind++){
-         if(strncmp(fd[x].path,tarfs_ind[ind].name,len)==0 && (tarfs_ind[ind].name[len]!='\0')){
+         if(strncmp(process->fd[x].path,tarfs_ind[ind].name,len)==0 && (tarfs_ind[ind].name[len]!='\0')){
              if((strlen(tarfs_ind[ind].name))>len){
                 strcpy(arr[i].d_name,tarfs_ind[ind].name);
                  arr[i].d_off=tarfs_ind[ind].bin_start_addr;
@@ -111,13 +113,14 @@ uint64_t sys_getdents(int x,dirent* dirp,int count){
 //void close(uint64_t addr){
 int sys_close(int filedes){
 	int ind=0;
+	struct task_struct *process = getCurrentTask();
 	for(ind=0;ind<MAX_BIN;ind++){
 //	if(addr==tarfs_ind[ind].bin_start_addr){
-    	    if(tarfs_ind[ind].bin_start_addr==fd[filedes].offset){
+    	    if(tarfs_ind[ind].bin_start_addr==process->fd[filedes].offset){
     		tarfs_ind[ind].ref_cnt--;
-    		fd[filedes].offset=0;
-    		strcpy(fd[filedes].path," ");
-    		fd[filedes].flags=0;
+    		process->fd[filedes].offset=0;
+    		strcpy(process->fd[filedes].path," ");
+    		process->fd[filedes].flags=0;
 		return 1;
 	    }
 	}

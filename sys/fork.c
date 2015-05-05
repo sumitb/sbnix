@@ -92,23 +92,32 @@ uint16_t sys_fork() {
 		}
 		
 		cproc->entry_pt=pproc->entry_pt;
-		
+		//copy fd table
+		cproc->fd_cnt=pproc->fd_cnt;
+		for(int i=0; i<=pproc->fd_cnt;i++){
+			cproc->fd[i].offset=pproc->fd[i].offset;
+			strcpy(cproc->fd[i].path,pproc->fd[i].path);
+		}
+		for(int i=0;i<25;i++){
+		cproc->dup_arr[i]=i;
+		}
 		//copy heap
 		cproc->heap.bump_ptr=BUMP_PTR;
 		uint64_t size = pproc->heap.bump_ptr - BUMP_PTR;
-		uint64_t *heap_page_virtual=(uint64_t *)kmalloc(pproc->heap.bump_ptr - BUMP_PTR);
-		uint64_t *heap_page_physical=(uint64_t *)((void *)heap_page_virtual-KERN_MEM);
-        __asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
-        
-        uint64_t *temp_heap = (uint64_t*)BUMP_PTR;
-        for(int i=0; i < size; i++) {
-			heap_page_virtual[i] = temp_heap[i];
+		if(size){
+			uint64_t *heap_page_virtual=(uint64_t *)kmalloc(pproc->heap.bump_ptr - BUMP_PTR);
+			uint64_t *heap_page_physical=(uint64_t *)((void *)heap_page_virtual-KERN_MEM);
+			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
+			
+			uint64_t *temp_heap = (uint64_t*)BUMP_PTR;
+			for(int i=0; i < size; i++) {
+				heap_page_virtual[i] = temp_heap[i];
+			}
+			
+			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
+			map_kernel(pml4e_chld, BUMP_PTR, (uint64_t)heap_page_physical, pproc->heap.bump_ptr - BUMP_PTR);
+			__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 		}
-		
-		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-		map_kernel(pml4e_chld, BUMP_PTR, (uint64_t)heap_page_physical, pproc->heap.bump_ptr - BUMP_PTR);
-		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
-
 		//proc->process->kstack[491] = (uint64_t)(&irq0+34);
 		for(int i=KERNEL_STACK_SIZE-1; i>=STACK_OFFSET; i--) {
 			cproc->kstack[i]=pproc->kstack[i];

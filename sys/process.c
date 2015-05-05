@@ -97,6 +97,12 @@ struct task_struct *create_process(const char *binary){
 	process->heap.bump_ptr=BUMP_PTR;
 	strcpy(process->bin_name, binary);
 	
+	//intialize  dup array
+	for(int i=0;i<25;i++){
+		process->dup_arr[i]=i;
+	}
+	process->fd_cnt=2;
+	
 	process->stack=(uint64_t*)STACK_MEM_TOP;
 	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
 	

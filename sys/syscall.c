@@ -10,29 +10,50 @@
 volatile int ggd=0;
 
 int64_t sys_write(uint64_t fildes, char *buf, uint64_t size) {
-    char tem_buf[size];
+	struct task_struct *process = getCurrentTask();
+	if(process->dup_arr[fildes]!=fildes){
+		//write to pipe buffer
+		char *pipe_temp_buf=(char *)process->fd[process->dup_arr[fildes]].offset;
+		int len=strlen(pipe_temp_buf);
+		for(int i=0;i<size;i++,len++)
+			pipe_temp_buf[len]=buf[i];
+		return size;
+	}
+	else if(fildes==1 || fildes==2){
+		char tem_buf[size];
 
-    strncpy(tem_buf,buf,size);
-    tem_buf[size] = '\0';
-    return printk(tem_buf);
+		strncpy(tem_buf,buf,size);
+		tem_buf[size] = '\0';
+		return printk(tem_buf);
+	}
     /*if(fildes==1 || fildes==2) {
     }
-    return -1;
+    return 1;
     */
+	return 0;
 }
 
 int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
 
     if(size>0){
-    	char tem_buf[size];
-    	tem_buf[size] = '\0';
-    	uint64_t len=0;
-    	len = scank(tem_buf);
-		if(len>size)
-    		len=size;
-    	strncpy(buf,tem_buf,len);
-    	buf[len]='\0';
-    	return len;
+		struct task_struct *process = getCurrentTask();
+		if(process->dup_arr[fildes]!=fildes){
+			//read from pipe buffer
+			char *pipe_temp_buf=(char *)process->fd[process->dup_arr[fildes]].offset;
+			strcpy(buf,pipe_temp_buf);
+			return strlen(pipe_temp_buf);
+		}
+		else if(fildes==0){
+			char tem_buf[size];
+			tem_buf[size] = '\0';
+			uint64_t len=0;
+			len = scank(tem_buf);
+			if(len>size)
+				len=size;
+			strncpy(buf,tem_buf,len);
+			buf[len]='\0';
+			return len;
+		}
     }
     return 0;
 }
@@ -84,7 +105,7 @@ void syscall_handler(){
 		case SYS_open:
             {
                 uint16_t fd = 0;
-                //fd = sys_open((const char *)param_1, (int)param_2);
+                fd = sys_open((const char *)param_1, (int)param_2);
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)fd):"cc", "memory");
             }
             break;
@@ -119,6 +140,18 @@ void syscall_handler(){
             {
                     uint64_t num_bytes=sys_getdents((int)param_1,(dirent*)param_2,(int)param_3);
                     __asm__ __volatile__("movq %0, %%rax;" ::"a" ((uint64_t)num_bytes):"cc", "memory");
+        	}
+            break;
+		case SYS_pipe:
+            {
+                    int num=sys_pipe((int *)param_1);
+                    __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)num):"cc", "memory");
+        	}
+            break;
+		case SYS_dup2:
+            {
+                    int ret=sys_dup2((int)param_1,(int)param_2);
+                    __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)ret):"cc", "memory");
         	}
             break;
 	}
