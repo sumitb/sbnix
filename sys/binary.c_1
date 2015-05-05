@@ -1,0 +1,47 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void ps(){
+
+    struct task_struct *temp=runQueue;
+
+    while(temp!=NULL){
+        printf("%d,%s",temp->pid,temp->pathname);
+        temp=temp->next;
+    }
+
+    temp=waitqueue;
+    while(temp!=NULL){
+        printf("%d,%s",temp->pid,temp->pathname);
+        temp=temp->next;
+    }
+
+
+
+}
+
+void ls(){
+    char *buf;
+    char *name=getcwd(buf);
+    DIR* dirn=opendir(name);
+    dirent *arr=(dirent *)(KERN_MEM+mem_allocate(4096));
+    memset(arr,'0',4096);
+    readdir(dirn);
+
+}
+
+
+
