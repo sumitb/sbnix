@@ -42,4 +42,5 @@ int64_t sys_close(int32_t filedes);
 int64_t sys_getdents(int x,dirent* dirp,int count);
 int64_t sys_read(uint64_t fildes, char *buf, uint64_t size);
 int64_t sys_write(uint64_t fildes, char *buf, uint64_t size);
+off_t sys_lseek(int fildes, off_t offset, int whence);
 #endif

@@ -60,6 +60,7 @@ struct File{
     dirent directory;
     uint64_t offset;
     int flags;
+    uint64_t seek;
 }fd[200];
 struct opdir {
 	int fd;

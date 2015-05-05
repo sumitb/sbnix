@@ -4,6 +4,22 @@
 #include <sys/console.h>
 #define MAXLEN 1024
 
+int test_lseek(const char * path){
+    char buf[40];
+    uint64_t size;
+    int file_des=open(path,0);
+       size= read(file_des,buf,30);
+       printf("read\n");
+      printf("%s",(char*)buf);
+       printf("%d",size);
+    off_t offset=lseek(file_des,20,0);
+    printf("lseek\n");
+    printf("%d",offset);
+    size=read(file_des,buf,30);
+    printf("read\n");
+    printf(buf);
+    return 0;
+}
 
 int main(int argc, char* argv[], char* envp[])
 {
@@ -93,7 +109,7 @@ int main(int argc, char* argv[], char* envp[])
 */
 //    listdir("/");
    /* write(1, "ABCD\0", 2);
-*/
+
 	int fd=0;
 	char *str = (char *)malloc(20);
 	//int num=0;
@@ -122,5 +138,11 @@ int main(int argc, char* argv[], char* envp[])
 	printf("val : %d\n",y);
     while(1);
     printk("Hello World 13 Apr\n");
+    */
+    int s=test_lseek("bin/sbush");
+        if(s==0)
+            printf("success\n");
+        else
+            printf("fail\n");
     return 0;
 }

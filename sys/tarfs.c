@@ -71,6 +71,7 @@ int64_t sys_open(const char *file_name, int flags){
         fd[file_fd].flags=flags;
        	//strcpy(fd[file_fd].path,file_name);
        	strcpy(fd[file_fd].path,tarfs_ind[ind].name);
+        fd[file_fd].seek=0;
         file_fd++;
 	//	return tarfs_ind[ind].bin_start_addr;
         return file_fd-1;

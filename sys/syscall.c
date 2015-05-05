@@ -84,6 +84,12 @@ void syscall_handler(){
 		case SYS_write:
             sys_write((uint64_t)param_1, (char*)param_2, (uint64_t)param_3);
             break;
+        case SYS_lseek:
+            {
+                int64_t offset=sys_lseek((int)param_1,(off_t)param_2,(int)param_3);
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)offset):"cc", "memory");
+            }
+            break;
 		case SYS_close:
             {
                 int64_t fd = 0;

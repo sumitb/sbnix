@@ -18,7 +18,15 @@ int csr_x = 0, csr_y = 0;     // Current cursor position
 // TODO: Write clear func and test it's functionality
 void reset() {
     //av_vid = A_VIDEO;
-    return;
+	char *new=A_VIDEO;
+    for(int j=0;j<=80*15*2;j++){
+		*new=' ';
+		new++;
+		*new=0x07;
+		new++;
+	}
+	csr_x=0;
+	csr_y=0;
  }
 
 int getcsr_x() {
