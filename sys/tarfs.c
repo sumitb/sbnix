@@ -1,4 +1,5 @@
 #include <sys/console.h>
+#include <string.h>
 #include <sys/tarfs.h>
 #include <sys/memory.h>
 
@@ -39,15 +40,94 @@ uint64_t check_file(const char *file_name){
 	return 0;
 }
 
-//uint64_t open(char *file_name){
 uint16_t sys_open(const char *file_name, int flags){
+    int ind=0;
+    for(ind=0;ind<MAX_BIN;ind++){
+        if(strcmp(file_name,tarfs_ind[ind].name)==0){   // && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
+                tarfs_ind[ind].ref_cnt++;
+                fd[file_fd].offset=tarfs_ind[ind].bin_start_addr;
+                fd[file_fd].flags=flags;
+                strcpy(fd[file_fd].path,file_name);
+                fd[file_fd].seek=0;
+                file_fd++;
+                return file_fd-1;
+        }}
+                printk("No such file\n");
+                return -1;
+}
+int sys_getdents(int x,dirent* dirp,int count){
+  // int x=fd;
+   int i=0;
+   int ind=0;
+    dirent *arr=(dirent *)(KERN_MEM+mem_allocate()); 
+    memset(arr,'0',4096);
+    int len=strlen(fd[x].path);
+
+   // void * buff=malloc(4096);
+	for(ind=0;ind<MAX_BIN;ind++){
+		if(strncmp(fd[x].path,tarfs_ind[ind].name,len)==0 && tarfs_ind[ind].name[len-1]=='/'){
+            if((strlen(tarfs_ind[ind].name))>len){
+		       strcpy(arr[i].d_name,tarfs_ind[ind].name);
+                arr[i].d_off=tarfs_ind[ind].bin_start_addr;
+         //   printk("%s\n",tarfs_ind[ind].name);
+                i++;
+	         }
+
+        }
+    }
+           // buff=(void*)arr[i];
+           dirp=arr;
+    if(i>0)
+        return 4096;
+    else
+        return 0;
+
+
+}
+
+off_t sys_lseek(int fildes,off_t offset,int whence){
+
+    if(whence==0){    //set
+       fd[fildes].seek=offset;
+       return fd[fildes].seek;
+    }
+    if(whence==1){        //current
+        fd[fildes].seek+=offset;
+       return fd[fildes].seek;
+
+    }
+
+    if(whence==2){   //end
+        int ind=0;
+        while(strcmp(fd[fildes].path,tarfs_ind[ind].name)!=0){
+            ind++;
+        }
+        fd[fildes].seek=tarfs_ind[ind].file_size+offset;
+       return fd[fildes].seek;
+
+    }
+    return -1;
+}
+
+
+/*
+//uint64_t open(char *file_name){
+int sys_open(const char *file_name, int flags){
+>>>>>>> moiz
 	int ind=0;
 	for(ind=0;ind<MAX_BIN;ind++){
 	if(strcmp(file_name,tarfs_ind[ind].name)==0 && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
 		tarfs_ind[ind].ref_cnt++;
+<<<<<<< HEAD
         fd[file_fd].offset=tarfs_ind[ind].bin_start_addr;
         fd[file_fd].flags=flags;
        	strcpy(fd[file_fd].path,file_name);
+=======
+        fd[file_fd]->offset=tarfs_ind[ind].bin_start_addr;
+        fd[file_fd]->flags=flags;
+        fd[file_fd]->seek=0;
+       strcpy(fd[file_fd]->path,file_name);
+>>>>>>> moiz
         file_fd++;
 	//	return tarfs_ind[ind].bin_start_addr;
         return file_fd-1;
@@ -56,7 +136,6 @@ uint16_t sys_open(const char *file_name, int flags){
 	printk("No such file\n");
 	return -1;
 }
-/*
 //void close(uint64_t addr){
 int close(int filedes){
 	int ind=0;
@@ -67,6 +146,7 @@ int close(int filedes){
     fd[filedes]->offset=0;
     strcpy(fd[filedes]->path," ");
     fd[filedes]->flag=0;
+    fd[fildes]->seek=0;
 	return 0;
 	    }
 	}
@@ -118,6 +198,7 @@ dirent *readdir(void *dir){
     int len=strlen(dir_type->dir_name);
     dirent *arr=(dirent *)malloc(4096); 
     memset(arr,'0',4096);
+    void * buff=malloc(4096);
 	for(ind=0;ind<MAX_BIN;ind++){
 		if(strncmp(dir_type->dir_name,tarfs_ind[ind].name,len)==0 && tarfs_ind[ind].name[len]=='/'){
                                                  //   && strcmp(tarfs_ind[ind].typeflag,FILE)==0 && (strcmp(dir,tarfs_ind[ind].name))){
@@ -126,7 +207,9 @@ dirent *readdir(void *dir){
                 arr[i]->d_off=tarfs_[ind].bin_start_addr;
          //   printk("%s\n",tarfs_ind[ind].name);
                 i++;
-		}
+	         }
+            buff=(void*)arr[i];
+    
 	}
 }
 	return arr;

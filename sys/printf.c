@@ -8,8 +8,6 @@
 //char *av_vid = A_VIDEO;       // Current addr of video buffer
 int csr_x = 0, csr_y = 0;     // Current cursor position
 void scroll();
-//void window_scroll();
-//int* buffer[4096];
 /*
  * value of a_vid = 0xb80000
  * increment it by 1 byte
@@ -98,6 +96,24 @@ void c_printf(char ch) {
     }
     return;
 }
+
+void clr_scr(){
+
+	char *new=A_VIDEO;
+for(int j=0;j<=80*15*2;j++){
+		*new=' ';
+		new++;
+		*new=0x07;
+		new++;
+	}
+	csr_x=0;
+	csr_y=0;	
+									
+
+
+}
+
+
 
 /* Print a string to video buffer */
 void s_printf(char str[]) {
@@ -222,7 +238,7 @@ void scroll(){
 		*new=0x07;
 		new++;
 	}
-	for(int j=0;j<=80;j++){
+for(int j=0;j<=80;j++){
 		*new=' ';
 		new++;
 		*new=0x07;

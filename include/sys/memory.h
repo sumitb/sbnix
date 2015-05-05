@@ -11,6 +11,7 @@
 #define BUMP_PTR 0xffffff0f80000000
 #define END_LIMIT 0x7ffe000
 #define VIDEO_MEM 0xb8000
+#define BUMP_PTR 0xffffff0f80000000
 
 #define PAGE_PERM 7
 #define PAGE_PRESENT 1

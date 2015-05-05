@@ -5,7 +5,6 @@
 #include <sys/memory.h>
 #include <sys/console.h>
 #include<stdlib.h>
-
 volatile int gdb=0;
 //static uint64_t avail_pid = 0;
 
@@ -110,7 +109,7 @@ struct task_struct *create_process(const char *binary){
     process->kstack[62] = (uint64_t)(&process->stack[63]);      //  ESP
     process->kstack[61] = 0x246;                           // EFLAGS
     process->kstack[60] = 0x1b ;                           //CS
-    
+   // process->pathname=;
     elf_load(process, binary);
     //process->heap_vma->vm_end = process->heap_vma->vm_start;
     process->kstack[59] = (uint64_t)process->entry_pt;  //RIP

@@ -60,10 +60,11 @@ typedef struct dir{
   }__attribute__((packed))direct;
 
 struct File{
-    char path[32];
+    char path[40];
     dirent directory;
     uint64_t offset;
     int flags;
+    uint64_t seek;
 }__attribute__((packed))fd[200];
 
 enum { O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000 };

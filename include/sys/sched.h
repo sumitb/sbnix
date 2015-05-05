@@ -52,7 +52,7 @@ struct task_struct {
     uint64_t cr3_address;
     uint64_t pml4e_addr;            /* REML: Virtual address of cr3 */
     uint64_t entry_pt;
-    
+    char *pathname;    //added for pathname of the process
     vma *heap_vma;
     struct mm_struct *mm;
     struct task_struct *parent;

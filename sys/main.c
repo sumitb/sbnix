@@ -73,10 +73,25 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 */	/* Moiz: User process init */
 //	struct task_struct *task1=create_process("bin/foo");
 //        addTasktoQueue(task1);
-	struct task_struct *task=create_process("bin/hello");
+	struct task_struct *task=create_process("bin/echo");
         addTasktoQueue(task);
 
     init_process((uint64_t *)stack);
+//	while(dbg);
+    /*
+    addTasktoQueue(initTask((uint64_t)&foo));
+    addTasktoQueue(initTask((uint64_t)&bar));
+    addTasktoQueue(initTask((uint64_t)&baz));
+    addTasktoQueue(initTask((uint64_t)&qux));
+    */
+//    addTasktoQueue(create_process("bin/foo"));
+  //  addTasktoQueue(create_process("bin/bar"));
+   // addTasktoQueue(create_process("bin/baz"));
+   // addTasktoQueue(create_process("bin/qux"));
+ //   addTasktoQueue(create_process("bin/hello"));
+	/* Moiz: User process init */
+   // struct task_struct *task=create_
+//	init_process((uint64_t *)stack);
     schedule();
     printk("Die Kernel");
     
@@ -102,6 +117,7 @@ void boot(void)
 	reload_gdt();
 	setup_tss();
 	reload_idt();
+    clr_scr();
 //	 __asm__ __volatile__ ("sti");
 	start(
 		(uint32_t*)((char*)(uint64_t)loader_stack[3] + (uint64_t)&kernmem - (uint64_t)&physbase),

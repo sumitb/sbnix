@@ -40,6 +40,8 @@ struct tarfs {
 
 void tarfs_initialize();
 uint64_t check_file(const char *file_name);
+int sys_getdents(int fd,dirent* dirp, int count);
 uint16_t sys_open(const char *file_name, int flags);
+off_t sys_lseek(int fildes,off_t offset,int whence);
 
 #endif

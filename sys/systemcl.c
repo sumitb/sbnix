@@ -68,12 +68,22 @@ unsigned int alarm(unsigned int seconds){
 
 
 int chdir(const char *path){
-
+    struct task_struct *task=runningTask;
+    task->mm->vma_addr.vm_offset=
+    
+    task->pathname=path; 
+    return 0;
 }
 
 char *getcwd(char *buf, size_t size){
-
-
+    struct task_struct *task=runningTask;
+    uint64_t len=strlen(task->pathname);
+    if(len>size)
+        return NULL;
+    else{
+         strcpy(buf,task->pathname);
+         return buf;
+        }
 }
 pid_t getpid(){
 
@@ -85,4 +95,30 @@ pid_t getppid(){
     return(running_proc.process.parent_id);
 
 }
+
+off_t lseek(int fildes,off_t offset,int whence){
+
+    if(whence==0){    //set
+       fd[fildes]->seek=offset;
+       return fd[fildes]->seek;
+    }
+    if(whence==1){        //current
+        fd[fildes]->seek+=offset;
+       return fd[fildes]->seek;
+
+    }
+
+    if(whence==2){   //end
+        int ind=0;
+        while(strcmp(fd[fildes]->path,tarfs_ind[ind])!=0){
+            ind++;
+        }
+        fd[fildes]->seek=tarfs_ind[ind].file_size+offset;
+       return fd[fildes]->seek;
+
+    }
+}
+
+
+
 */

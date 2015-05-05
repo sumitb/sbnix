@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <sys/console.h>
 #define MAXLEN 1024
-
-/*int listdir(const char *path) {
+#include<syscall.h>
+int listdir(const char *path) {
     struct dirent *entry;
     DIR *dp;
 
     dp = opendir(path);
-    if (dp == NULL) {
+      if (dp == NULL) {
         printf("opendir error");
         return -1;
     }
@@ -20,9 +20,34 @@
     closedir(dp);
     return 0;
 }
-*/
+
+int test_lseek(const char * path){
+    char buf[40];
+    uint64_t size;
+    int file_des=open(path,0);
+       size= read(file_des,buf,30);
+       printf("read\n");
+      printf("%s",(char*)buf);
+       printf("%d",size);
+    off_t offset=lseek(file_des,20,0);
+    printf("lseek\n");
+    printf("%d",offset);
+    size=read(file_des,buf,30);
+    printf("read\n");
+    printf(buf);
+    return 0;
+}
+
 int main(int argc, char* argv[], char* envp[])
 {
+
+   // int num_bytes = syscall_3(SYS_getdents, (uint64_t)9090, (uint64_t)102121, (uint64_t)1025);
+  //  printf("%d", num_bytes);
+    int s=test_lseek("bin/sbush");
+        if(s==0)
+            printf("success\n");
+        else
+            printf("fail\n");
 //  char str1[MAXLEN]="\0";
 //  char str2[MAXLEN]="\0";
 //  char** env;
@@ -104,9 +129,9 @@ int main(int argc, char* argv[], char* envp[])
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
 //    listdir("/");
-	*((char*)0xffffffff80000000+0xb8000)=65;
+/*	*((char*)0xffffffff80000000+0xb8000)=65;
 	*((char*)0xffffffff80000000+0xb8001)=0x07;
-   /* write(1, "ABCD\0", 2);
+    write(1, "ABCD\0", 2);
     pid_t pid = fork();
 		if(pid>0)
 		{
