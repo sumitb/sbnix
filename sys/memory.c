@@ -105,6 +105,37 @@ uint64_t addr_res(uint64_t logical, int flag){
 	return 0;
 }
 
+struct memory_map *get_physical_memmap(uint64_t physical){
+    for(int i=0; i<MAX_MEM; i++){
+        if(memmap[i].addr == physical){
+            return &memmap[i];
+        }
+    }
+    return NULL;
+}
+
+uint64_t look_pages(uint64_t *pml4e,uint64_t logical){
+	uint64_t *pdpe, *pde, *pte;
+	uint64_t pdpe_t, pde_t, pte_t;
+		
+	if(!pml4e[addr_res(logical,PML4E)] & PAGE_PRESENT){
+        pdpe_t = (pml4e[addr_res(logical,PML4E)] + KERN_MEM);
+        pdpe = (uint64_t *)(pdpe_t & (0xFFFFFFFFFFFFF000));
+
+        if(!pdpe[addr_res(logical,PDPE)]){
+            pde_t = (pdpe[addr_res(logical,PDPE)] + KERN_MEM);
+            pde = (uint64_t *)(pde_t & (0xFFFFFFFFFFFFF000));
+            
+            if(!pde[addr_res(logical,PDE)]){
+                pte_t = (pde[addr_res(logical,PDE)] + KERN_MEM);
+                pte = (uint64_t *)(pte_t & (0xFFFFFFFFFFFFF000));
+                return pte[addr_res(logical,PTE)];
+            }
+        }
+	}
+    return 0;
+}
+
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
 	uint64_t *pdpe;
 	uint64_t pdpe_t;

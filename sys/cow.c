@@ -58,12 +58,9 @@ int64_t cow_walk_pages(uint64_t *pml4e, uint64_t *pml4e_child){
                                 if(pte[l] & PAGE_PRESENT){
                                     pte[l]=(pte[l] & PAGE_WRITE);
                                     pte_child[l]=pte[l];
-                                    for(i=0; i<MAX_MEM; i++){
-                                        if(memmap[i].addr==pte[l]){
-                                            memmap[i].ref_cnt++;
-                                            memmap[i].cow_flag=true;
-                                        }
-                                    }
+                                    struct memory_map *memmap_ent = get_physical_memmap(pte[l]);
+                                    memmap_ent->ref_cnt++;
+                                    memmap_ent->cow_flag=true;
                                 }
                             }
                         }

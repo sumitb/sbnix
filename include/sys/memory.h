@@ -12,6 +12,7 @@
 #define STACK_MEM_TOP 0xf0000000
 #define END_LIMIT 0x7ffe000
 #define VIDEO_MEM 0xb8000
+#define PAGE_SIZE 4096
 
 #define PAGE_PERM 7
 #define PAGE_WRITE 2
@@ -56,7 +57,9 @@ uint64_t addr_res(uint64_t logical, int flag);
 void OOM();
 void page_fault();
 
+uint64_t look_pages(uint64_t *pml4e,uint64_t logical);
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical);
+struct memory_map *get_physical_memmap(uint64_t physical);
 int64_t cow_walk_pages(uint64_t *pml4e, uint64_t *pml4e_child);
 
 void page_insert(uint64_t *pml4e, uint64_t logical, uint64_t physical);
