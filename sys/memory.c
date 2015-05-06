@@ -1,6 +1,4 @@
-#include <sys/sched.h>
 #include <sys/memory.h>
-#include <sys/console.h>
 
 void init_memmap(void *physfree){
 	long size=MAX_MEM;
@@ -10,13 +8,15 @@ void init_memmap(void *physfree){
 	long i=0;
 	for(i=0; i<size; i++){
 		if(addr_t<(uint64_t)physfree){
-			memmap[i].addr=addr_t;
+			memmap[i].ref_cnt=1;
 			memmap[i].res_flag=BUSY;
 		}
 		else{
-			memmap[i].addr=addr_t;
+			memmap[i].ref_cnt=0;
 			memmap[i].res_flag=AVAIL;
 		}
+        memmap[i].addr=addr_t;
+        memmap[i].cow_flag=false;
 		addr_t=addr_t+4096;
 	}
 //	printk("Memory Initialized");
@@ -26,6 +26,7 @@ uint64_t mem_allocate(){
 	long i=0;
 	for(i=0; i<MAX_MEM; i++){
 		if(memmap[i].res_flag==AVAIL){
+			memmap[i].ref_cnt++;
 			memmap[i].res_flag=BUSY;
 			return memmap[i].addr;
 		}
@@ -207,20 +208,6 @@ void kmalloc_user_space(uint64_t *pml4e,uint64_t logical, uint64_t size){
 	}
 }
 
-void page_fault(){
-	uint64_t *pte;
-	uint64_t *pml4e_addr;
-	uint64_t logical; 
-	uint64_t physical;
-	physical=mem_allocate();
-	__asm__ __volatile__ ("movq %%cr2, %0" : "=r"(logical));
-	pml4e_addr=(uint64_t *)currentTask->pml4e_addr;
-	pte=walk_pages(pml4e_addr,logical);
-	if(*pte & PAGE_PRESENT)
-		mem_free(*pte);
-	*pte=(physical | PAGE_PERM);
-}
-
 void allocate(uint64_t pml4e_addr,void * addr, int len){
 	uint64_t start;
    //start address should be round down to 4096
@@ -237,80 +224,10 @@ void allocate(uint64_t pml4e_addr,void * addr, int len){
     
     for(i=start;i<end;i+=4096,cnt+=4096){
         if(!(p=mem_allocate()))
-            printk("out of memory\n");
+            OOM();
         else{
-                page_insert((uint64_t *)pml4e_addr,start+cnt, p);
+            page_insert((uint64_t *)pml4e_addr,start+cnt, p);
         }
     }
-}
-
-vma* allocate_vma(vma **vma_head){
-    vma* tail;
-    if(*vma_head == NULL){
-            *vma_head=(vma *)(KERN_MEM+mem_allocate());
-            return *vma_head;
-        }
-    else{
-        tail=*vma_head;
-        while(tail->vm_next!=NULL)
-            tail=tail->vm_next;
-        tail->vm_next=(vma *)(sizeof(vma)+(char *)tail);
-        return tail->vm_next;
-    }
-	return NULL;
-}
-
-void protection_fault() {
-	printk("protection fault\n");
-}
-
-int64_t sys_brk(uint64_t bump_addr){
-	struct task_struct *proc = getCurrentTask();
-	//static uint64_t bump_ptr=BUMP_PTR;
-	//static uint64_t rem_size=0; //remaining size in page after allocating memory
-	if(bump_addr==0)
-		return proc->heap.bump_ptr;
-	else{
-		uint64_t size;
-		size = bump_addr - proc->heap.bump_ptr;
-		uint64_t ret_addr;
-		ret_addr = proc->heap.bump_ptr;
-		uint64_t blk_cnt=0;
-		if(size>0){
-			if(proc->heap.rem_size>size){  //available size is greater than requested
-				proc->heap.rem_size = proc->heap.rem_size-size;
-				proc->heap.bump_ptr = proc->heap.bump_ptr+size;
-				return ret_addr;
-			}
-			else{   //available is less than requested, allocate more pages
-				uint64_t less_mem=0;
-				uint64_t *pml4e_addr;
-				uint64_t *pte;
-				uint64_t physical;
-				uint64_t logical;
-				logical = proc->heap.bump_ptr + proc->heap.rem_size;
-				//pml4e_addr=(uint64_t *)currentTask->pml4e_addr;
-				pml4e_addr=(uint64_t *)proc->pml4e_addr;
-				less_mem = size - proc->heap.rem_size;  //required memory to be allocated = requested - remaining
-				blk_cnt = less_mem/4096;
-				if((size%4096)>0)
-					blk_cnt++;
-				while(blk_cnt){
-						physical=mem_allocate();
-						pte=walk_pages(pml4e_addr,logical);
-						if(*pte & PAGE_PRESENT)
-							mem_free(*pte);
-						*pte=(physical | PAGE_PERM);
-						logical = logical + 4096;
-						proc->heap.rem_size = proc->heap.rem_size+4096; //remaining memory increase by 4096 after eacch page allocation
-						blk_cnt--;
-				}
-				proc->heap.rem_size = proc->heap.rem_size-size; //allocate requested memory and decrease remaining memory
-				proc->heap.bump_ptr = proc->heap.bump_ptr+size;
-				return ret_addr;
-			}
-		}
-	}
-	return 0;
 }
 

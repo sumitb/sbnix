@@ -6,6 +6,7 @@
 #define HZ  100
 
 void irq_install();
+void isrs_install();
 void irq_install_handler(int irq, void (*handler)(void));
 void irq_uninstall_handler(int irq);
 
