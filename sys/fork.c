@@ -34,21 +34,9 @@ int64_t sys_execve(const char *filename,char *const argv[],char *const envp[]) {
 }
 
 int64_t sys_fork() {
-    //uint64_t pproc_rsp;
-    //__asm__ __volatile__("movq %%rsp, %0":"=g"(pproc_rsp)::"memory");
 	struct task_struct *pproc = getCurrentTask();
-	//struct task_struct *cproc = (struct task_struct *)(KERN_MEM + mem_allocate());
 	struct task_struct *cproc = (struct task_struct *)kmalloc(10*4096);
-	/*mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	mem_allocate();
-	*/memset((void *)cproc,'\0',10*4096);
+	memset((void *)cproc,'\0',10*4096);
 	if((uint64_t)cproc){
 		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 		uint64_t page_addr = (uint64_t )mem_allocate();
@@ -73,23 +61,7 @@ int64_t sys_fork() {
         cproc->sleep_time=0;
 		uint16_t child_id=cproc->pid;
 		
-		//copy user stack
 		cproc->stack=(uint64_t*)STACK_MEM_TOP;
-		//kmalloc_user_space(process->pml4e_addr,STACK_MEM,512*64)
-		
-		/*uint64_t *stack_page_virtual=(uint64_t *)kmalloc((sizeof(uint64_t)*(USER_STACK_SIZE)));
-		uint64_t *stack_page_physical=(uint64_t *)((void *)stack_page_virtual-KERN_MEM);
-        __asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
-        
-        uint64_t *temp = pproc->stack - USER_STACK_SIZE;
-        for(int i=0; i < USER_STACK_SIZE-1; i++) {
-			stack_page_virtual[i] = temp[i];
-		}
-		
-		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-		map_kernel(pml4e_chld,(uint64_t)cproc->stack - (sizeof(uint64_t)*(USER_STACK_SIZE)),
-			(uint64_t)stack_page_physical,(sizeof(uint64_t)*(USER_STACK_SIZE)));
-		__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));*/
 		
 		//copy vma
 		vma *p_vm = pproc->mm->vma_addr;
@@ -100,25 +72,6 @@ int64_t sys_fork() {
 			c_vm->vm_mmsz=p_vm->vm_mmsz;
 			c_vm->vm_file=p_vm->vm_file;
 			c_vm->vm_offset=p_vm->vm_offset;
-		    /*
-            allocate(cproc->pml4e_addr,(void *) c_vm->vm_start, c_vm->vm_mmsz);
-			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-			memset((char *) c_vm->vm_start,0,c_vm->vm_mmsz);
-			memcpy((char *) c_vm->vm_start, (void *) (p_vm->vm_file + p_vm->vm_offset), c_vm->vm_mmsz);
-			//copy binary
-			/*uint64_t *vma_page_virtual=(uint64_t *)kmalloc(c_vm->vm_mmsz);
-			uint64_t *vma_page_physical=(uint64_t *)((void *)vma_page_virtual-KERN_MEM);
-			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
-			
-			uint64_t *temp_vma = (uint64_t*)p_vm->vm_start;
-			for(int i=0,j=0; i < c_vm->vm_mmsz; i+=8,j++) {
-				vma_page_virtual[i] = temp_vma[i];
-			}
-			
-			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-			map_kernel(pml4e_chld, p_vm->vm_start, (uint64_t)vma_page_physical, p_vm->vm_mmsz);*/
-			__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
-            */
 			p_vm=p_vm->vm_next;
 		}
 		
@@ -130,35 +83,14 @@ int64_t sys_fork() {
 			strcpy(cproc->fd[i].path,pproc->fd[i].path);
 		}
 		for(int i=0;i<25;i++){
-		cproc->dup_arr[i]=i;
+            cproc->dup_arr[i]=i;
 		}
-		//copy heap
+
 		cproc->heap.bump_ptr=page_roundoff_4096(pproc->heap.bump_ptr);
-		/*uint64_t size = pproc->heap.bump_ptr - BUMP_PTR;
-		if(size){
-			uint64_t *heap_page_virtual=(uint64_t *)kmalloc(pproc->heap.bump_ptr - BUMP_PTR);
-			uint64_t *heap_page_physical=(uint64_t *)((void *)heap_page_virtual-KERN_MEM);
-			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
-			
-			uint64_t *temp_heap = (uint64_t*)BUMP_PTR;
-			for(int i=0,j=0; i < size; i+=8,j++) {
-				heap_page_virtual[j] = temp_heap[j];
-			}
-			
-			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
-			map_kernel(pml4e_chld, BUMP_PTR, (uint64_t)heap_page_physical, pproc->heap.bump_ptr - BUMP_PTR);
-			__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
-		}*/
-		//proc->process->kstack[491] = (uint64_t)(&irq0+34);
+
 		for(int i=STACK_OFFSET; i<STACK_OFFSET+NUM_REGISTERS_SAVED+1; i++) {
 			cproc->kstack[i]=pproc->kstack[i+1];
 		}
-
-		//process->kstack[511] = 0x23 ;                              //SS
-        //cproc->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)((cproc->stack)+((sizeof(uint64_t))*(USER_STACK_SIZE-1)));      //  ESP
-        //process->kstack[508] = 0x1b ;                           //CS
-        
-		//process->kstack[507] = pproc->process->kstack[507];
 		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-6] = 0;  // assigning rax of child to zero;
 		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-5] = pproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-5];                           // EIP
 		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-4] = pproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-4];                           // CS
@@ -169,9 +101,6 @@ int64_t sys_fork() {
 		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
 		
 		return child_id;
-		//copy elf
-		//push register
-		//iretq
 	}
 	return 0;
 }
