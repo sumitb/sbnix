@@ -56,6 +56,7 @@ void reload_idt() {
     idtp.limit=sizeof(struct idt_entry)*256-1;
     idtp.base=(uint64_t) &idt;
 	
+    isrs_install();
     irq_install();
     timer_install();
     /* Points the processor's internal register to the new IDT */

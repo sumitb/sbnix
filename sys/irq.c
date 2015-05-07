@@ -33,9 +33,8 @@ extern void irq15();
 */
 extern void handler_irq0();
 extern void handler_irq1();
-extern void handler_isr13();
-extern void handler_isr14();
 extern void handler_idt80();
+extern void handler_idt128();
 extern void outportb(uint16_t port, uint8_t val);
 
 /* This array is actually an array of function pointers. We use
@@ -90,9 +89,8 @@ void irq_install()
     idt_set_gate(32, (uint64_t) &handler_irq0, 0x08, 0x8E);
     idt_set_gate(33, (uint64_t) &handler_irq1, 0x08, 0x8E);
 	idt_set_gate(80, (uint64_t) &handler_idt80, 0x08, 0xEE);
+	idt_set_gate(128, (uint64_t) &handler_idt128, 0x08, 0xEE);
 	
-    idt_set_gate(13, (uint64_t) &handler_isr13, 0x08, 0x8E);
-	idt_set_gate(14, (uint64_t) &handler_isr14, 0x08, 0x8E);
     /*
     idt_set_gate(32, (unsigned)irq0, 0x08, 0x8E);
     idt_set_gate(33, (unsigned)irq1, 0x08, 0x8E);

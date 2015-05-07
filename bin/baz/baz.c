@@ -4,8 +4,10 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
+    /*
     for(int i=0; i<2000; i++)
         write(1, "3\n\0", 2);
+    */
     int pid = 0;
     pid=fork();
 

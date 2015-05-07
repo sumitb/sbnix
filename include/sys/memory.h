@@ -12,8 +12,10 @@
 #define STACK_MEM_TOP 0xf0000000
 #define END_LIMIT 0x7ffe000
 #define VIDEO_MEM 0xb8000
+#define PAGE_SIZE 4096
 
 #define PAGE_PERM 7
+#define PAGE_WRITE 2
 #define PAGE_PRESENT 1
 
 #define PML4E 101
@@ -32,6 +34,8 @@ struct vm_area_struct {
 struct memory_map {
                 uint64_t addr;      /* No need to store addr, can evaluate it */
                 int res_flag;
+                int ref_cnt;
+                bool cow_flag;
         };
 
 struct memory_map memmap[MAX_MEM];
@@ -50,9 +54,13 @@ uint64_t kmalloc(size_t bytes);
 uint64_t page_roundoff_4096(uint64_t addr);
 uint64_t addr_res(uint64_t logical, int flag);
 
-void page_fault();
+void OOM();
+int page_fault();
 
+uint64_t* look_pages(uint64_t *pml4e,uint64_t logical);
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical);
+struct memory_map *get_physical_memmap(uint64_t physical);
+int64_t cow_walk_pages(uint64_t *pml4e, uint64_t *pml4e_child);
 
 void page_insert(uint64_t *pml4e, uint64_t logical, uint64_t physical);
 void map_kernel(uint64_t *pml4e, uint64_t logical, uint64_t physical, uint64_t size);

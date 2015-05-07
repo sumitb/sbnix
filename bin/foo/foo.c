@@ -2,12 +2,17 @@
 #include <stdlib.h>
 #define addr 0xffffffff80000000+0xb8000
 
-
-int main(int argc, char* argv[], char* envp[])
-{
 char *str1;
 char *str2;
 char *str3;
+char *str4;
+char *str5;
+char *str6;
+char *str7;
+char *str8;
+
+int main(int argc, char* argv[], char* envp[])
+{
     int fd=1;
     //char str[15] = "Sumit Moiz\n\0";
     str1=(char *)malloc(50);
@@ -36,14 +41,7 @@ char *str3;
 		for(int i=0;i<1000;i++){
             	write(fd, &str, 1);
 		}
-//    		write(fd, str1, 8);
- //   		write(fd, str2, 8);
-  //  		write(fd, str3, 8);
-		
     }
-    //write(fd, "Parent\n\0", 7);
-    //write(fd, "Child\n\0", 6);
-    //write(fd, "Fuck\n\0", 5);
     /*
     int cnt=0;
     *((char*)addr + cnt++)=49;
