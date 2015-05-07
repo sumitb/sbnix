@@ -55,9 +55,9 @@ uint64_t page_roundoff_4096(uint64_t addr);
 uint64_t addr_res(uint64_t logical, int flag);
 
 void OOM();
-void page_fault();
+int page_fault();
 
-uint64_t look_pages(uint64_t *pml4e,uint64_t logical);
+uint64_t* look_pages(uint64_t *pml4e,uint64_t logical);
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical);
 struct memory_map *get_physical_memmap(uint64_t physical);
 int64_t cow_walk_pages(uint64_t *pml4e, uint64_t *pml4e_child);

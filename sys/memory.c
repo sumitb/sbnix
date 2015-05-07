@@ -106,6 +106,7 @@ uint64_t addr_res(uint64_t logical, int flag){
 }
 
 struct memory_map *get_physical_memmap(uint64_t physical){
+    physical = (physical & (0xFFFFFFFFFFFFF000));
     for(int i=0; i<MAX_MEM; i++){
         if(memmap[i].addr == physical){
             return &memmap[i];
@@ -114,26 +115,29 @@ struct memory_map *get_physical_memmap(uint64_t physical){
     return NULL;
 }
 
-uint64_t look_pages(uint64_t *pml4e,uint64_t logical){
+uint64_t* look_pages(uint64_t *pml4e,uint64_t logical){
 	uint64_t *pdpe, *pde, *pte;
 	uint64_t pdpe_t, pde_t, pte_t;
 		
-	if(!pml4e[addr_res(logical,PML4E)] & PAGE_PRESENT){
+	if(pml4e[addr_res(logical,PML4E)] & PAGE_PRESENT){
         pdpe_t = (pml4e[addr_res(logical,PML4E)] + KERN_MEM);
         pdpe = (uint64_t *)(pdpe_t & (0xFFFFFFFFFFFFF000));
 
-        if(!pdpe[addr_res(logical,PDPE)]){
+        if(pdpe[addr_res(logical,PDPE)]){
             pde_t = (pdpe[addr_res(logical,PDPE)] + KERN_MEM);
             pde = (uint64_t *)(pde_t & (0xFFFFFFFFFFFFF000));
             
-            if(!pde[addr_res(logical,PDE)]){
+            if(pde[addr_res(logical,PDE)]){
                 pte_t = (pde[addr_res(logical,PDE)] + KERN_MEM);
                 pte = (uint64_t *)(pte_t & (0xFFFFFFFFFFFFF000));
-                return pte[addr_res(logical,PTE)];
+
+                if(pte[addr_res(logical,PTE)]){
+                    return &pte[addr_res(logical,PTE)];
+                }
             }
         }
 	}
-    return 0;
+    return NULL;
 }
 
 uint64_t* walk_pages(uint64_t *pml4e,uint64_t logical){
@@ -213,8 +217,8 @@ void mem_init(void* physbase,void *physfree){
 	map_kernel(pml4e,KERN_MEM+(uint64_t)physbase,(uint64_t)physbase,END_LIMIT-(uint64_t)physbase);
 	//map_video_memory
 	map_kernel(pml4e,KERN_MEM+VIDEO_MEM,VIDEO_MEM,8192);
-	pml4e=(uint64_t *)(KERN_MEM+cr3_addr);	
-	__asm__ __volatile__("mov %0, %%cr3":: "b"(cr3_addr));
+	pml4e=(uint64_t *)(KERN_MEM+cr3_addr);
+	__asm__ __volatile__("mov %0, %%cr3":: "g"(cr3_addr));
 }
 
 void page_insert(uint64_t *pml4e, uint64_t logical, uint64_t physical){

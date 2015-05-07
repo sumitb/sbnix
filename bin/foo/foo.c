@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #define addr 0xffffffff80000000+0xb8000
 
-
-int main(int argc, char* argv[], char* envp[])
-{
 char *str1;
 char *str2;
 char *str3;
@@ -13,6 +10,9 @@ char *str5;
 char *str6;
 char *str7;
 char *str8;
+
+int main(int argc, char* argv[], char* envp[])
+{
     int fd=1;
     char string = '8';
     //char str[15] = "Sumit Moiz\n\0";
@@ -45,23 +45,13 @@ char *str8;
     write(fd, str7, 8);
     write(fd, str8, 8);
     if(pid > 0) {
-        while(1) {
             write(fd, &string, 1);
-        }
     }
     else if(pid == 0) {
     char str = '7';
 //    	execve("bin/qux", argv, envp);
 //        str = '6';
-        while(1) {
             write(fd, &str, 1);
-        }
-    }
-    else {
-    //	str = '3';
-        while(1) {
-            write(fd, "9\0", 1);
-        }
     }
     write(fd, "Parent\n\0", 7);
     write(fd, "Child\n\0", 6);

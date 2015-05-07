@@ -155,7 +155,7 @@ void fault_handler(uint64_t *r, uint64_t *err_code)
     if (*r < 32)
     {
         printk("%s\n", exception_messages[*r]);
-        printk(" Exception. System Halted!\n");
+        printk("Exception. System Halted!\n");
         for (;;);
     }
 }

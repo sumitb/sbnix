@@ -32,6 +32,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	
 	tarfs_initialize();
 	/* initialize memory in pages */
+	while(dbg);
 	mem_init(physbase, physfree);
     
     /* Disable scan_flag by default */
@@ -42,15 +43,14 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
      * Add two processes to task list
      */
 
-	while(dbg);
     /*
-    addTasktoQueue(create_process("bin/foo"));
     addTasktoQueue(create_process("bin/bar"));
     addTasktoQueue(create_process("bin/baz"));
+    addTasktoQueue(create_process("bin/hello"));
     addTasktoQueue(create_process("bin/w00t"));
     */
 	/* Moiz: User process init */
-    addTasktoQueue(create_process("bin/hello"));
+    addTasktoQueue(create_process("bin/foo"));
     addTasktoQueue(create_process("bin/qux"));
     //printSchedulerQueue();
 	init_process((uint64_t *)stack);
