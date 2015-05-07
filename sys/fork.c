@@ -124,8 +124,8 @@ int64_t sys_fork() {
 			__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 		}*/
 		//proc->process->kstack[491] = (uint64_t)(&irq0+34);
-		for(int i=KERNEL_STACK_SIZE-1; i>=STACK_OFFSET; i--) {
-			cproc->kstack[i]=pproc->kstack[i];
+		for(int i=STACK_OFFSET; i<STACK_OFFSET+NUM_REGISTERS_SAVED+1; i++) {
+			cproc->kstack[i]=pproc->kstack[i+1];
 		}
 
 		//process->kstack[511] = 0x23 ;                              //SS
@@ -134,7 +134,11 @@ int64_t sys_fork() {
         
 		//process->kstack[507] = pproc->process->kstack[507];
 		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-6] = 0;  // assigning rax of child to zero;
+		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-5] = pproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-5];                           // EIP
+		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-4] = pproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-4];                           // CS
 		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-3] = 0x200286;                           // EFLAGS - 0x200286
+		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-2] = pproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-2];                           // ESP
+		cproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-1] = pproc->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-1];                           // SS
 		cproc->kernel_rsp = (uint64_t *)(&cproc->kstack[STACK_OFFSET]);	        //-50
 		__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
 		
