@@ -10,7 +10,8 @@
 #define TRAP_SIZE           5
 #define TSS_OFFSET          1
 #define BINARY_LEN          24
-#define USER_STACK_SIZE     512
+#define DIR_LEN				48
+#define USER_STACK_SIZE     262144
 #define KERNEL_STACK_SIZE   512
 #define NUM_REGISTERS_SAVED 15
 #define STACK_MAGIC         0xdeadbeef
@@ -55,6 +56,7 @@ struct task_struct {
     uint16_t pid;
     uint16_t ppid;
     char bin_name[BINARY_LEN];
+	char dir_path[DIR_LEN];
     bool is_sleep;
     uint64_t sleep_time;
     

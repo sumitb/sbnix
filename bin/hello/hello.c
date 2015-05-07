@@ -108,7 +108,7 @@ int main(int argc, char* argv[], char* envp[])
 	printf("int :%d string: %s hex: %x char: %c\n",num,str,num2,ch);
 */
 //    listdir("/");
-   /* write(1, "ABCD\0", 2);
+    write(1, "ABCD\0", 2);
 
 	int fd=0;
 	char *str = (char *)malloc(20);
@@ -138,7 +138,7 @@ int main(int argc, char* argv[], char* envp[])
 	printf("val : %d\n",y);
     while(1);
     printk("Hello World 13 Apr\n");
-    */
+    
     int s=test_lseek("bin/sbush");
         if(s==0)
             printf("success\n");

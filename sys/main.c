@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 0;
+volatile int dbg = 1;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -29,7 +29,7 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
 	}
 	printk("tarfs in [%p:%p]\n", &_binary_tarfs_start, &_binary_tarfs_end);
     */
-	
+	while(dbg);	
 	tarfs_initialize();
 	/* initialize memory in pages */
 	mem_init(physbase, physfree);
@@ -42,16 +42,16 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
      * Add two processes to task list
      */
 
-	while(dbg);
     /*
-    addTasktoQueue(create_process("bin/foo"));
     addTasktoQueue(create_process("bin/bar"));
     addTasktoQueue(create_process("bin/baz"));
     addTasktoQueue(create_process("bin/w00t"));
+    addTasktoQueue(create_process("bin/pipe"));
+    addTasktoQueue(create_process("bin/foo"));
+    addTasktoQueue(create_process("bin/hello"));
     */
 	/* Moiz: User process init */
-    addTasktoQueue(create_process("bin/hello"));
-    addTasktoQueue(create_process("bin/qux"));
+    addTasktoQueue(create_process("bin/sbush"));
     //printSchedulerQueue();
 	init_process((uint64_t *)stack);
 

@@ -5,8 +5,8 @@
 #define maxArgs 5
 #define charSize 22
 #define cmdSize maxArgs * charSize
-#define fileSize 512
-#define maxSize 1024
+#define fileSize 256
+#define maxSize 512
 
 void execLine(char* input, char** argv, char** envp);
 
@@ -144,9 +144,9 @@ void changeDir(char* dirPath, char* home)
     char buffer[200]="\0";int i=0,j=0;
     if(dirPath == NULL) {
 		getcwd(last_path, fileSize);
-        //T chdir(home);
-	printf("curr path : %s\n",last_path);
-        chdir_shell(home);
+         chdir(home);
+	//printf("curr path : %s\n",last_path);
+      //  chdir_shell(home);
     }
     else {
         if(!strcmp(dirPath, "~") || !strcmp(dirPath, ""))
@@ -164,9 +164,9 @@ void changeDir(char* dirPath, char* home)
 			strcpy(dirPath,buffer);
 		}
 		getcwd(last_path, fileSize);
-		chdir_shell(dirPath);
-		//T if(chdir_shell(dirPath))
-           //T  printf("%s: No such file or directory.\n", dirPath);
+		//chdir_shell(dirPath);
+		 if(chdir(dirPath))
+             printf("%s: No such file or directory.\n", dirPath);
 	}
     
 }
@@ -174,41 +174,50 @@ void changeDir(char* dirPath, char* home)
 /* Feature 2: execute binaries interactively */
 void execBin(char* binary, char* path, char** argv, char** envp)
 {
-    int i=0, j, k, error=1, status;
-    char* singlePath;
+    int i=0, j, k; 
+    int error=1;
+    int  status;
     pid_t childPID;
-
-    singlePath = malloc(fileSize * sizeof(char));
+    char bin_name[30];
+    char cmd_path[30];
+    strcpy(bin_name,binary);
+    strcpy(cmd_path,path);
     if((childPID = fork()) == 0) {
         // Absolute Path
         // Done: handle binaries like ./hello and ./a.out
-        error = execve(binary, argv, envp);
+        //error = execve(bin_name, argv, envp);
+        error = execve(bin_name, argv, envp);
         
+    	char singlePath[256];
+    	//singlePath = malloc(100 * sizeof(char));
         // Relative Path
         // ls -lrt
         do {
             j = 0;
-            memset(singlePath, '\0', fileSize);
+            memset(singlePath, '\0', 256);
+            //printf("bin_name : %s ,cmd_path : %s, singlePath :%s,i :%d, j:%d\n", bin_name, cmd_path, singlePath,i,j);
             // TODO: Call parseCmd with delimiter ':'
-            while(i<strlen(path) && path[i] != ':') {
-                singlePath[j++] = path[i++];
+            while(i<strlen(cmd_path) && cmd_path[i] != ':') {
+                singlePath[j++] = cmd_path[i++];
             }
             i++;
             if(singlePath[j-1] != '/')
                 singlePath[j++] = '/';
             
             k = 0;
-            while(k<strlen(binary) && binary[k] != '\n' && binary[k] != EOF)
-                singlePath[j++] = binary[k++];
+            while(k<strlen(bin_name) && bin_name[k] != '\n' && bin_name[k] != EOF)
+                singlePath[j++] = bin_name[k++];
 
             //printf("%s args=%s | %s |", singlePath, argv[0], argv[1], argv[2]);
+           // printf("bin_name : %s ,cmd_path : %s, singlePath :%s,i :%d, j:%d\n", bin_name, cmd_path, singlePath,i,j);
             error = execve(singlePath, argv, envp);
             //printf("%d\n", error);
             
             if(!error)
-                exit(0);
-        } while(i<strlen(path) && path[i] != '\n' && path[i] != EOF);
-        printf("%s: command not found.\n", binary);
+                exit(1);
+        } while(i<strlen(cmd_path) && cmd_path[i] != '\n' && cmd_path[i] != EOF);
+        printf("%s: command not found.\n", bin_name);
+	exit(0);
     }
     else {
         waitpid(childPID, &status, 0);
@@ -349,9 +358,10 @@ void setPS1(char* new_ps, char* envp[], char *new_path)
 int execCmd(char** cmd, char** argv, char** envp)
 {
     char* input = cmd[0];
-    char home[fileSize]; //T, path[maxSize];
+    char home[fileSize], path[maxSize];
     // T char user[charSize], hostname[charSize];
-    
+    strcpy(path,"bin/");
+		strcpy(home,"bin/");
 //T    parsePATH(envp, home, path, user, hostname);
     // Check if valid command, ignore null or blank
     if( strcmp(input, " ") && strlen(input) > 0) {
@@ -373,61 +383,77 @@ int execCmd(char** cmd, char** argv, char** envp)
                     setPATH(cmd[2], envp);
             }
         }
- /*       else {
+       else {
             execBin(input, path, cmd, envp);
-        }*/
+        }
         //printf("%s len(%d) ", input, strlen(input));
     }
     return 0;
 }
-
+int pfd[2];
 void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 {
 	char** cmd; int l=0,k,p; //int status;
 	pid_t childpid;
-	int pfd1[2];
-	int pfd2[2]; int error=0;
-	char home[fileSize], path[maxSize];
-    char user[charSize], hostname[charSize];
-	
-    char* singlePath;
-    singlePath = malloc(fileSize * sizeof(char));
+	//int pfd2[2]; 
+	int error=0;
+//	char home[fileSize]
+	char path[maxSize];
+	char cmd_chld[30];
+	int i_chld=i;
+	int cnt_chld=cnt;
+    //char user[charSize], hostname[charSize];
+
+  //  char* singlePath;
+   // singlePath = malloc(fileSize * sizeof(char));
     
 	cmd = parseCmd(cmd_list, ' ');
+	strcpy(cmd_chld,cmd[0]);
+	printf("cmd_chld :%s\n",cmd_chld);
+
+	
 	/* for(j=0; cmd[j] != NULL; j++)
 		printf("cmd[%d]: %s\n",j,cmd[j]);
 	j=0; */
-	parsePATH(envp, home, path, user, hostname);
+	//parsePATH(envp, home, path, user, hostname);
+	strcpy(path,"bin");
 	
 	if( strcmp(cmd[0], " ") && strlen(cmd[0]) > 0) {
-		if (i % 2 != 0){
+	
+	if (i_chld == 0){
+		pipe(pfd);
+	}
+	int fd1=pfd[0];
+	int fd2=pfd[1];
+	
+	/*	if (i_chld % 2 == 0){
 			pipe(pfd1);
 		}else{
 			pipe(pfd2);
-		} 
+		} */
+	
+	//int pfd1[2];
+	
 		
-		if ((childpid = fork()) == 0) {
-			if (i == 0)
-				dup2(pfd2[1],1);
-			else if (i == cnt-1){
-				if ((cnt) % 2 != 0){ // for odd number of commands
-					dup2(pfd1[0],0);
-				}else{ // for even number of commands
-					dup2(pfd2[0],0);
-				}
+		
+	if ((childpid = fork()) == 0) {
+			if (i_chld == 0){
+					dup2(1,fd2);
+					printf("fd1 :%d, fd2: %d\n",fd1,fd2);
 			}
-			else{
-				if (i % 2 != 0){
-					dup2(pfd2[0],0);
-					dup2(pfd1[1],1);
-					}else{ // for even i
-					dup2(pfd1[0],0);
-					dup2(pfd2[1],1);
-				}
-			} 
+			else if (i_chld == cnt_chld-1){
+					dup2(0, fd1);
+					dup2(fd2,1);
+			}
+			/*else{
+					dup2(0,pfd1[0]);
+					dup2(1,pfd1[0]);
+			} */
+			char singlePath[256];
+			
 			do {
 				k = 0;
-				memset(singlePath, '\0', fileSize);
+				memset(singlePath, '\0', 256);
 				// TODO: Call parseCmd with delimiter ':'
 				while(l<strlen(path) && path[l] != ':')	 {
 					singlePath[k++] = path[l++];
@@ -437,25 +463,78 @@ void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 					singlePath[k++] = '/';
 				
 				p = 0;
-				while(p<strlen(cmd[0]) && cmd[0][p] != '\n' && cmd[0][p] != EOF){
-					singlePath[k++] = cmd[0][p++];}
+				while(p<strlen(cmd_chld) && cmd_chld[p] != '\n' && cmd_chld[p] != EOF){
+					singlePath[k++] = cmd_chld[p++];}
 
 				error = execve(singlePath, argv, envp);
 				if(!error)
 					break;
 			} while(l<strlen(path) && path[l] != '\n' && path[l] != EOF);
+		exit(0);
 		}
-		if (i == 0)
+		waitpid(childpid, NULL, 0);
+	}
+	
+/*	if( strcmp(cmd[0], " ") && strlen(cmd[0]) > 0) {
+		if (i_chld % 2 != 0){
+			pipe(pfd1);
+		}else{
+			pipe(pfd2);
+		} 
+		
+		if ((childpid = fork()) == 0) {
+
+  			char singlePath[256];
+			if (i_chld == 0)
+				dup2(pfd2[1],1);
+			else if (i_chld == cnt_chld-1){
+				if ((cnt_chld) % 2 != 0){ // for odd number of commands
+					dup2(pfd1[0],0);
+				}else{ // for even number of commands
+					dup2(pfd2[0],0);
+				}
+			}
+			else{
+				if (i_chld % 2 != 0){
+					dup2(pfd2[0],0);
+					dup2(pfd1[1],1);
+					}else{ // for even i
+					dup2(pfd1[0],0);
+					dup2(pfd2[1],1);
+				}
+			} 
+			do {
+				k = 0;
+				memset(singlePath, '\0', 256);
+				// TODO: Call parseCmd with delimiter ':'
+				while(l<strlen(path) && path[l] != ':')	 {
+					singlePath[k++] = path[l++];
+				}
+				l++;
+				if(singlePath[k-1] != '/')
+					singlePath[k++] = '/';
+				
+				p = 0;
+				while(p<strlen(cmd_chld) && cmd_chld[p] != '\n' && cmd_chld[p] != EOF){
+					singlePath[k++] = cmd_chld[p++];}
+
+				error = execve(singlePath, argv, envp);
+				if(!error)
+					break;
+			} while(l<strlen(path) && path[l] != '\n' && path[l] != EOF);
+		exit(0);
+		}
+		if (i_chld == 0)
 			close(pfd2[1]);
-		else if (i == cnt-1){
-			if ((cnt) % 2 != 0){ // for odd number of commands
+		else if (i_chld == cnt_chld-1){
+			if ((cnt_chld) % 2 != 0){ // for odd number of commands
 				close(pfd1[0]);
 			}else{ // for even number of commands
 				close(pfd2[0]);
 			}
 		}
 		else{
-			if (i % 2 != 0){
+			if (i_chld % 2 != 0){
 					close(pfd2[0]);
 					close(pfd1[1]);
 				}else{ // for even i
@@ -464,7 +543,7 @@ void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 			}
 		}
 		waitpid(childpid, NULL, 0);
-	}
+	}*/
 }
 
 
@@ -487,8 +566,10 @@ void execLine(char* input, char** argv, char** envp)
         }
         else{
             for(i=0; cmdList[i] != NULL; i++) {
-                if(strcmp(cmdList[i], "\n") && strcmp(cmdList[i], ""))
+                if(strcmp(cmdList[i], "\n") && strcmp(cmdList[i], "")){
+		    printf("cmdList[%d] : %s\n",i,cmdList[i]);
                     execute_pipe_cmd(cmdList[i], i, cnt, argv, envp);
+		}
                 else
                     printf("Invalid null command.\n");
             }

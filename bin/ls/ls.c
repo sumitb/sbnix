@@ -17,7 +17,6 @@ int listdir(const char *path) {
 	{
         	printf("%s\n", entry->d_name);
 	}
-   while(1);  
     closedir(dp);
     return 0;
 }

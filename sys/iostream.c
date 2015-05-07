@@ -39,7 +39,9 @@ int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
 			//read from pipe buffer
 			char *pipe_temp_buf=(char *)process->fd[process->dup_arr[fildes]].offset;
 			strcpy(buf,pipe_temp_buf);
-			return strlen(pipe_temp_buf);
+			int len = strlen(pipe_temp_buf);
+			memset(pipe_temp_buf,'\0',len);
+			return len;
 		}
 		else if(fildes==0){
             char tem_buf[size];

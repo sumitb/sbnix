@@ -37,7 +37,8 @@ int64_t sys_waitpid(pid_t pid, int *status_addr, int options);
 int64_t sys_execve(const char *filename, char *const argv[], char *const envp[]);
 
 int64_t sys_open(const char *file_name, int flags);
-char * sys_getcwd();
+char* sys_getcwd(char *dir_name, uint64_t size);
+int64_t sys_chdir(char *path);
 int64_t sys_close(int32_t filedes);
 int64_t sys_getdents(int x,dirent* dirp,int count);
 int64_t sys_read(uint64_t fildes, char *buf, uint64_t size);

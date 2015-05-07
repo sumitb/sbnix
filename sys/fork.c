@@ -11,10 +11,24 @@ int64_t sys_execve(const char *filename,char *const argv[],char *const envp[]) {
     if(!check_file(filename))
         return -1;
     // Copy pid
-    struct task_struct *process = create_process(filename);
+    struct task_struct *exec_child = create_process(filename);
     --avail_pid;
-    process->pid = ((struct task_struct*)getCurrentTask())->pid;
-    addTasktoQueueHead(process);
+	struct task_struct *exec_parent = (struct task_struct*)getCurrentTask();
+    exec_child->pid = exec_parent->pid;
+	exec_child->ppid = exec_parent->ppid;
+	exec_parent->ppid = 0;
+	
+	//copy fd table
+	exec_child->fd_cnt=exec_parent->fd_cnt;
+	for(int i=0; i<=exec_parent->fd_cnt;i++){
+		exec_child->fd[i].offset=exec_parent->fd[i].offset;
+		strcpy(exec_child->fd[i].path,exec_parent->fd[i].path);
+	}
+	//copy dup table
+	for(int i=0;i<25;i++){
+		exec_child->dup_arr[i]=exec_parent->dup_arr[i];
+	}
+    addTasktoQueueHead(exec_child);
     sys_exit(0);
     return 0;
 }
@@ -90,6 +104,18 @@ int64_t sys_fork() {
 			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
 			memset((char *) c_vm->vm_start,0,c_vm->vm_mmsz);
 			memcpy((char *) c_vm->vm_start, (void *) (p_vm->vm_file + p_vm->vm_offset), c_vm->vm_mmsz);
+			//copy binary
+			/*uint64_t *vma_page_virtual=(uint64_t *)kmalloc(c_vm->vm_mmsz);
+			uint64_t *vma_page_physical=(uint64_t *)((void *)vma_page_virtual-KERN_MEM);
+			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
+			
+			uint64_t *temp_vma = (uint64_t*)p_vm->vm_start;
+			for(int i=0,j=0; i < c_vm->vm_mmsz; i+=8,j++) {
+				vma_page_virtual[i] = temp_vma[i];
+			}
+			
+			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
+			map_kernel(pml4e_chld, p_vm->vm_start, (uint64_t)vma_page_physical, p_vm->vm_mmsz);*/
 			__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 			p_vm=p_vm->vm_next;
 		}
@@ -105,7 +131,9 @@ int64_t sys_fork() {
 		cproc->dup_arr[i]=i;
 		}
 		//copy heap
-		cproc->heap.bump_ptr=BUMP_PTR;
+		/*int rem = pproc->heap.bump_ptr%4096;
+		cproc->heap.bump_ptr=rem + pproc->heap.bump_ptr;
+		
 		uint64_t size = pproc->heap.bump_ptr - BUMP_PTR;
 		if(size){
 			uint64_t *heap_page_virtual=(uint64_t *)kmalloc(pproc->heap.bump_ptr - BUMP_PTR);
@@ -113,15 +141,14 @@ int64_t sys_fork() {
 			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(pproc->cr3_address));
 			
 			uint64_t *temp_heap = (uint64_t*)BUMP_PTR;
-			for(int i=0; i < size; i++) {
-				heap_page_virtual[i] = temp_heap[i];
+			for(int i=0,j=0; i < size; i+=8,j++) {
+				heap_page_virtual[j] = temp_heap[j];
 			}
 			
 			__asm__ __volatile__ ("movq %0, %%cr3":: "a"(cproc->cr3_address));
 			map_kernel(pml4e_chld, BUMP_PTR, (uint64_t)heap_page_physical, pproc->heap.bump_ptr - BUMP_PTR);
 			__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
-		}
-		//proc->process->kstack[491] = (uint64_t)(&irq0+34);
+		}*/
 		for(int i=KERNEL_STACK_SIZE-1; i>=STACK_OFFSET; i--) {
 			cproc->kstack[i]=pproc->kstack[i];
 		}

@@ -62,8 +62,15 @@ void syscall_handler(){
 		case SYS_getcwd:
             {
                 char *dir_name;
-                dir_name = sys_getcwd();
+                dir_name = sys_getcwd((char *)param_1,(uint64_t)param_2);
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)dir_name):"cc", "memory");
+                break;
+            }
+		case SYS_chdir:
+            {
+                int res;
+                res = sys_chdir((char *)param_1);
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)res):"cc", "memory");
                 break;
             }
 		case SYS_open:
