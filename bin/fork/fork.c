@@ -4,14 +4,14 @@
 #include <sys/console.h>
 
 
-int main(int argc, char* argv[], char* envp[]) {
+int main() {
    char *var = (char *)malloc(sizeof(200));
    strcpy(var,"Malloc rigouros testing along with fork and execve. Full proof plan");
  
    int k = fork();
    if(k == 0){
         printf("%s in child\n",var);
-        execve("bin/test",argv,envp);
+        execve("bin/qux",NULL,NULL);
 
 
    }

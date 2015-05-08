@@ -58,7 +58,7 @@ struct task_struct {
     char dir_path[DIR_LEN];
     char bin_name[BINARY_LEN];
     bool is_sleep;
-    uint64_t sleep_time;
+    int64_t sleep_time;
     
     uint64_t *stack;     /* user stack */
     uint64_t kstack[KERNEL_STACK_SIZE];     /* maintain one kernel stack per task */

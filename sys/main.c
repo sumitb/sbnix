@@ -44,16 +44,18 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
      */
 
     /*
+    addTasktoQueue(create_process("bin/baz"));
+    addTasktoQueue(create_process("bin/hello"));
+    addTasktoQueue(create_process("bin/sbush"));
+    addTasktoQueue(create_process("bin/w00t"));
+    addTasktoQueue(create_process("bin/sleep"));
     addTasktoQueue(create_process("bin/foo"));
     addTasktoQueue(create_process("bin/bar"));
-    addTasktoQueue(create_process("bin/baz"));
     addTasktoQueue(create_process("bin/qux"));
-    addTasktoQueue(create_process("bin/hello"));
-    addTasktoQueue(create_process("bin/w00t"));
     */
 	/* Moiz: User process init */
-    //printSchedulerQueue();
     addTasktoQueue(create_process("bin/sbush"));
+    //printSchedulerQueue();
 	init_process((uint64_t *)stack);
 
     schedule();

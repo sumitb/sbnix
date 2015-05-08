@@ -137,6 +137,7 @@ int64_t sys_open(const char *file_name, int flags){
 	printk("No such file\n");
 	return 0;
 }
+
 int64_t sys_getdents(int x,dirent* dirp,int count){
    // int x=fd;
     int i=0;
