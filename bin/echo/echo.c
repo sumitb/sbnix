@@ -4,10 +4,9 @@
 
 int main(){
     char buf[30];
-    strcpy(buf,"hello");
+    strcpy(buf,"he\'llo");
     for(int i=0; i<5; i++){
         printf("%c", buf[i]);
     }
-    while(1);
     return 0;
 }

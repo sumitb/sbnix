@@ -55,16 +55,57 @@ char * sys_getcwd(char *dir_name, uint64_t size){
 		if(cnt)
 			dir_name[i]=proc->bin_name[i];
 	}*/
-	return proc->dir_path;
+	strcpy(dir_name,proc->dir_path);
+	return dir_name;
 }
 
 int64_t sys_chdir(char *path){
 	int ind=0;
 	struct task_struct *proc = getCurrentTask();
-	int len = strlen(path);
+	int len_path = strlen(path);
+	int j=0;
+	char new_path[50];
+	int len = strlen(proc->dir_path);
+	if(path[0]=='.'){
+		for(int i=0; i<len_path; i++){
+			if(path[i]=='.' && (path[i+1]=='\0' || path[i+1]=='/')){
+				strcat(new_path,proc->dir_path);
+				j=j+len;
+			}
+			else if(path[i]=='.' && path[i+1]=='.' && (path[i+2]=='\0' ||  path[i+2]=='/')){
+				int i_mid;int cnt=0;
+				for(i_mid=0; i_mid<len; i_mid++){
+					if(proc->dir_path[i_mid]=='/')
+						cnt++;
+				}
+				for(i_mid=0; i_mid<len; i_mid++){
+					if(proc->dir_path[i_mid]=='/' && cnt>0){
+						cnt--;
+					}
+					if(cnt>1){
+						new_path[j]=proc->dir_path[i_mid];
+						j++;
+					}
+				}
+				i=i+2;
+			}
+			else{
+					new_path[j]=path[i];
+					j++;
+			}
+	  
+		}
+	}
+	else{
+		strcpy(new_path,proc->dir_path);
+		if(new_path[len-1]!='/')
+			new_path[len]='/';
+		strcat(new_path,path);
+	}
+	int new_len=strlen(new_path);
 	for(ind=0;ind<MAX_BIN;ind++){
-		if((strncmp(path,tarfs_ind[ind].name,len)==0) && strcmp(tarfs_ind[ind].typeflag,DIR)==0){
-			strcpy(proc->dir_path,path);
+		if((strncmp(new_path,tarfs_ind[ind].name,new_len)==0) && strcmp(tarfs_ind[ind].typeflag,DIR)==0){
+			strcpy(proc->dir_path,new_path);
 			return 0;
 		}
 	}
@@ -83,7 +124,9 @@ int64_t sys_open(const char *file_name, int flags){
         tarfs_ind[ind].ref_cnt++;
         process->fd_cnt++;
         process->fd[process->fd_cnt].offset=tarfs_ind[ind].bin_start_addr;
-        process->fd[process->fd_cnt].flags=flags;
+		process->fd[process->fd_cnt].offset_read=tarfs_ind[ind].bin_start_addr;
+        process->fd[process->fd_cnt].file_size=tarfs_ind[ind].file_size;
+		process->fd[process->fd_cnt].flags=flags;
        	//strcpy(fd[file_fd].path,file_name);
        	strcpy(process->fd[process->fd_cnt].path,tarfs_ind[ind].name);
         process->fd[process->fd_cnt].seek=0;

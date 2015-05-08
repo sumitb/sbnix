@@ -57,8 +57,10 @@ struct dirent {
 typedef struct dirent dirent;
 struct File{
     char path[32];
-    dirent directory;
+    //dirent directory;
     uint64_t offset;
+	uint64_t offset_read;
+	uint64_t  file_size;
     int flags;
     uint64_t seek;
 };

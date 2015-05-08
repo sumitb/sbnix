@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define maxArgs 5
+#define maxArgs 8
 #define charSize 22
 #define cmdSize maxArgs * charSize
-#define fileSize 256
-#define maxSize 512
+#define fileSize 128
+#define maxSize 256
 
 void execLine(char* input, char** argv, char** envp);
 
@@ -83,12 +83,13 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
 
     //printf("Executable name is %s\n", argv[0]);
     //for(i=1; i<argc; i++)
-        //printf("%s ", argv[i]);
-    while(*++envp != NULL) {
+    // printf("envp[1] : %s ", envp[1]);
+    for(int z=0; z<maxArgs; z++) {
         len = strlen("HOME=");
-        if(!strncmp(*(envp), "HOME=", len)) {
-            memset(temp, '\0', strlen(*(envp))+1);
-            strcpy(temp, *(envp));
+        if(!strncmp(envp[z], "HOME=", len)) {
+           // memset(temp, '\0', (strlen(envp[z])+1));
+		    memset(temp, '\0', maxSize);
+            strcpy(temp, (envp[z]));
             for(i=len,j=0; i<strlen(temp); i++,j++)
                 home[j]=temp[i];
             //printf("%d %s\n", strlen(temp), home);
@@ -99,27 +100,28 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
                 *(readPtr++) = *(charPtr++);
             */
         }
-        len = strlen("PATH=");
-        if(!strncmp(*(envp), "PATH=", len)) {
-            memset(temp, '\0', strlen(*(envp))+1);
-            strcpy(temp, *(envp));
+        len = strlen("USER=");
+        if(!strncmp((envp[z]), "USER=", len)) {
+            memset(temp, '\0', maxSize);
+			strcpy(temp, (envp[z]));
+            for(i=len,j=0; i<strlen(temp); i++,j++)
+                user[j]=temp[i];
+       //     printf("%d %s\n", strlen(temp), user);
+        }
+        
+		len = strlen("PATH=");
+        if(!strncmp((envp[z]), "PATH=", len)) {
+            memset(temp, '\0', maxSize);
+			strcpy(temp, (envp[z]));
             for(i=len,j=0; i<strlen(temp); i++,j++)
                 path[j]=temp[i];
             //printf("%d %s\n", strlen(temp), path);
         }
         // TODO: BUG: Username not working in PS1
-        len = strlen("USER=");
-        if(!strncmp(*(envp), "USER=", len)) {
-            memset(temp, '\0', strlen(*(envp))+1);
-            strcpy(temp, *(envp));
-            for(i=len,j=0; i<strlen(temp); i++,j++)
-                user[j]=temp[i];
-            //printf("%d %s\n", strlen(temp), user);
-        }
         len = strlen("HOSTNAME=");
-        if(!strncmp(*(envp), "HOSTNAME=", len)) {
-            memset(temp, '\0', strlen(*(envp))+1);
-            strcpy(temp, *(envp));
+        if(!strncmp((envp[z]), "HOSTNAME=", len)) {
+            memset(temp, '\0', maxSize);
+			strcpy(temp, (envp[z]));
             for(i=len,j=0; i<strlen(temp); i++,j++)
                 hostname[j]=temp[i];
             //printf("%d %s\n", strlen(temp), hostname);
@@ -131,22 +133,14 @@ int parsePATH(char *envp[], char home[], char path[], char user[], char hostname
 
     return 0;
 }
-void chdir_shell(char *path){
-	strcpy(curr_shell_path,path);
-}
-
 /* Feature 1: cd command */
 void changeDir(char* dirPath, char* home)
 {
-    //do not copy character pointer, always use strcpy
-    // Bug: cd - not working
-    // Bug: cd ~/sbnix not working
     char buffer[200]="\0";int i=0,j=0;
     if(dirPath == NULL) {
 		getcwd(last_path, fileSize);
          chdir(home);
 	//printf("curr path : %s\n",last_path);
-      //  chdir_shell(home);
     }
     else {
         if(!strcmp(dirPath, "~") || !strcmp(dirPath, ""))
@@ -164,9 +158,8 @@ void changeDir(char* dirPath, char* home)
 			strcpy(dirPath,buffer);
 		}
 		getcwd(last_path, fileSize);
-		//chdir_shell(dirPath);
 		 if(chdir(dirPath))
-             printf("%s: No such file or directory.\n", dirPath);
+             printf("%s: No such directory.\n", dirPath);
 	}
     
 }
@@ -233,37 +226,35 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 	memset(temp_file,'\0',len+2);
 	
     if(strcmp(file_name, " ")){
-		if((file_name[0]=='.' && file_name[1]=='/') || (file_name[0]=='/'))
+		//if((file_name[0]=='.' && file_name[1]=='/') || (file_name[0]=='/'))
 			fd_shell = open(file_name, 0);
-		else{
+	/*	else{
 			strcpy(temp_file,"./");
 			strcat(temp_file,file_name);
 			fd_shell = open(temp_file, 0);
-		}
+		}*/
 	}
 		
     
-	if(fd_shell == -1)
+	if(!fd_shell)
 	{
 		printf("sbush: %s: No such file or directory\n", file_name);
 	}
 	else {
-		//while (!feof(fd_shell)) {
 		while (read(fd_shell,ch,1)) {
 
-		    // TODO: Confirm use of fgetc
-            //for (ch = fgetc(fd_shell); ch != EOF && ch != '\n'; ch = fgetc(fd_shell)) {
 			buffer[n] = ch[0];
-			
+	//		printf("%c",ch[0]);
             // TODO: Add support of positional params
 			// null-terminate the string
 			if(buffer[n++] == '\n'){
 				buffer[n] = '\0';
-				//printf("line : %s\n", buffer);
+		//		printf("line : %s\n", buffer);
 				execLine(buffer, argv, envp);
 				memset(buffer,'\0',sizeof(buffer));n=0;
 			}
 		}
+		//close(fd_shell);
 	}
 }
 
@@ -288,9 +279,9 @@ void setPATH(char* newPath, char* envp[])
     //printf("Executable name is %s\n", argv[0]);
     //for(i=1; i<argc; i++)
         //printf("%s ", argv[i]);
-    while(*++envp != NULL) {
+    for(int z=0; z<maxArgs; z++) {
         len = strlen("PATH=");
-        if(!strncmp(*(envp), "PATH=", len)) {
+        if(!strncmp((envp[z]), "PATH=", len)) {
             //memset(temp, '\0', strlen(*(envp))+1);
 			for(i=0;i<len_path;i++,p++){
 				if(newPath[i]=='$'){
@@ -305,7 +296,7 @@ void setPATH(char* newPath, char* envp[])
             //strcat(temp, path);
 			//strcat(temp, newPath);
 			//printf("envp :%s\n",temp);
-			strcpy(*(envp), temp);
+			strcpy((envp[z]), temp);
             //printf("%d %s\n", strlen(temp), path);
         }
         //*(envp++);
@@ -316,19 +307,20 @@ void setPS1(char* new_ps, char* envp[], char *new_path)
 {
 	int i=0, j=0, esc_flag=2;
 	char *curr_path;
-	//char home[fileSize];
-	//char  path[maxSize];
+	char home[fileSize];
+	char  path[maxSize];
     char user[charSize], hostname[charSize];
 	
     curr_path = malloc(fileSize * sizeof(char));
+	//printf("new_ps: %s\n",new_ps);
 	getcwd(curr_path, fileSize);
+	//printf("curr_path: %s\n",curr_path);
 //	strcpy(curr_path,"/home/sbush");
 //	strcpy(new_path,"/home/sbush");
 	
 	memset(new_path, '\0', fileSize);
-//	parsePATH(envp, home, path, user, hostname);
-	strcpy(hostname,"sbrocks");
-	strcpy(user,"moizali");
+	parsePATH(envp, home, path, user, hostname);
+	//printf("user : %s\n",user);
 	
     //abc\u@\h
 	while(new_ps[i] != '\0') {
@@ -359,18 +351,18 @@ int execCmd(char** cmd, char** argv, char** envp)
 {
     char* input = cmd[0];
     char home[fileSize], path[maxSize];
-    // T char user[charSize], hostname[charSize];
-    strcpy(path,"bin/");
-		strcpy(home,"bin/");
-//T    parsePATH(envp, home, path, user, hostname);
+    char user[charSize], hostname[charSize];
+	//strcpy(path,getcwd(path,25));
+	//	strcpy(home,"bin/");
+    parsePATH(envp, home, path, user, hostname);
     // Check if valid command, ignore null or blank
     if( strcmp(input, " ") && strlen(input) > 0) {
         
         if(!strcmp(input, "cd"))
             changeDir(cmd[1], home);
-       /*T else if(!strcmp(input, "exit"))
+        else if(!strcmp(input, "exit"))
             exit(0);
-*/        else if(!strcmp(input, "set")) {
+        else if(!strcmp(input, "set")) {
             if(cmd[1] == NULL || cmd[2] == NULL)
                 printf("set: Insufficient arguments.\n");
             else if(cmd[3] != NULL)
@@ -383,6 +375,9 @@ int execCmd(char** cmd, char** argv, char** envp)
                     setPATH(cmd[2], envp);
             }
         }
+		else if(!strcmp(input, "sbush")){
+			execShell(cmd[1], argv, envp);
+		}
        else {
             execBin(input, path, cmd, envp);
         }
@@ -397,26 +392,26 @@ void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 	pid_t childpid;
 	//int pfd2[2]; 
 	int error=0;
-//	char home[fileSize]
+	char home[fileSize];
 	char path[maxSize];
 	char cmd_chld[30];
 	int i_chld=i;
 	int cnt_chld=cnt;
-    //char user[charSize], hostname[charSize];
+    char user[charSize], hostname[charSize];
 
   //  char* singlePath;
    // singlePath = malloc(fileSize * sizeof(char));
     
 	cmd = parseCmd(cmd_list, ' ');
 	strcpy(cmd_chld,cmd[0]);
-	printf("cmd_chld :%s\n",cmd_chld);
+	//printf("cmd_chld :%s\n",cmd_chld);
 
 	
 	/* for(j=0; cmd[j] != NULL; j++)
 		printf("cmd[%d]: %s\n",j,cmd[j]);
 	j=0; */
-	//parsePATH(envp, home, path, user, hostname);
-	strcpy(path,"bin");
+	parsePATH(envp, home, path, user, hostname);
+	//strcpy(path,"bin");
 	
 	if( strcmp(cmd[0], " ") && strlen(cmd[0]) > 0) {
 	
@@ -439,16 +434,16 @@ void execute_pipe_cmd(char cmd_list[], int i, int cnt, char** argv, char** envp)
 	if ((childpid = fork()) == 0) {
 			if (i_chld == 0){
 					dup2(1,fd2);
-					printf("fd1 :%d, fd2: %d\n",fd1,fd2);
+					//printf("fd1 :%d, fd2: %d\n",fd1,fd2);
 			}
 			else if (i_chld == cnt_chld-1){
 					dup2(0, fd1);
 					dup2(fd2,1);
 			}
-			/*else{
-					dup2(0,pfd1[0]);
-					dup2(1,pfd1[0]);
-			} */
+			else{
+					dup2(0,fd1);
+					dup2(1,fd2);
+			} 
 			char singlePath[256];
 			
 			do {
@@ -567,7 +562,7 @@ void execLine(char* input, char** argv, char** envp)
         else{
             for(i=0; cmdList[i] != NULL; i++) {
                 if(strcmp(cmdList[i], "\n") && strcmp(cmdList[i], "")){
-		    printf("cmdList[%d] : %s\n",i,cmdList[i]);
+		    //printf("cmdList[%d] : %s\n",i,cmdList[i]);
                     execute_pipe_cmd(cmdList[i], i, cnt, argv, envp);
 		}
                 else
@@ -577,7 +572,7 @@ void execLine(char* input, char** argv, char** envp)
     }
 }
 
-int main(int argc, char* argv[], char** envp)
+int main(int argc, char* argv[], char** envp1)
 {
     char input[cmdSize];
 	char *sh_target;
@@ -585,6 +580,17 @@ int main(int argc, char* argv[], char** envp)
     
 	//TODO free memory allocated by Malloc
    
+	//set envp
+	char **envp=(char **)malloc(8*sizeof(char *));
+		for(int z=0;z<8;z++)
+			envp[z]=(char *)malloc(512*sizeof(char));
+
+	
+ 	strcpy(envp[0],"HOSTNAME=sbrocks");
+ 	strcpy(envp[1],"USER=root");
+ 	strcpy(envp[2],"HOME=bin");
+ 	strcpy(envp[3],"PATH=rootfs/bin/:bin/:mnt/");
+	
     ps1 = malloc(fileSize * sizeof(char));
 	last_path = malloc(fileSize * sizeof(char));
 	sh_target = malloc(fileSize * sizeof(char));

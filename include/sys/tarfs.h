@@ -6,7 +6,7 @@ extern char _binary_tarfs_end;
 
 #define DIR "5"
 #define FILE "0"
-#define MAX_BIN 20
+#define MAX_BIN 40
 
 
 struct posix_header_ustar {

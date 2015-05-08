@@ -20,6 +20,7 @@ int64_t sys_execve(const char *filename,char *const argv[],char *const envp[]) {
 	
 	//copy fd table
 	exec_child->fd_cnt=exec_parent->fd_cnt;
+	strcpy(exec_child->dir_path, exec_parent->dir_path);
 	for(int i=0; i<=exec_parent->fd_cnt;i++){
 		exec_child->fd[i].offset=exec_parent->fd[i].offset;
 		strcpy(exec_child->fd[i].path,exec_parent->fd[i].path);
@@ -69,6 +70,7 @@ int64_t sys_fork() {
 		cproc->mm->vma_addr=NULL;
 
         strcpy(cproc->bin_name, (const char*)pproc->bin_name);
+        strcpy(cproc->dir_path, (const char*)pproc->dir_path);
         cproc->is_sleep=false;
         cproc->sleep_time=0;
 		uint16_t child_id=cproc->pid;

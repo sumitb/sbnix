@@ -15,8 +15,9 @@ int listdir(const char *path) {
    // entry = readdir(dp);
     while((entry = readdir(dp)) != NULL)
 	{
-        	printf("%s\n", entry->d_name);
+        	printf("%s\t", entry->d_name);
 	}
+    printf("\n");
     closedir(dp);
     return 0;
 }

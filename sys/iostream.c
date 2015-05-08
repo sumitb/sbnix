@@ -30,9 +30,9 @@ int64_t sys_write(uint64_t fildes, char *buf, uint64_t size) {
 
 int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
 
-    /*int i=0;
-    char *dest;
-    char *src;*/
+    int i=0;
+    //char *dest;
+    char *src;
     if(size>0){
 		struct task_struct *process = getCurrentTask();
 		if(process->dup_arr[fildes]!=fildes){
@@ -54,19 +54,24 @@ int64_t sys_read(uint64_t fildes, char *buf, uint64_t size) {
             buf[len]='\0';
             return len;
         }
-        /*
+        
         if(fildes>2){
-            if(fd[fildes].seek==0)
-                src=(char*)fd[fildes].offset;
+            if(process->fd[fildes].seek==0)
+                src=(char*)process->fd[fildes].offset_read;
             else
-                src=(char*)fd[fildes].seek;
-            for(i=0; i<size;i++){
-                dest[i]=*(src++);
+                src=(char*)process->fd[fildes].seek;
+        if(process->fd[fildes].offset_read < ((uint64_t)((char *)process->fd[fildes].offset+process->fd[fildes].file_size))){
+			for(i=0; i<size;i++){
+                buf[i]=src[i];
+				process->fd[fildes].offset_read = (uint64_t)((char*)process->fd[fildes].offset_read + 1);
             }
-            dest[i]='\0';
-            buf=dest;
+            buf[i]='\0';
             return size;
-        }*/
+		}
+		else{
+			 return 0;
+		}
+        }
     }
     return 0;
 }
