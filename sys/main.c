@@ -51,8 +51,8 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     */
 	/* Moiz: User process init */
  //   addTasktoQueue(create_process("bin/sbush"));
-    addTasktoQueue(create_process("bin/qux",argv,envp));
     addTasktoQueue(create_process("bin/hello",argv,envp));
+    addTasktoQueue(create_process("bin/qux",argv,envp));
     //printSchedulerQueue();
 	init_process((uint64_t *)stack);
 

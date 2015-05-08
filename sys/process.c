@@ -128,9 +128,9 @@ struct task_struct *create_process(const char *binary,char **argv,char **envp){
 		env_cnt++;
 	}
 	stack_top--;
-	*stack_top=9890;	
+	*stack_top=9890;
 	stack_top--;
-	int stk_cnt=0;
+	int stk_cnt=1;
 	for(int i=env_cnt-1; i>=0; i--){
 		int len_env=strlen(envp[i])+1;
 		stack_top=(uint64_t *)((char*)stack_top - len_env);
@@ -139,12 +139,10 @@ struct task_struct *create_process(const char *binary,char **argv,char **envp){
 		memcpy(stack_top,envp[i],len_env);
 		temp[stk_cnt]=stack_top;
 		stk_cnt++;
-	}	
+	}
 	temp[stk_cnt]=0;
 	stk_cnt++;
-	*stack_top=0;
-	stack_top--;
-	for(int i=arg_cnt; i>=0; i--){
+	for(int i=arg_cnt-1; i>=0; i--){
 		int len_arg=strlen(argv[i])+1;
 		stack_top=(uint64_t *)((char *)stack_top - len_arg);
 		//*stack_top=(uint64_t)(argv[i]);
@@ -152,8 +150,11 @@ struct task_struct *create_process(const char *binary,char **argv,char **envp){
 		memcpy(stack_top,argv[i],len_arg);
 		temp[stk_cnt]=stack_top;
 		stk_cnt++;
-	}	
-     	for(int i=0;i<stk_cnt;i++){
+	}
+	stack_top--;
+    stack_top = (uint64_t *)stack_roundless((uint64_t)stack_top);
+
+    for(int i=0;i<stk_cnt;i++){
 		*stack_top=(uint64_t)temp[i];
 		stack_top--;
 	}

@@ -93,6 +93,18 @@ uint64_t page_roundless_4096(uint64_t addr){
 	}
 }
 
+uint64_t stack_roundless(uint64_t addr){
+	if(addr%8==0)
+		return addr;
+	else{
+		uint64_t new_pg_addr= addr - (addr%8);
+		if(new_pg_addr<0)
+			return 0;
+		else
+			return new_pg_addr;
+	}
+}
+
 uint64_t addr_res(uint64_t logical, int flag){
 	if (flag == PML4E)
 		return ((logical>>39) & 0x1FF);
