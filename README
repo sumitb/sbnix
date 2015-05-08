@@ -1,24 +1,142 @@
-The provided Makefile:
-  1) builds a kernel
-  2) copies it into rootfs/boot/kernel/kernel
-  3) creates an ISO CD image with the rootfs/ contents
+Team Members:
+	Sumit Bindal		(109913379)
+	Moiz Ali		(110100333)
+	Pratik Bagaria		(110013587)
 
-To boot the system in QEMU, run:
-  qemu-system-x86_64 -curses -cdrom $USER.iso -drive id=disk,file=$USER.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 -net nic -net user,hostfwd=tcp::10080-:80 -net user,hostfwd=tcp::10023-:23 --no-reboot -gdb tcp::9998
+We have implemented preemptive scheduling OS (70 marks project)
 
-  Explanation of parameters:
-  -curses         use a text console (omit this to use default SDL/VNC console)
-  -cdrom x.iso    connect a CD-ROM and insert CD with x.iso disk
-  --no-reboot     exit when guest reboots
-  -gdb tcp::9998  listen for "remote" debugging connections on port 9998
+Read Me:
 
-  connect a hard drive with x.img disk:
-  -drive id=disk,file=$USER.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
-  connect a NIC and forward local port 10080 into port 80 and local port 10023 to port 23
-  -net nic -net user,hostfwd=tcp::10080-:80 -net user,hostfwd=tcp::10023-:23
+SYSTEM CALLS	    
+    SYS_exit()
+    Syntax       :  exit(int status)
+    Description  :  The exit() function causes normal process termination        
 
-When using the -curses mode, switch to the qemu> console with ESC-2.
 
-To connect a remote debugger to the running qemu VM:
-  gdb ./kernel
-  target remote localhost:9998
+	
+    SYS_brk()
+    Syntax       : int brk(void *addr)
+    Description  : brk() sets the end of the data segment to the value specified by addr
+    return       : On success, brk() the base pointer from where the memory was allocated. On error 0 is returned.
+
+
+    SYS_fork()
+    Syntax       :  pid_t fork (void); 
+    Description  :  Whenever called a child process is created. It returns pid = 0 for child process and non zero for parent process.
+    return       :  This call returns the pid for parent process or 0 for the child  process.
+    
+
+
+    SYS_getpid()
+    Syntax       :  pid_t getpid(void)
+    Description  :  getpid() returns the process ID of the calling process.
+    
+    SYS_getppid()
+    Syntax       :  pid_t getppid(void)
+    Description  :  getppid() returns the process ID of the parent of the calling process.
+
+
+    SYS_execve()
+    Syntax       :  int execve(const char *filename, char *const argv[], char *const envp[])
+    Description  :  execve() executes the program pointed to by filename along with any necessary arguments argv[] in the environment envp[].
+    return       :  This call returns -1 on failure, and 0 on success
+    
+    SYS_waitpid()
+    Syntax       :  pid_t waitpid(pid_t pid, int *status, int options)
+    Description  :  It suspends execution of the calling process until a child specified by pid argument has changed state.
+    return       :  On success, returns the process ID of the child whose state has changed; on error -1 is returned.
+
+    
+    SYS_nanosleep()
+    Syntax       :  int sleep(unsigned int seconds)
+    Description  :  sleep() makes the calling thread sleep until seconds seconds have elapsed
+    return       :  Zero if the requested time has elapsed.
+
+
+
+   SYS_open()
+    Syntax       :  int open(const char *pathname, int flags)
+    Description  :  Whenever called, a file pointed by the pathname is opened and a file descriptor is returned. It opens files from 'tarfs'.
+    Dependencies :  The flags can be one of the following: O_RDONLY = 0, O_WRONLY = 1, O_RDWR = 2, O_CREAT = 0x40, O_DIRECTORY = 0x10000
+    return       :  This call returns file descriptor number on success and  returns 0 on failure.
+
+
+    SYS_read()
+    Syntax       :  uint64_t read(int fd, void *buf, uint64_t count)
+    Description  :  read() attempts to read up to count bytes from file descriptor fd into the buffer starting at buf.
+    Dependencies :  Before read, always open the file first and after read is finished close the file.
+    return       :  Returns 0 on failure and on success returns number of bytes read into buf.
+
+
+    SYS_write() 
+    Syntax       :  uint64_t write(int fd, const void *buf, uint64_t count)
+    Description  :  write() writes up to count bytes from the buffer pointed buf to the file referred to by the file descriptor fd.
+    return       :  On success, the number of bytes written is returned or 0 on error
+       
+
+
+    SYS_lseek()
+    Syntax       :  off_t lseek(int fildes, off_t offset, int whence)
+    Description  :  The lseek() function repositions the offset of the open file associated with the file descriptor fd to the argument offset
+                    according to the directive whence
+    Dependencies :  Values of whence could be any of the following:
+       SEEK_SET
+              The offset is set to offset bytes.
+       SEEK_CUR
+              The offset is set to its current location plus offset bytes.
+       SEEK_END
+              The offset is set to the size of the file plus offset bytes.
+    return      : Upon successful completion, lseek() returns the resulting offset location from the beginning of the file else -1 on error.
+
+
+    SYS_close()
+    Syntax       : int close(int fd)
+    Description  : It closes a file descriptor, so that it no longer refers to any file.
+    return       : returns 1 on success. On error, 0 is returned
+
+    SYS_pipe()
+    Syntax       :int pipe(int filedes[])
+    Description  : pipe() creates a pipe, a unidirectional data channel that can be used for interprocess communication. The array pipefd is used to return two file descriptors referring to the ends of the pipe. pipefd[0] refers to the read end of the pipe. pipefd[1] refers to the write end of the pipe. Data written to the write end of the pipe is buffered by the kernel until it is read from the read end of the pipe.
+    return       :On success, zero is returned. On error, 1 is returned
+
+    SYS_dup2()
+    Syntax       :int dup2(int oldfd, int newfd)
+    Description  :makes newfd be the copy of oldfd, closing newfd first if necessary
+    return       :On success, it returns the new descriptor. On error, -1 is returned,
+
+
+    SYS_getdents() 
+
+    Syntax       : int getdents(unsigned int fd, struct linux_dirent *dirp,unsigned int count)
+    Description  : It reads several linux_dirent structures from the directory referred to by the open file descriptor fd into the
+       buffer pointed to by dirp.The argument count specifies the size of that buffer.
+    Dependency   :getdents is called by opendir
+    return       : On success, the number of bytes read is returned.
+
+
+List of Binaries created to test the system calls:
+
+1) fork: to test fork and execve
+2)listdir: to test opendir, readdir and closedir
+3)open: to test open, read and lseek 
+4)preempt: to test preemptive scheduling
+5)ls: for listing the files of a directory
+6)echo: to echo on a terminal
+7)pipe: to test pipe use the normal pipe symbol to give commands in the shell: Below is an example to test0 3 level pipe in our shell:
+ ls | scan_pipe | scan_pipe2
+  ls|scan_pipe
+
+Working flow of fork():
+	 In fork after the child is created, we first resume the parent process and then the child process is scheduled.
+
+Limitations:
+
+
+
+
+
+	
+	
+
+
+

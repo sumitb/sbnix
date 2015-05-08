@@ -165,7 +165,7 @@ void changeDir(char* dirPath, char* home)
 }
 
 /* Feature 2: execute binaries interactively */
-void execBin(char* binary, char* path, char** argv, char** envp)
+void execBin(char* binary, char* path, char** argv, char** envp, char *cmd1)
 {
     int i=0, j, k; 
     int error=1;
@@ -213,7 +213,12 @@ void execBin(char* binary, char* path, char** argv, char** envp)
 	exit(0);
     }
     else {
-        waitpid(childPID, &status, 0);
+		if(cmd1 != NULL && strcmp(cmd1,"&")==0){
+			
+		}
+		else{
+			waitpid(childPID, &status, 0);
+		}
     }
 }
 
@@ -250,7 +255,8 @@ void execShell(char* file_name, char* argv[], char* envp[]) {
 			if(buffer[n++] == '\n'){
 				buffer[n] = '\0';
 		//		printf("line : %s\n", buffer);
-				execLine(buffer, argv, envp);
+				if(strcmp(buffer,"#!")!=0)
+					execLine(buffer, argv, envp);
 				memset(buffer,'\0',sizeof(buffer));n=0;
 			}
 		}
@@ -375,11 +381,22 @@ int execCmd(char** cmd, char** argv, char** envp)
                     setPATH(cmd[2], envp);
             }
         }
-		else if(!strcmp(input, "sbush")){
+		else if(!strcmp(input, "sbh")){
 			execShell(cmd[1], argv, envp);
 		}
+		else if(!strcmp(input, "echo")){
+			if(cmd[1] != NULL){
+				int len=strlen(cmd[1]);
+				for(int i=0; i<len; i++){
+					printf("%c", cmd[1][i]);
+					}
+			}
+		}
+		else if(strcmp(input, "kill")==0 && strcmp(cmd[1], "-9")==0){
+			kill(atoi(cmd[2]),9);
+		}
        else {
-            execBin(input, path, cmd, envp);
+            execBin(input, path, cmd, envp,cmd[1]);
         }
         //printf("%s len(%d) ", input, strlen(input));
     }

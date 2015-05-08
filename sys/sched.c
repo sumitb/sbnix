@@ -54,6 +54,23 @@ int64_t sys_getppid(void) {
     return (int64_t)((struct task_struct*)getCurrentTask())->ppid;
 }
 
+void sys_ps(void){
+	struct task_struct *process = NULL;
+	int cnt = 1;
+	printk("S.No.\t PARENT_PID\t PID\t NAME\t STATUS\n");
+	printk("=====\t ==========\t ===\t ====\t ======\n");
+	list_for_each_entry(process, &runQueue, tasks) {
+        printk("%d.\t\t %d\t %d\t %s\t", cnt, process->ppid, process->pid, process->bin_name);
+		printk("RUNNING\n");
+		cnt++;
+	 }
+	 list_for_each_entry(process, &waitQueue, tasks) {
+        printk("%d.\t\t %d\t %d\t %s\t", cnt, process->ppid, process->pid, process->bin_name);
+		printk("WAITING\n");
+		cnt++;
+	 }	 
+}
+
 int64_t sys_exit(int error_code) {
     struct task_struct *process = getCurrentTask();
     

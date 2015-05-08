@@ -16,7 +16,7 @@ int main() {
 
    }
    else{
-      waitpid(k,0,0);
+       waitpid(k,0,0);
        printf("\n Parent.\n");
        printf("%s in parent\n",var) ;
        strcpy(var,"modifying the value of test in parent");

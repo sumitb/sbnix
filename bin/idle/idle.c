@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    int cnt = 0;
-    printf("%d. Lorde\n", ++cnt);
+    /* Idle Task */
+	while(1);
     return 0;
 }

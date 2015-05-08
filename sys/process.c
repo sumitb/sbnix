@@ -43,7 +43,7 @@ struct task_struct* initTask(uint64_t entry_point) {
     
     task->pid = ++avail_pid;
     task->state = 0;
-    task->parent = NULL;
+    //task->parent = NULL;
     //task->childList = ####; /* define in sched.h and init here*/
     //task-> mm = get_mm();
     /* define get_mm in memory.h */

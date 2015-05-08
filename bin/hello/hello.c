@@ -15,7 +15,7 @@ int test_lseek(const char * path){
     off_t offset=lseek(file_des,20,0);
     printf("lseek\n");
     printf("%d",offset);
-    size=read(file_des,buf,30);
+//    size=read(file_des,buf,30);
     printf("read\n");
     printf(buf);
     return 0;
@@ -23,18 +23,6 @@ int test_lseek(const char * path){
 
 int main(int argc, char* argv[], char* envp[])
 {
-//	listdir("bin");
-//	printf("Next file\n");
-
-//	listdir("hello");
-//  char str1[MAXLEN]="\0";
-//  char str2[MAXLEN]="\0";
-//  char** env;
-//  char* thisEnv;
-//  int i=0;
-//  int num2=0;
-//  char ch;
-//  write(1,buff,sizeof(buff)+1);
 /*struct a{
 	int data1;
 	char data2[10];	

@@ -11,16 +11,8 @@ int main(int argc, char* argv[], char* envp[]) {
             printf("Hello CHild \n");
         }
         else{
-            for(int i=0;i<1000;i++)
-                printf("parent test\n");
-            sleep(3);
+            printf("parent sleeping\n");
+	    sleep(1);
             printf("Hello Parent\n");
         }
-
-
-    
-
-
-
-
 }

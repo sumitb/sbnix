@@ -23,11 +23,14 @@
 #define SYS_dup        32
 #define SYS_dup2       33
 #define SYS_getdents   78
+#define SYS_ps	       84	
+#define SYS_kill       52	
 
 int64_t sys_brk(uint64_t bump_addr);
 
 /* Process related Syscalls */
 int64_t sys_fork();
+int64_t sys_ps();
 int64_t sys_getpid(void);
 int64_t sys_getppid(void);
 int64_t sys_exit(int error_code);

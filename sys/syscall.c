@@ -80,6 +80,13 @@ void syscall_handler(){
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)fd):"cc", "memory");
             }
             break;
+		case SYS_ps:
+            {
+                int64_t res = 0;
+                res = sys_ps();
+                __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)res):"cc", "memory");
+            }
+            break;
 		case SYS_read:
             {
                 int num=0;

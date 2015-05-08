@@ -74,9 +74,7 @@ struct task_struct {
     vma *heap_vma;
     struct heap_mem heap;
     struct mm_struct *mm;
-    struct task_struct *parent;
     struct list_head tasks;
-    struct list_head children;      /* list of my children */
 };
 
 //struct kernel_stack kern_stack[NR_TASKS];
