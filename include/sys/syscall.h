@@ -34,7 +34,7 @@ int64_t sys_exit(int error_code);
 int64_t sys_kill(int pid, int sig);
 int64_t sys_sleep(uint64_t seconds);
 int64_t sys_waitpid(pid_t pid, int *status_addr, int options);
-int64_t sys_execve(const char *filename, char *const argv[], char *const envp[]);
+int64_t sys_execve(const char *filename, char *argv[], char *envp[]);
 
 int64_t sys_open(const char *file_name, int flags);
 char * sys_getcwd();

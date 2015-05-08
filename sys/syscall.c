@@ -43,7 +43,7 @@ void syscall_handler(){
             break;
 		case SYS_execve:
             {
-                int64_t ret = sys_execve((char*)param_1, (char* const*)param_2, (char* const*)param_3);
+                int64_t ret = sys_execve((char*)param_1, (char**)param_2, (char**)param_3);
                 __asm__ __volatile__("movq %0, %%rax;" ::"a" ((int64_t)ret):"cc", "memory");
             }
             break;

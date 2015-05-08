@@ -63,7 +63,7 @@ struct task_struct* initTask(uint64_t entry_point) {
 }
 
 
-struct task_struct *create_process(const char *binary){
+struct task_struct *create_process(const char *binary,char **argv,char **envp){
 	uint64_t *page_addr;
 	uint64_t *pml4e_pr;
 	
@@ -97,17 +97,71 @@ struct task_struct *create_process(const char *binary){
 	process->heap.bump_ptr=BUMP_PTR;
 	strcpy(process->bin_name, binary);
 	process->is_sleep=false;
-    process->sleep_time=0;
+	process->sleep_time=0;
 
 	//intialize  dup array
 	for(int i=0;i<25;i++){
 		process->dup_arr[i]=i;
 	}
 	process->fd_cnt=2;
+	
 
-    process->stack=(uint64_t*)STACK_MEM_TOP;
+    	process->stack=(uint64_t*)STACK_MEM_TOP;
 	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
 	
+	__asm __volatile("movq %0, %%cr3":: "a"(process->cr3_address));
+	//load argc and argv
+	strcpy(argv[0],binary);	
+	int argc=1;
+	int arg_cnt=0;
+	//while(argv[arg_cnt]!=NULL && strlen(envp[arg_cnt])>0){
+	while(strcmp(argv[arg_cnt],"NULL") != 0){ //!=NULL && strlen(envp[arg_cnt])>0){
+		arg_cnt++;
+	}
+	argc=arg_cnt;
+	uint64_t *stack_top=(uint64_t *)(STACK_MEM_TOP-0x8);
+	uint64_t *temp[16];
+	for(int i=0; i<16; i++)
+		temp[i]=0;
+	int env_cnt=0;
+	while(strcmp(envp[env_cnt],"NULL") != 0){//!=NULL && strlen(envp[env_cnt])>0){
+		env_cnt++;
+	}
+	stack_top--;
+	*stack_top=9890;	
+	stack_top--;
+	int stk_cnt=0;
+	for(int i=env_cnt-1; i>=0; i--){
+		int len_env=strlen(envp[i])+1;
+		stack_top=(uint64_t *)((char*)stack_top - len_env);
+		//*stack_top=(uint64_t )(envp[i]);
+		//stack_top--;
+		memcpy(stack_top,envp[i],len_env);
+		temp[stk_cnt]=stack_top;
+		stk_cnt++;
+	}	
+	temp[stk_cnt]=0;
+	stk_cnt++;
+	*stack_top=0;
+	stack_top--;
+	for(int i=arg_cnt; i>=0; i--){
+		int len_arg=strlen(argv[i])+1;
+		stack_top=(uint64_t *)((char *)stack_top - len_arg);
+		//*stack_top=(uint64_t)(argv[i]);
+		//stack_top--;
+		memcpy(stack_top,argv[i],len_arg);
+		temp[stk_cnt]=stack_top;
+		stk_cnt++;
+	}	
+     	for(int i=0;i<stk_cnt;i++){
+		*stack_top=(uint64_t)temp[i];
+		stack_top--;
+	}
+	*stack_top=argc;
+	stack_top--;
+	stack_top--;
+	
+	__asm __volatile("movq %0,%%cr3" : : "r" (cr3_addr));
 	//process->stack[63]= GDT_DS | P | W | DPL3,  /*** user data segment descriptor ***/
 	//process->stack[62]= (uint64_t)(&proc->process->stack[63]);
 	//process->stack[61]= 0x246;                           //  EFlags
@@ -119,7 +173,8 @@ struct task_struct *create_process(const char *binary){
     process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-4] = 0x1b ;                           //CS
     process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-3] = 0x246;                           //EFlags
     //process->kstack[KERNEL_STACK_SIZE-2] = (uint64_t)(&(process->stack)+((USER_STACK_SIZE-1)));      //ESP
-	process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-2] = (uint64_t)STACK_MEM_TOP-0x8;     //ESP
+	//process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-2] = (uint64_t)STACK_MEM_TOP-0x8;     //ESP
+	process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-2] = (uint64_t)stack_top;     //ESP
     process->kstack[KERNEL_STACK_SIZE-TSS_OFFSET-1] = 0x23 ;                           //SS
     
     process->kernel_rsp = (uint64_t *)&process->kstack[STACK_OFFSET];

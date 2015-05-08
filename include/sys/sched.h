@@ -100,7 +100,7 @@ int addTasktoQueueHead(struct task_struct *task);
 
 /* Process functions */
 struct task_struct *initTask(uint64_t entry_point);
-struct task_struct *create_process(const char *binary);
+struct task_struct *create_process(const char *binary,char **argv,char **envp);
 void init_process(uint64_t *stack);
 void allocate(uint64_t pml4e_addr, void * addr, int len);
 vma* allocate_vma(vma **vma_head);

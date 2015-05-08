@@ -6,12 +6,12 @@
 #include <sys/console.h>
 
 
-int64_t sys_execve(const char *filename,char *const argv[],char *const envp[]) {
+int64_t sys_execve(const char *filename,char *argv[],char *envp[]) {
 	/* File type is not ELF */
     if(!check_file(filename))
         return -1;
     // Copy pid
-    struct task_struct *process = create_process(filename);
+    struct task_struct *process = create_process(filename,argv,envp);
     --avail_pid;
     process->pid = ((struct task_struct*)getCurrentTask())->pid;
     addTasktoQueueHead(process);

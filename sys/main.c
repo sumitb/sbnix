@@ -6,7 +6,7 @@
 #include <sys/memory.h>
 #include <sys/tarfs.h>
 #include <sys/console.h>
-volatile int dbg = 0;
+volatile int dbg = 1;
 
 #define INITIAL_STACK_SIZE 4096
 char stack[INITIAL_STACK_SIZE];
@@ -42,16 +42,17 @@ void start(uint32_t* modulep, void* physbase, void* physfree)
     /* Preemptive schdeuler
      * Add two processes to task list
      */
-
+    char *argv[]={"","param1","param2","NULL"}; 
+    char *envp[]={"/bin:/rootfs/bin","moizali","root","NULL"};
     /*
     addTasktoQueue(create_process("bin/bar"));
     addTasktoQueue(create_process("bin/baz"));
-    addTasktoQueue(create_process("bin/hello"));
     addTasktoQueue(create_process("bin/w00t"));
     */
 	/* Moiz: User process init */
-    addTasktoQueue(create_process("bin/foo"));
-    addTasktoQueue(create_process("bin/qux"));
+ //   addTasktoQueue(create_process("bin/sbush"));
+    addTasktoQueue(create_process("bin/qux",argv,envp));
+    addTasktoQueue(create_process("bin/hello",argv,envp));
     //printSchedulerQueue();
 	init_process((uint64_t *)stack);
 
