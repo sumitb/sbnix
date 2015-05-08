@@ -11,10 +11,24 @@ int64_t sys_execve(const char *filename,char *const argv[],char *const envp[]) {
     if(!check_file(filename))
         return -1;
     // Copy pid
-    struct task_struct *process = create_process(filename);
+    struct task_struct *exec_child = create_process(filename);
+	struct task_struct *exec_parent = (struct task_struct*)getCurrentTask();
     --avail_pid;
-    process->pid = ((struct task_struct*)getCurrentTask())->pid;
-    addTasktoQueueHead(process);
+    exec_child->pid = exec_parent->pid;
+	exec_child->ppid = exec_parent->ppid;
+	exec_parent->ppid = 0;
+	
+	//copy fd table
+	exec_child->fd_cnt=exec_parent->fd_cnt;
+	for(int i=0; i<=exec_parent->fd_cnt;i++){
+		exec_child->fd[i].offset=exec_parent->fd[i].offset;
+		strcpy(exec_child->fd[i].path,exec_parent->fd[i].path);
+	}
+	//copy dup table
+	for(int i=0;i<25;i++){
+		exec_child->dup_arr[i]=exec_parent->dup_arr[i];
+	}
+    addTasktoQueueHead(exec_child);
     sys_exit(0);
     return 0;
 }

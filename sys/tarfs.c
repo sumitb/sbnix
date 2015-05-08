@@ -41,21 +41,34 @@ uint64_t check_file(const char *file_name){
 }
 
 char * sys_getcwd(char *dir_name, uint64_t size){
-    	struct task_struct *proc = getCurrentTask();
-	int len = strlen(proc->bin_name);
+    struct task_struct *proc = getCurrentTask();
+	/*int len = strlen(proc->bin_name);
 	int i;int cnt=0;
 	for(i=0; i<len; i++){
 		if(proc->bin_name[i]=='/')
 			cnt++;
-	}	
+	}
 	for(i=0; i<len; i++){
 		if(proc->bin_name[i]=='/' && cnt>0){
 			cnt--;
 		}
 		if(cnt)
 			dir_name[i]=proc->bin_name[i];
+	}*/
+	return proc->dir_path;
+}
+
+int64_t sys_chdir(char *path){
+	int ind=0;
+	struct task_struct *proc = getCurrentTask();
+	int len = strlen(path);
+	for(ind=0;ind<MAX_BIN;ind++){
+		if((strncmp(path,tarfs_ind[ind].name,len)==0) && strcmp(tarfs_ind[ind].typeflag,DIR)==0){
+			strcpy(proc->dir_path,path);
+			return 0;
+		}
 	}
-	return dir_name;
+	return -1;
 }
 
 //uint64_t open(char *file_name){
@@ -65,17 +78,17 @@ int64_t sys_open(const char *file_name, int flags){
 	len=strlen(file_name);
 	struct task_struct *process = getCurrentTask();
 	for(ind=0;ind<MAX_BIN;ind++){
-	if((strncmp(file_name,tarfs_ind[ind].name,len)==0) && ((tarfs_ind[ind].name[len]=='/' && tarfs_ind[ind].name[len+1]=='\0') || tarfs_ind[ind].name[len]=='\0')){		
+	if((strncmp(file_name,tarfs_ind[ind].name,len)==0) && ((tarfs_ind[ind].name[len]=='/' && tarfs_ind[ind].name[len+1]=='\0') || tarfs_ind[ind].name[len]=='\0')){	
 	// && strcmp(tarfs_ind[ind].typeflag,FILE)==0){
-	tarfs_ind[ind].ref_cnt++;
+        tarfs_ind[ind].ref_cnt++;
+        process->fd_cnt++;
         process->fd[process->fd_cnt].offset=tarfs_ind[ind].bin_start_addr;
         process->fd[process->fd_cnt].flags=flags;
        	//strcpy(fd[file_fd].path,file_name);
        	strcpy(process->fd[process->fd_cnt].path,tarfs_ind[ind].name);
         process->fd[process->fd_cnt].seek=0;
-        process->fd_cnt++;
 	//	return tarfs_ind[ind].bin_start_addr;
-        return process->fd_cnt-1;
+        return process->fd_cnt;
 		}
 	}
 	printk("No such file\n");

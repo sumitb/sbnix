@@ -9,6 +9,7 @@
 #define NR_TASKS            128
 #define TRAP_SIZE           5
 #define TSS_OFFSET          1
+#define DIR_LEN             48
 #define BINARY_LEN          24
 #define USER_STACK_SIZE     512
 #define KERNEL_STACK_SIZE   512
@@ -54,6 +55,7 @@ struct task_struct {
 
     uint16_t pid;
     uint16_t ppid;
+    char dir_path[DIR_LEN];
     char bin_name[BINARY_LEN];
     bool is_sleep;
     uint64_t sleep_time;

@@ -105,6 +105,14 @@ struct task_struct *create_process(const char *binary){
 	}
 	process->fd_cnt=2;
 
+	int len=strlen(binary);
+	for(int i=len-1; i>0; i--){
+		if(binary[i]=='/'){
+			strncpy(process->dir_path,binary,i);
+			i=0;
+		}
+	}
+
     process->stack=(uint64_t*)STACK_MEM_TOP;
 	kmalloc_user_space(pml4e_pr,STACK_MEM_TOP-(sizeof(uint64_t)*(USER_STACK_SIZE)),(sizeof(uint64_t)*(USER_STACK_SIZE)));
 	
