@@ -11,7 +11,7 @@ int main(int argc, char* argv[], char* envp[]) {
    int k = fork();
    if(k == 0){
         printf("%s in child\n",var);
-        execve("bin/test",argv,envp);
+        execve("bin/qux",argv,envp);
 
 
    }

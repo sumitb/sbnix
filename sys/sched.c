@@ -47,11 +47,11 @@ void printSchedulerQueue() {
 }
 
 int64_t sys_getpid(void) {
-    return currentTask->pid;
+    return (int64_t)((struct task_struct*)getCurrentTask())->pid;
 }
 
 int64_t sys_getppid(void) {
-    return currentTask->ppid;
+    return (int64_t)((struct task_struct*)getCurrentTask())->ppid;
 }
 
 int64_t sys_exit(int error_code) {
@@ -67,35 +67,46 @@ int64_t sys_exit(int error_code) {
 }
 
 int64_t sys_sleep(uint64_t seconds) {
-    currentTask->is_sleep = true;
-    currentTask->sleep_time = seconds;
+	struct task_struct *proc = getCurrentTask();
+    proc->is_sleep = true;
+    proc->sleep_time = seconds;
     /* Move current task to wait queue */
-    list_move(&currentTask->tasks, &waitQueue);
+    list_move(&proc->tasks, &waitQueue);
     schedule();
     return 0;
 }
 
 void awake() {
     struct task_struct *process = NULL;
-    /* If child pid exists, wait */
-    list_for_each_entry(process, &waitQueue, tasks) {
-        if(process->is_sleep) {
-            process->sleep_time--;
-            if(process->sleep_time == 0) {
-                /* Move current task to run queue */
-                list_move(&process->tasks, &runQueue);
+    if(list_empty(&waitQueue))
+        return;
+    else if(list_is_singular(&waitQueue)){
+        //list_first_entry(&waitQueue, (struct task_struct*), tasks);
+    }
+    else{
+        /* If child pid exists, wait */
+        list_for_each_entry(process, &waitQueue, tasks) {
+            if(process->is_sleep) {
+                process->sleep_time--;
+                if(process->sleep_time <= 0) {
+                    process->is_sleep = false;
+                    /* Move current task to run queue */
+                    list_move(&process->tasks, &runQueue);
+                }
             }
         }
     }
+    return;
 }
 
 int64_t sys_waitpid(pid_t pid, int *status_addr, int options) {
     struct task_struct *process = NULL;
+	struct task_struct *currentProc = getCurrentTask();
     /* If child pid exists, wait */
     list_for_each_entry(process, &runQueue, tasks) {
         if(process->pid == pid) {
             /* Move current task to wait queue */
-            list_move(&currentTask->tasks, &waitQueue);
+            list_move(&currentProc->tasks, &waitQueue);
             schedule();
             return pid;
         }
@@ -103,7 +114,7 @@ int64_t sys_waitpid(pid_t pid, int *status_addr, int options) {
     list_for_each_entry(process, &waitQueue, tasks) {
         if(process->pid == pid) {
             /* Move current task to wait queue */
-            list_move(&currentTask->tasks, &waitQueue);
+            list_move(&currentProc->tasks, &waitQueue);
             schedule();
             return pid;
         }
@@ -114,6 +125,8 @@ int64_t sys_waitpid(pid_t pid, int *status_addr, int options) {
 /* Awake given process from wait queue */
 void awakepid(pid_t pid) {
     struct task_struct *process = NULL;
+    if(list_empty(&waitQueue))
+        return;
     /* If child pid exists, wait */
     list_for_each_entry(process, &waitQueue, tasks) {
         if(process->pid == pid) {

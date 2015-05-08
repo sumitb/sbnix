@@ -8,9 +8,12 @@ int main(int argc, char* argv[], char* envp[])
     pid_t childPID;
     printf("%d. Parent\n", error);
     
+    *((char*)addr)=65;
+	*((char*)addr+0x1)=0x07;
     if((childPID = fork()) == 0) {
     	//error = execve("bin/qux", argv, envp);
         printf("%d. Infinite child\n", error);
+        sleep(111);
     }
     else {
         waitpid(childPID, &status, 0);
