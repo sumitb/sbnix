@@ -1,13 +1,36 @@
 Team Members:
 	Sumit Bindal		(109913379)
-	Moiz Ali		(110100333)
+	Moiz Ali			(110100333)
 	Pratik Bagaria		(110013587)
 
-We have implemented preemptive scheduling OS (70 marks project)
+We have implemented preemptive os (70 marks project)
 
-Read Me:
+Readme:
 
-SYSTEM CALLS	    
+Features:
+- COW Fork
+- Preemptive Scheduler
+- On demand heap
+
+List of Binaries created to test the system calls:
+1)fork: to test fork and execve
+2)listdir: to test opendir, readdir and closedir
+3)open: to test open, read and lseek 
+4)ps, pwd: To display process and directory info.
+5)ls: for listing the files of a directory
+6)echo: to echo on a terminal
+7)pipe: to test pipe use the normal pipe symbol to give commands in the shell: Below is an example to test0 3 level pipe in our shell:
+ ls | scan_pipe | scan_pipe2
+  ls|scan_pipe
+
+Working flow of fork():
+	 In fork after the child is created, we first resume the parent process and then the child process is scheduled.
+
+Limitations:
+- We disable scheduler while performing scan
+- argv, envp handling for user processes
+
+List of SYSTEM CALLS	    
     SYS_exit()
     Syntax       :  exit(int status)
     Description  :  The exit() function causes normal process termination        
@@ -112,31 +135,5 @@ SYSTEM CALLS
        buffer pointed to by dirp.The argument count specifies the size of that buffer.
     Dependency   :getdents is called by opendir
     return       : On success, the number of bytes read is returned.
-
-
-List of Binaries created to test the system calls:
-
-1) fork: to test fork and execve
-2)listdir: to test opendir, readdir and closedir
-3)open: to test open, read and lseek 
-4)preempt: to test preemptive scheduling
-5)ls: for listing the files of a directory
-6)echo: to echo on a terminal
-7)pipe: to test pipe use the normal pipe symbol to give commands in the shell: Below is an example to test0 3 level pipe in our shell:
- ls | scan_pipe | scan_pipe2
-  ls|scan_pipe
-
-Working flow of fork():
-	 In fork after the child is created, we first resume the parent process and then the child process is scheduled.
-
-Limitations:
-
-
-
-
-
-	
-	
-
 
 
